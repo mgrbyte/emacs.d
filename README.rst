@@ -2,7 +2,7 @@
 Emacs development environment
 =============================
 One of the primary motivations for this package is to provide a consistent,
-useful python_ development environment.
+useful development environment.
 
 It is also opinionated, providing mode hooks for a host of extensions.
 
@@ -41,7 +41,7 @@ please raise an issue on github.
 .. _Emacs: https://www.gnu.org/software/emacs/
 .. _HACKING.rst: HACKING.rst
 .. _docs: docs
-.. _emacs.d: https://github.com/netsight/emacs.d
+.. _emacs.d: https://github.com/mgrbyte/emacs.d
 .. _python: https://github.com/fgallina/python.el
 .. _use-package: https://github.com/jwiegley/use-package
 

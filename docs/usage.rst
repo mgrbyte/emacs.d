@@ -2,9 +2,9 @@
  Usage
 =======
 
-nesight-mode
+mgrbyte-mode
 ============
-At ``Netsight``, we use a custom minor-mode which defines a set of
+I use a custom minor-mode which defines a set of
 ``emacs`` functions and key bindings that we've found useful over
 time.
 
@@ -16,18 +16,18 @@ the ``custom-file`` variable:
 
 .. code-block: lisp
 
-   (netsight-mode 0)
+   (mgrbyte-mode 0)
 
 As with all other modes, Key-bindings and functions provided by the
 mode are documented in the ``info`` window when you invoke ``C-h m``
-or ``M-x describe-mode`` and navigate to ``Netsight``.
+or ``M-x describe-mode`` and navigate to ``Mgrbyte``.
  
 python-mode
 ===========
 This package use the built-in python_ mode provided in emacs24.
 
 It has been configure to add hooks which load the pungi_ package.
-Additionally, the ``netsight-mode`` function `py-insert-debug` is
+Additionally, the ``mgrbyte-mode`` function `py-insert-debug` is
 enabled, which inserts the ``pdb.set_trace`` command on the current
 line indicated by position of the cursor.
 
@@ -61,7 +61,7 @@ file_` up to date with packages you may install or delete with
 
 Python development
 ==================
-By default, the netsight package uses the built-in python_ package,
+By default, the mgrbyte package uses the built-in python_ package,
 
 The pungi_ package provides jedi_ and pyvenv_ integration for
 buildout_ and virtualenv.

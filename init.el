@@ -1,4 +1,4 @@
-;;; init.el --- Init file for Netsight development. -*- lexical-binding: t; coding: utf-8 -*-
+;;; init.el --- Init file for developement environment. -*- lexical-binding: t; coding: utf-8 -*-
 ;;; Commentary:
 ;;
 ;; Initialize Emacs configuration.
@@ -21,20 +21,11 @@
 
 ;; Package configuration
 
-(use-package netsight
+(use-package mgrbyte
   :load-path "lisp"
-  :diminish netsight-mode
-  :preface
-  (defun netsight-ffap ()
-    "Find file at point support for JAQ URLs."
-    (interactive)
-    (let* ((word (thing-at-point 'word)))
-      (if (s-matches? "^JAQ[0-9]+" word)
-	  (ffap (s-replace "JAQ" netsight-jaq-url word))
-	(ffap))))
+  :diminish mgrbyte-mode
   :config
-  (bind-key "C-x C-o" #'netsight-ffap netsight-keymap)
-  (add-hook 'after-init-hook #'netsight-mode)
+  (add-hook 'after-init-hook #'mgrbyte-mode)
   ;; Turn off UI clutter
   (mapc #'apply `((menu-bar-mode -1) (tool-bar-mode -1) (scroll-bar-mode -1)))
 
@@ -115,7 +106,7 @@
   (defadvice dired-readin
       (after dired-after-updating-hook first () activate)
     "Sort dired listings with directories first before adding mark."
-    (netsight-sort-directories-first)))
+    (mgrbyte-sort-directories-first)))
 
 (use-package dired-x
   :config
@@ -209,7 +200,7 @@
          ("\\.cpy$" . python-mode)
          ("\\.vpy$" . python-mode))
   :config
-  (declare-function py-insert-debug netsight nil)
+  (declare-function py-insert-debug mgrbyte nil)
   (setq fill-column 79)
   (setq-default flycheck-flake8rc "~/.config/flake8rc")
   (setq python-check-command "flake8")

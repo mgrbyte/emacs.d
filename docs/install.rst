@@ -39,13 +39,13 @@ Installation
 ============
 If you want to run a stable version, please checkout a release tag
 
-See https://github.com/netsight/emacs.d/releases
+See https://github.com/mgrbyte/emacs.d/releases
 
 For the commands below we'll use the ``master`` branch.
 
 .. code-block:: bash
 
-  git clone https://github.com/netsight/emacs.d ~/.emacs.d
+  git clone https://github.com/mgrbyte/emacs.d ~/.emacs.d
   cd ~/.emacs.d
   make
 
