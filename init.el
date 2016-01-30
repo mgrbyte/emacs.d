@@ -56,7 +56,6 @@
 
   ;; Annoyance factor
   (fset 'yes-or-no-p 'y-or-n-p)
-  (setq redisplay-dont-pause t)
   (setq font-lock-verbose nil)
   (setq confirm-nonexistent-file-or-buffer nil)
 
