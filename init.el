@@ -76,7 +76,7 @@
   ;; Position
   (setq initial-frame-alist
 	'((top . 0) (left . 200)
-	  (width . 320) (height . 10)))
+	  (width . 80) (height . 300)))
 
   ;; avoid audio beeping by turning on visible-bell
   (setq visible-bell t)
