@@ -8,7 +8,6 @@
 (depends-on "async")
 (depends-on "auto-complete")
 (depends-on "bind-key")
-(depends-on "browse-kill-ring")
 (depends-on "cask")
 (depends-on "concurrent")
 (depends-on "ctable")
