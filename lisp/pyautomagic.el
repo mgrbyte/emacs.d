@@ -41,7 +41,6 @@ Return nil if this is not the case."
   "Return true if URL is a Pylons repository."
   (s-contains? "Pylons/" url))
 
-
 (defun pyautomagic--activate-venv-safely (directory)
   "Use instead of pyvenv-activate to strip trailing slash from DIRECTORY."
   (interactive "DEnter Path to directory containing bin/activate:")
