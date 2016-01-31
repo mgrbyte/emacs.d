@@ -224,8 +224,6 @@ Result will be shown in the flycheck mode-line."
 (use-package java-mode
   :mode (("\\.js.dtml$" . java-mode)))
 
-(use-package company-jedi)
-
 (use-package jedi
   :preface
   (declare-function jedi:goto-definition jedi nil)
