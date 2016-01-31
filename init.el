@@ -113,9 +113,6 @@
       [menu-bar bookmarks bookmark-jump]
       '("Goto bookmark" . bookmark-jump))))
 
-(use-package browse-kill-ring
-  :bind ("<kp-8>" . browse-kill-ring))
-
 (use-package conf-mode
   :mode (("\\.conf" . conf-mode)
          ("\\.cfg" . conf-mode)
