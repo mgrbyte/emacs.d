@@ -8,10 +8,6 @@
 ;; Setup package management (Cask)
 (require 'cask "~/.cask/cask.el")
 
-(defun mgrbyte--add-to-hooks (function mode-hooks)
-  "Add FUNCTION to multiple modes MODE-HOOKS."
-  (mapc (lambda (hook) (add-hook hook function)) mode-hooks))
-
 (cask-initialize)
 (setq package-enable-at-startup nil)
 (package-initialize)
@@ -26,13 +22,19 @@
   (require 'pallet)
   (require 's))
 
+(use-package async
+  :functions async-byte-comp-get-allowed-pkgs)
+
 (use-package mgrbyte
   :ensure abyss-theme
   :load-path "lisp"
-  :diminish 'mgrbyte-mode
+  :preface
+
+  (defun mgrbyte/add-to-hooks (function mode-hooks)
+    "Add FUNCTION to multiple modes MODE-HOOKS."
+    (mapc (lambda (hook) (add-hook hook function)) mode-hooks))
+
   :config
-  (add-hook 'after-init-hook #'mgrbyte-mode)
-  ;; Turn off UI clutter
   (mapc #'apply
 	`((menu-bar-mode -1) (tool-bar-mode -1) (scroll-bar-mode -1)))
 
@@ -203,7 +205,7 @@ Result will be shown in the flycheck mode-line."
 (use-package ispell
   :bind (("C-c i" . ispell-buffer))
   :init
-  (mgrbyte--add-to-hooks
+  (mgrbyte/add-to-hooks
    #'flyspell-mode `(LaTeX-mode-hook
 		     git-commit-mode-hook
 		     jabber-chat-mode-hook
@@ -263,7 +265,7 @@ Result will be shown in the flycheck mode-line."
 (use-package paredit
   :diminish paredit-mode
   :config
-  (mgrbyte--add-to-hooks
+  (mgrbyte/add-to-hooks
    #'enable-paredit-mode `(lisp-mode-hook emacs-lisp-mode-hook)))
 
 (use-package paren
@@ -282,7 +284,7 @@ Result will be shown in the flycheck mode-line."
   (defun enable-pretty-symbols-mode ()
     (pretty-symbols-mode 1))
   :config
-  (mgrbyte--add-to-hooks
+  (mgrbyte/add-to-hooks
    #'enable-pretty-symbols-mode `(emacs-lisp-mode-hook
 				  lisp-mode-hook
 				  clojure-mode-hook
