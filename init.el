@@ -150,7 +150,6 @@
 (use-package erc)
 
 (use-package flycheck
-  :bind ("<kp-7>" . flycheck-next-error)
   :preface
   (declare-function flycheck-next-error flycheck nil)
   (add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode)
@@ -331,10 +330,6 @@ Result will be shown in the flycheck mode-line."
 (use-package sass-mode
   :config (setq sass-indent-offset 2))
 
-(use-package sendmail)
-
-(use-package sphinx-doc)
-
 ;; Emacs server configuration
 ;; Allows use with screen
 ;; Start either gnuserv or emacsserver for external access
@@ -376,8 +371,6 @@ Result will be shown in the flycheck mode-line."
 (use-package text-scale-mode
   :bind (("C-c +" . text-scale-increase)
 	 ("C-c -" . text-scale-decrease)))
-
-(use-package vc)
 
 (use-package vcl
   :mode (("\\.vcl" . vcl-mode)))
