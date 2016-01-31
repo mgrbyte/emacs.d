@@ -74,7 +74,8 @@ Determined by looking at dir-locals for the current git
 repository, and seeing if there is a `python-mode' entry with a
 sub-entry for `flycheck-flake8rc' defined."
   (when directory-name
-    (let* ((dlf (f-join (file-name-as-directory directory-name) dir-locals-file))
+    (let* ((dlf (f-join
+		 (file-name-as-directory directory-name) dir-locals-file))
 	   (class (if (f-exists? dlf) (dir-locals-read-from-file dlf) ""))
 	   (variables (dir-locals-get-class-variables class))
 	   (variables
