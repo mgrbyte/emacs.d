@@ -1,6 +1,8 @@
-=============================
-Emacs development environment
-=============================
+=================================================
+Another Opinionated Emacs Development Environment
+=================================================
+A bunch of emacs-lisp_ tailored for Python_ and lisp_ web development.
+
 One of the primary motivations for this package is to provide a consistent,
 useful development environment.
 
@@ -18,11 +20,6 @@ Cask_  is used for package management and installation
 
 Please see the documentation in docs_ for installation, custom configuration and more.
 
-.. CAUTION:
-   Since Emacs uses several different libraries,
-   please check KNOWN_ISSUES.rst and apply any workarounds
-   that may be required before proceeding to final installation.
- 
 Read HACKING.rst_ for a guide on developing emacs.d_.
    
 Contributing
@@ -30,18 +27,18 @@ Contributing
 
 Git Hub
 -------
-
-See emacs.d_ on Github
-
 If you think of a feature you'd like to add, or have found a bug,
-please raise an issue on github.
+please raise an issue on github_.
 
-.. _`Contribution guidelines`: blobs/master/CONTRIBUTING.rst
 .. _Cask: https://github.com/cask/cask
 .. _Emacs: https://www.gnu.org/software/emacs/
 .. _HACKING.rst: HACKING.rst
+.. _Python: https://www.python.org
+.. _`Contribution guidelines`: blobs/master/CONTRIBUTING.rst
 .. _docs: docs
+.. _emacs-lisp: https://en.wikipedia.org/wiki/Emacs_Lisp
 .. _emacs.d: https://github.com/mgrbyte/emacs.d
-.. _python: https://github.com/fgallina/python.el
+.. _github: https://github.com
+.. _lisp: https://en.wikipedia.org/wiki/Lisp_%28programming_language%29
+.. _python-mode: https://github.com/fgallina/python.el
 .. _use-package: https://github.com/jwiegley/use-package
-
