@@ -75,11 +75,6 @@
   (put 'narrow-to-page 'disabled nil)
   (bind-key "C-c t" #'tool-bar-mode)
 
-  ;; Position
-  (setq initial-frame-alist
-	'((top . 0) (left . 200)
-	  (width . 80) (height . 300)))
-
   ;; avoid audio beeping by turning on visible-bell
   (setq visible-bell t)
   (setq debug-on-error t)
