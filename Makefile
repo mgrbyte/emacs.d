@@ -11,7 +11,8 @@ all: python2setup
 
 python2setup:
 	$(shell test -d ${USER_CONF_DIR} || mkdir ${USER_CONF_DIR})
-	$(shell test -f ${USER_CONF_DIR}/${FLAKE8_CONF_NAME} || cp ${FLAKE8_CONF_SRC} ${FLAKE8_CONF_TARGET})
+	$(shell test -f ${USER_CONF_DIR}/${FLAKE8_CONF_NAME} || \
+		cp ${FLAKE8_CONF_SRC} ${FLAKE8_CONF_TARGET})
 	$(shell test -f ${EMACS_CUSTOMIZE_FILE} || touch ${EMACS_CUSTOMIZE_FILE})
 	$(shell test -d ${VENV_WORKON_HOME} || mkdir ${VENV_WORKON_HOME})
 	@pip2 install --user --install-option="--prefix=" -r requirements.txt
