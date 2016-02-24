@@ -151,6 +151,9 @@
   (declare-function flycheck-next-error flycheck nil)
   (add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode)
   (fringe-mode (quote (4 . 0)))
+  (eval-after-load 'flycheck '(flycheck-clojure-setup))
+  (eval-after-load 'flycheck
+    '(setq flycheck-display-errors-function #'flycheck-pos-tip-error-messages))
   (global-flycheck-mode 1)
   (defun mgrbyte/flycheck-checker-name-on-mode-line (oldfun &optional status)
     "Show the current checker name using OLDFUN and STATUS.
@@ -206,6 +209,7 @@ Result will be shown in the flycheck mode-line."
 		     jabber-chat-mode-hook
 		     markdown-mode-hook
 		     message-mode-hook
+		     org-mode-hook
 		     rst-mode-hook
 		     sphinx-doc-mode-hook)))
 
@@ -218,13 +222,11 @@ Result will be shown in the flycheck mode-line."
   :mode (("\\.js.dtml$" . java-mode)))
 
 (use-package jedi
-  :preface
-  (declare-function jedi:goto-definition jedi nil)
-  (declare-function jedi:related-names jedi nil)
-  (declare-function jedi:show-doc jedi nil)
   :bind (("C-." . jedi:goto-definition)
 	 ("C-c r" . jedi:related-names)
-	 ("C-?" . jedi:show-doc)))
+	 ("C-?" . jedi:show-doc))
+  :config
+  (setq-default jedi:complete-on-dot t))
 
 (use-package keyfreq)
 
@@ -261,7 +263,10 @@ Result will be shown in the flycheck mode-line."
   :diminish paredit-mode
   :config
   (mgrbyte/add-to-hooks
-   #'enable-paredit-mode `(lisp-mode-hook emacs-lisp-mode-hook)))
+   #'enable-paredit-mode `(cider-repl-mode-hook
+			   clojure-mode-hook
+			   emacs-lisp-mode-hook
+			   lisp-mode-hook)))
 
 (use-package paren
   :config
