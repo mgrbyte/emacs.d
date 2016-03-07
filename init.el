@@ -80,7 +80,6 @@
   (setq debug-on-error t)
   (setq custom-theme-directory (locate-user-emacs-file "themes"))
   (setq-default theme-load-from-file t)
-  (setq-default epg-gpg-program "gpg2")
   (add-to-list 'auto-mode-alist '("Makfile.*" . makefile-gmake-mode))
   (keyfreq-mode)
   (menu-bar-mode 0)
