@@ -23,6 +23,7 @@
 (depends-on "flx-ido")
 (depends-on "flycheck")
 (depends-on "flycheck-color-mode-line")
+(depends-on "flycheck-pos-tip")
 (depends-on "fringe-helper")
 (depends-on "flycheck-pyflakes")
 (depends-on "frame-cmds")
