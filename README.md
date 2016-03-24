@@ -24,10 +24,23 @@ configuration and more.
 Read the [hacking guide] for a guide on developing [emacs.d].
    
 ## Contributing
+Any reporting of issues, and fixes are most welcome.
+If you'd like to contribute new features,
+please check with the other users of this package.
 
-### Git Hub
+Please see the [hacking] document for note on  development.
+
 If you think of a feature you'd like to add, or have found a bug,
-please raise an issue on [github].
+please [raise an issue].
+
+## Documentation
+ 
+Always run:
+
+  ```M-x chekdoc``
+
+on any `.el` files before commiting them.
+
 
 [Cask]: https://github.com/cask/cask
 [Clojure]: https://www.clojure.org
@@ -37,7 +50,7 @@ please raise an issue on [github].
 [docs]: docs
 [emacs-lisp]: https://en.wikipedia.org/wiki/Emacs_Lisp
 [emacs.d]: https://github.com/mgrbyte/emacs.d
-[github]: https://github.com
+[raise an issue]: https://github.com/mgrbyte/emacs.d/issues/new
 [hacking guide]: HACKING.md
 [jedi]: https://github.com/tkf/emacs-jedi
 [lisp]: https://en.wikipedia.org/wiki/Lisp_%28programming_language%29
