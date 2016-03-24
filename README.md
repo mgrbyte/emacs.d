@@ -18,7 +18,8 @@ This [Emacs] setup assumes Emacs 24 or higher.
 
 [Cask]  is used for package management and installation (via [pallet-mode]).
 
-Please see the documentation in [docs] for installation, custom configuration and more.
+Please see the documentation in [docs] for installation, custom
+configuration and more.
 
 Read the [hacking guide] for a guide on developing [emacs.d].
    
@@ -30,7 +31,7 @@ please raise an issue on [github].
 
 [Cask]: https://github.com/cask/cask
 [Emacs]: https://www.gnu.org/software/emacs/
-[the hacking guide]: HACKING.rst
+[hacking guide]: HACKING.rst
 [Python]: https://www.python.org
 [Contribution guidelines]: blobs/master/CONTRIBUTING.rst
 [docs]: docs
