@@ -51,11 +51,11 @@ New packages can be added to Emacs by using the package manager:
  ``M-x list-packages``
 
 The [pallet] package automatically takes care of keeping the
-[Cask dependencies file] up-to-date with packages you may install or
+Cask dependencies file up-to-date with packages you may install or
 delete with ``list-packages``.
 
 ## Coding modes
-All linting (wavey-red-lines) is handled by the flycheck package, and
+All linting (wavey-red-lines) is handled by the [flycheck] package, and
 related language specific plugins for checking syntax and correctness
 of code.
 
