@@ -8,7 +8,7 @@ useful development environment.
 
 It is also opinionated, providing mode hooks for a host of extensions.
 
-Each of these can of course been overridden/configured as you prefer.
+Each of these can of course be overridden/configured as you prefer.
 
 use-package_ is used to configure the default set of packages that will be installed.
 
@@ -16,7 +16,7 @@ See the use-package_ statements in ``.emacs.d/init.el``.
 
 This Emacs_ setup assumes Emacs 24 or higher.
 
-Cask_  is used for package management and installation
+Cask_  is used for package management and installation (via pallet-mode_).
 
 Please see the documentation in docs_ for installation, custom configuration and more.
 
@@ -42,3 +42,4 @@ please raise an issue on github_.
 .. _lisp: https://en.wikipedia.org/wiki/Lisp_%28programming_language%29
 .. _python-mode: https://github.com/fgallina/python.el
 .. _use-package: https://github.com/jwiegley/use-package
+.. _pallet-mode: https://github.com/rdallasgray/pallet
