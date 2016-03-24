@@ -30,16 +30,17 @@ If you think of a feature you'd like to add, or have found a bug,
 please raise an issue on [github].
 
 [Cask]: https://github.com/cask/cask
-[Emacs]: https://www.gnu.org/software/emacs/
-[hacking guide]: HACKING.md
-[Python]: https://www.python.org
+[Clojure]: https://www.clojure.org
 [Contribution guidelines]: blobs/master/CONTRIBUTING.rst
+[Emacs]: https://www.gnu.org/software/emacs/
+[Python]: https://www.python.org
 [docs]: docs
 [emacs-lisp]: https://en.wikipedia.org/wiki/Emacs_Lisp
 [emacs.d]: https://github.com/mgrbyte/emacs.d
 [github]: https://github.com
+[hacking guide]: HACKING.md
+[jedi]: https://github.com/tkf/emacs-jedi
 [lisp]: https://en.wikipedia.org/wiki/Lisp_%28programming_language%29
+[pallet-mode]: https://github.com/rdallasgray/pallet
 [python-mode]: https://github.com/fgallina/python.el
 [use-package]: https://github.com/jwiegley/use-package
-[pallet-mode]: https://github.com/rdallasgray/pallet
-[Clojure]: https://www.clojure.org
