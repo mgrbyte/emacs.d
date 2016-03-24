@@ -31,7 +31,7 @@ please raise an issue on [github].
 
 [Cask]: https://github.com/cask/cask
 [Emacs]: https://www.gnu.org/software/emacs/
-[hacking guide]: HACKING.rst
+[hacking guide]: HACKING.md
 [Python]: https://www.python.org
 [Contribution guidelines]: blobs/master/CONTRIBUTING.rst
 [docs]: docs

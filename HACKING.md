@@ -1,9 +1,6 @@
-==========================================
- Hacking on the Netsight Emacs 24 pacakge
-==========================================
+#  Hacking on the Netsight Emacs 24 pacakge
 
-Debugging
-=========
+## Debugging
 
 The following will show other useful debug settings::
   apropos RET debug-on
@@ -17,8 +14,7 @@ The main setting that helps is:
 Although emacs will always prompt you to run with --debug-init
 on encountering an error.
 
-Writing emacs lisp
-==================
+## Writing emacs lisp
 Please ensure that you've set
 
 .. code-block:: cl
@@ -30,20 +26,13 @@ correct any/all errors.
 
 If possible, fix warnings too (less noise is better).
 
-Watch out for usage of setq and setq-default, with respecct to
-bufer-local variables.
+Watch out for usage of ```setq``` and ```setq-default```, with respect
+to buffer-local variables.
 
 Use hooks judiciously, especially those involved with saving.
 
-
-Releases
-========
-Pleas use semantic versioning with git tag -a.
-
-
-:Author: Matthew Russell <mattr@netsight.co.uk>
-:Date:   2014-03-13
-:Last-modified: 2014-04-26
+## Releases
+Please use semantic versioning with ```git tag -a```.
 
 
 
