@@ -29,11 +29,9 @@
   :ensure abyss-theme
   :load-path "lisp"
   :preface
-
   (defun mgrbyte/add-to-hooks (function mode-hooks)
     "Add FUNCTION to multiple modes MODE-HOOKS."
     (mapc (lambda (hook) (add-hook hook function)) mode-hooks))
-
   :config
   (mapc #'apply
 	`((menu-bar-mode -1) (tool-bar-mode -1) (scroll-bar-mode -1)))
@@ -84,30 +82,30 @@
   (keyfreq-mode)
   (menu-bar-mode 0)
   (helm-mode 1)
-  (load-theme 'abyss t)
+  (load-theme 'abyss t))
 
-  (use-package bookmark
-    :config
-    (define-key global-map [menu-bar bookmarks]
-      (cons "Bookmarks" (make-sparse-keymap "Bookmarks")))
-    (define-key global-map
-      [menu-bar bookmarks bookmark-insert]
-      '("Insert bookmark into buffer" . bookmark-insert))
-    (define-key global-map
-      [menu-bar bookmarks bookmark-delete]
-      '("Delete bookmark" . bookmark-delete))
-    (define-key global-map
-      [menu-bar bookmarks bookmark-save]
-      '("Save bookmarks" . bookmark-save))
-    (define-key global-map
-      [menu-bar bookmarks list-bookmarks]
-      '("List bookmarks" . list-bookmarks))
-    (define-key global-map
-      [menu-bar bookmarks bookmark-set]
-      '("Add bookmark" . bookmark-sebt))
-    (define-key global-map
-      [menu-bar bookmarks bookmark-jump]
-      '("Goto bookmark" . bookmark-jump))))
+(use-package bookmark
+  :config
+  (define-key global-map [menu-bar bookmarks]
+    (cons "Bookmarks" (make-sparse-keymap "Bookmarks")))
+  (define-key global-map
+    [menu-bar bookmarks bookmark-insert]
+    '("Insert bookmark into buffer" . bookmark-insert))
+  (define-key global-map
+    [menu-bar bookmarks bookmark-delete]
+    '("Delete bookmark" . bookmark-delete))
+  (define-key global-map
+    [menu-bar bookmarks bookmark-save]
+    '("Save bookmarks" . bookmark-save))
+  (define-key global-map
+    [menu-bar bookmarks list-bookmarks]
+    '("List bookmarks" . list-bookmarks))
+  (define-key global-map
+    [menu-bar bookmarks bookmark-set]
+    '("Add bookmark" . bookmark-sebt))
+  (define-key global-map
+    [menu-bar bookmarks bookmark-jump]
+    '("Goto bookmark" . bookmark-jump)))
 
 (use-package conf-mode
   :mode (("\\.conf" . conf-mode)
