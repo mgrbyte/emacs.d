@@ -1,4 +1,5 @@
-#  Hacking on the Netsight Emacs 24 pacakge
+#  Hacking
+The follow may help those not too familiar with working with Emacs lisp.
 
 ## Debugging
 
