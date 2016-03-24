@@ -33,6 +33,9 @@
     "Add FUNCTION to multiple modes MODE-HOOKS."
     (mapc (lambda (hook) (add-hook hook function)) mode-hooks))
   :config
+  ;; Track changes to install packages with Cask
+  (pallet-mode t)
+  ;; Turn off UI elements
   (mapc #'apply
 	`((menu-bar-mode -1) (tool-bar-mode -1) (scroll-bar-mode -1)))
 
