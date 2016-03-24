@@ -20,7 +20,7 @@ This [Emacs] setup assumes Emacs 24 or higher.
 
 Please see the documentation in [docs] for installation, custom configuration and more.
 
-Read the [hacking guide] for a guide on developing emacs.d_.
+Read the [hacking guide] for a guide on developing [emacs.d].
    
 ## Contributing
 
