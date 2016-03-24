@@ -61,8 +61,9 @@ of code.
 
 By default, this package uses the following modes per language:
 
-Python: [python], [pungi], [jedi], [pyvenv], [sphinx-doc]
-Clojure: [clojure-mode], [cider], [flycheck-pos-tip], [kibit-helper]
+  Python: [python], [pungi], [jedi], [pyvenv], [sphinx-doc]
+
+  Clojure: [clojure-mode], [cider], [flycheck-pos-tip], [kibit-helper]
 
 
 See the package documentation for each of the above for a synopsis on
