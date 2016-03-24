@@ -26,7 +26,7 @@ Read the [hacking guide] for a guide on developing emacs.d_.
 
 ### Git Hub
 If you think of a feature you'd like to add, or have found a bug,
-please raise an issue on github_.
+please raise an issue on [github].
 
 [Cask]: https://github.com/cask/cask
 [Emacs]: https://www.gnu.org/software/emacs/
