@@ -21,8 +21,6 @@
 (depends-on "deferred")
 (depends-on "diminish")
 (depends-on "editorconfig")
-(depends-on "editorconfig-core")
-(depends-on "editorconfig-fnmatch")
 (depends-on "edn")
 (depends-on "emojify")
 (depends-on "epc")
