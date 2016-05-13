@@ -154,6 +154,8 @@
   (eval-after-load 'flycheck '(flycheck-clojure-setup))
   (eval-after-load 'flycheck
     '(setq flycheck-display-errors-function #'flycheck-pos-tip-error-messages))
+  (with-eval-after-load 'flycheck
+    (flycheck-pos-tip-mode))
   (global-flycheck-mode 1)
   (defun mgrbyte/flycheck-checker-name-on-mode-line (oldfun &optional status)
     "Show the current checker name using OLDFUN and STATUS.
