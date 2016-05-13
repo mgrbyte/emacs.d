@@ -15,6 +15,7 @@ timelog
 /.python-environments
 /auto-save-list
 /elpa
+/flycheck_init.el
 /jabber-avatar-cache
 /projectile.cache
 /sandbox
