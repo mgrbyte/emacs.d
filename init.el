@@ -224,7 +224,7 @@ Result will be shown in the flycheck mode-line."
   :mode (("\\.json$" . json-mode)))
 
 (use-package java-mode
-  :mode (("\\.js.dtml$" . java-mode)))
+  :mode (("\\.java$" . java-mode)))
 
 (use-package jedi
   :bind (("C-." . jedi:goto-definition)
