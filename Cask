@@ -57,6 +57,7 @@
 (depends-on "jedi")
 (depends-on "jedi-core")
 (depends-on "js2-mode")
+(depends-on "json-mode")
 (depends-on "keyfreq")
 (depends-on "kibit-helper")
 (depends-on "let-alist")

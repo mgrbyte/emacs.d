@@ -218,6 +218,9 @@ Result will be shown in the flycheck mode-line."
   :config
   (setq-default indent-tabs-mode nil))
 
+(use-package json-mode
+  :mode (("\\.json$" . json-mode)))
+
 (use-package java-mode
   :mode (("\\.js.dtml$" . java-mode)))
 
