@@ -10,6 +10,7 @@ recentf
 server
 session.*
 timelog
+/#recentf#            
 /.cask
 /.mc-lists.el
 /.python-environments
