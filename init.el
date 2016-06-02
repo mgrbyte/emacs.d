@@ -337,22 +337,6 @@ Result will be shown in the flycheck mode-line."
 (use-package sass-mode
   :config (setq sass-indent-offset 2))
 
-;; Emacs server configuration
-;; Allows use with screen
-;; Start either gnuserv or emacsserver for external access
-(use-package server
-  :config
-  (setq server-socket-dir
-	(format "%semacs%d"
-		temporary-file-directory
-		(user-uid)))
-  (setq server-use-tcp 't)
-  :init
-  (when (not (or
-	      (window-system)
-	      (eq 'windows-nt system-type)))
-    (server-start)))
-
 (use-package sgml-mode
   :config
   (setq sgml-basic-offset 4)
