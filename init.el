@@ -7,6 +7,7 @@
 
 ;; Setup package management (Cask)
 (require 'cask "~/.cask/cask.el")
+(load-library "url-handlers")
 
 (cask-initialize)
 (setq package-enable-at-startup nil)
