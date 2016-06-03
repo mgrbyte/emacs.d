@@ -15,7 +15,7 @@ python2setup:
 		cp ${FLAKE8_CONF_SRC} ${FLAKE8_CONF_TARGET})
 	$(shell test -f ${EMACS_CUSTOMIZE_FILE} || touch ${EMACS_CUSTOMIZE_FILE})
 	$(shell test -d ${VENV_WORKON_HOME} || mkdir ${VENV_WORKON_HOME})
-	@pip2 install --user --install-option="--prefix=" -r requirements.txt
+	@pip2 install --user --install-option="--prefix=" -r requirements.txt -q
 	@cask install
 	${EMACS} \
 		--batch -nw -Q \
