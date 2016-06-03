@@ -50,12 +50,12 @@
   (setq next-line-add-newlines nil)
 
   ;; Display
-  (global-linum-mode 0)
   (setq transient-mark-mode t)
   (setq column-number-mode t)
   (setq inhibit-startup-message t)
   (setq search-highlight t)
   (setq query-replace-highlight t)
+  (global-linum-mode 0)
 
   ;; Desktop mode
   ;; Useful for remembering a set of file you're working on -
