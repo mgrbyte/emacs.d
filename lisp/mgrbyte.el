@@ -180,5 +180,15 @@ Nicked from http://emacsredux.com/blog/2013/04/21/edit-files-as-root/"
                          (ido-read-file-name "Find file(as root): ")))
     (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
 
+(defun mgrbyte-delete-trailing-blank-lines ()
+  "Deletes all blank lines at the end of the file except the very last."
+  (interactive)
+  (save-excursion
+    (save-restriction
+      (widen)
+      (goto-char (point-max))
+      (delete-blank-lines))))
+
+
 (provide 'mgrbyte)
 ;;; mgrbyte.el ends here

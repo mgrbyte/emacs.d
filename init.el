@@ -77,6 +77,10 @@
   (put 'narrow-to-page 'disabled nil)
   (bind-key "C-c t" #'tool-bar-mode)
 
+  ;; default whitespace management
+  (add-hook #'before-save-hook #'mgrbyte-delete-trailing-blank-lines)
+  (add-hook #'before-save-hook #'delete-trailing-whitespace)
+
   ;; avoid audio beeping by turning on visible-bell
   (setq visible-bell t)
   (setq debug-on-error t)
