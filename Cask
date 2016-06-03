@@ -20,6 +20,7 @@
 (depends-on "csv-mode")
 (depends-on "ctable")
 (depends-on "dash")
+(depends-on "dash-functional")
 (depends-on "deferred")
 (depends-on "diminish")
 (depends-on "editorconfig")
