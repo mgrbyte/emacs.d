@@ -78,8 +78,11 @@
   (bind-key "C-c t" #'tool-bar-mode)
 
   ;; default whitespace management
-  (add-hook #'before-save-hook #'mgrbyte-delete-trailing-blank-lines)
-  (add-hook #'before-save-hook #'delete-trailing-whitespace)
+  (declare-function
+   #'mgrbyte-delete-trailing-blank-lines
+   "lisp/mgrbyte.el")
+  (add-hook 'before-save-hook #'mgrbyte-delete-trailing-blank-lines)
+  (add-hook 'before-save-hook #'delete-trailing-whitespace)
 
   ;; avoid audio beeping by turning on visible-bell
   (setq visible-bell t)
@@ -305,11 +308,6 @@ Result will be shown in the flycheck mode-line."
   :mode (("\\.py$" . python-mode)
          ("\\.cpy$" . python-mode)
          ("\\.vpy$" . python-mode))
-  :preface
-  (add-hook 'python-mode-hook (lambda ()
-				(hack-local-variables)
-				(when (boundp 'mgrbyte-project-venv-name)
-				  (venv-workon mgrbyte-project-venv-name))))
   :config
   (declare-function py-insert-debug mgrbyte nil)
   (setq fill-column 79)
@@ -326,7 +324,16 @@ Result will be shown in the flycheck mode-line."
 (use-package virtualenvwrapper
   :bind (("C-c w o" . venv-workon)
 	 ("C-c w d" . venv-deactivate))
+  :preface
+  (defun mgrbyte/auto-activate-venv ()
+    (hack-local-variables)
+    (when (boundp 'mgrbyte-project-venv-name)
+      (venv-workon mgrbyte-project-venv-name)))
   :config
+  (mgrbyte/add-to-hooks
+   #'mgrbyte/auto-activate-venv
+   `(python-mode-hook
+     rst-mode-hook))
   (setq-default mode-line-format
 		(append
 		 mode-line-format
