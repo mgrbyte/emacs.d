@@ -174,7 +174,6 @@ Result will be shown in the flycheck mode-line."
   :config
   (progn
     (setq flycheck-emacs-lisp-load-path 'inherit)
-    (setq flycheck-python-flake8-executable "flake8")
     (setq flycheck-flake8-maximum-line-length 79)
     (setq flycheck-highlighting-mode 'lines)
     (advice-add 'flycheck-select-checker
@@ -306,6 +305,11 @@ Result will be shown in the flycheck mode-line."
   :mode (("\\.py$" . python-mode)
          ("\\.cpy$" . python-mode)
          ("\\.vpy$" . python-mode))
+  :preface
+  (add-hook 'python-mode-hook (lambda ()
+				(hack-local-variables)
+				(when (boundp 'mgrbyte-project-venv-name)
+				  (venv-workon mgrbyte-project-venv-name))))
   :config
   (declare-function py-insert-debug mgrbyte nil)
   (setq fill-column 79)
@@ -319,7 +323,14 @@ Result will be shown in the flycheck mode-line."
   :bind (("C-c v e" . pyautomagic--activate-venv-safely)
 	 ("C-c f c" . pyautomagic--configure-flycheck-checkers)))
 
-(use-package pyvenv)
+(use-package virtualenvwrapper
+  :bind (("C-c w o" . venv-workon)
+	 ("C-c w d" . venv-deactivate))
+  :config
+  (setq-default mode-line-format
+		(append
+		 mode-line-format
+		 '(:exec venv-current-name))))
 
 (use-package rainbow-delimiters
   :config
