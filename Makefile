@@ -1,4 +1,4 @@
-SHELL := /bin/sh
+SHELL := /bin/bash
 EMACS ?= $(shell which emacs)
 EMACS_CUSTOMIZE_FILE := ${HOME}/.emacs-customize.el
 VENV_WORKON_HOME := ${HOME}/.virtualenvs
@@ -7,19 +7,19 @@ FLAKE8_CONF_NAME := flake8rc
 FLAKE8_CONF_SRC := ${USER_CONF_DIR}/${FLAKE8_CONF_NAME}.template
 FLAKE8_CONF_TARGET := ${USER_CONF_DIR}/${FLAKE8_CONF_NAME}
 
-all: python2setup
+all: python3-setup
 
-python2setup:
+python-setup:
 	$(shell test -d ${USER_CONF_DIR} || mkdir ${USER_CONF_DIR})
 	$(shell test -f ${USER_CONF_DIR}/${FLAKE8_CONF_NAME} || \
 		cp ${FLAKE8_CONF_SRC} ${FLAKE8_CONF_TARGET})
 	$(shell test -f ${EMACS_CUSTOMIZE_FILE} || touch ${EMACS_CUSTOMIZE_FILE})
 	$(shell test -d ${VENV_WORKON_HOME} || mkdir ${VENV_WORKON_HOME})
-	@pip2 install --user --install-option="--prefix=" -r requirements.txt -q
+	@pip3 install --user -r requirements.txt -q
 	@cask install
 	${EMACS} \
 		--batch -nw -Q \
 		--load package \
 		--eval "(when (require 'jedi nil :noerr) (jedi:install-server))"
 clean:
-	@pip2 uninstall -y -r requirements.txt
+	@python3 -m pip uninstall -y -r requirements.txt
