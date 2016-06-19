@@ -1,4 +1,4 @@
-SHELL := /bin/sh
+SHELL := /bin/bash
 EMACS ?= $(shell which emacs)
 EMACS_CUSTOMIZE_FILE := ${HOME}/.emacs-customize.el
 VENV_WORKON_HOME := ${HOME}/.virtualenvs
@@ -15,7 +15,7 @@ python-setup:
 		cp ${FLAKE8_CONF_SRC} ${FLAKE8_CONF_TARGET})
 	$(shell test -f ${EMACS_CUSTOMIZE_FILE} || touch ${EMACS_CUSTOMIZE_FILE})
 	$(shell test -d ${VENV_WORKON_HOME} || mkdir ${VENV_WORKON_HOME})
-	@pip3 install --user -r requirements.txt
+	@pip3 install --user -r requirements.txt -q
 	@cask install
 	${EMACS} \
 		--batch -nw -Q \
