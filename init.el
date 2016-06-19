@@ -29,6 +29,7 @@
 (use-package mgrbyte
   :ensure abyss-theme
   :load-path "lisp"
+  :bind (("C-c f g" . find-grep-dired))
   :preface
   (defun mgrbyte/add-to-hooks (function mode-hooks)
     "Add FUNCTION to multiple modes MODE-HOOKS."
