@@ -9,17 +9,19 @@ FLAKE8_CONF_TARGET := ${USER_CONF_DIR}/${FLAKE8_CONF_NAME}
 
 all: python-setup
 
-python-setup:
+python3-setup:
 	$(shell test -d ${USER_CONF_DIR} || mkdir ${USER_CONF_DIR})
 	$(shell test -f ${USER_CONF_DIR}/${FLAKE8_CONF_NAME} || \
 		cp ${FLAKE8_CONF_SRC} ${FLAKE8_CONF_TARGET})
 	$(shell test -f ${EMACS_CUSTOMIZE_FILE} || touch ${EMACS_CUSTOMIZE_FILE})
 	$(shell test -d ${VENV_WORKON_HOME} || mkdir ${VENV_WORKON_HOME})
-	@pip3 install --user -r requirements.txt -q
+	@pip3 install --user -r requirements.txt
 	@cask install
 	${EMACS} \
 		--batch -nw -Q \
 		--load package \
 		--eval "(when (require 'jedi nil :noerr) (jedi:install-server))"
 clean:
-	@pip3 uninstall -y -r requirements.txt
+	@python3 -m pip uninstall -y -r requirements.txt
+
+.PHONY: python3-setup clean
