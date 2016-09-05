@@ -26,6 +26,9 @@
 (use-package async
   :functions async-byte-comp-get-allowed-pkgs)
 
+(use-package dockerfile-mode
+  :mode (("Dockerfile" . dockerfile-mode)))
+
 (use-package mgrbyte
   :ensure abyss-theme
   :load-path "lisp"
@@ -275,6 +278,8 @@ Result will be shown in the flycheck mode-line."
 (use-package paredit
   :diminish paredit-mode
   :config
+  (unbind-key "M-s" paredit-mode-map)
+  (unbind-key "M-r" paredit-mode-map)
   (mgrbyte/add-to-hooks
    #'enable-paredit-mode `(cider-repl-mode-hook
 			   clojure-mode-hook
@@ -302,6 +307,18 @@ Result will be shown in the flycheck mode-line."
 				  lisp-mode-hook
 				  clojure-mode-hook
 				  python-mode-hook)))
+
+(use-package clojure-mode
+  :config
+  (define-clojure-indent
+    (defroutes 'defun)
+    (GET 2)
+    (POST 2)
+    (PUT 2)
+    (DELETE 2)
+    (HEAD 2)
+    (ANY 2)
+    (context 2)))
 
 (use-package python
   :bind (("<kp-5>" . py-insert-debug)
