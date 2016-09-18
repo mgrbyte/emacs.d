@@ -9,6 +9,10 @@
 (require 'cask "~/.cask/cask.el")
 (load-library "url-handlers")
 
+(declare-function
+ #'mgrbyte-delete-trailing-blank-lines
+ "~/.emacs.d/lisp/mgrbyte.el")
+
 (cask-initialize)
 (setq package-enable-at-startup nil)
 (package-initialize)
@@ -82,9 +86,6 @@
   (bind-key "C-c t" #'tool-bar-mode)
 
   ;; default whitespace management
-  (declare-function
-   #'mgrbyte-delete-trailing-blank-lines
-   "lisp/mgrbyte.el")
   (add-hook 'before-save-hook #'mgrbyte-delete-trailing-blank-lines)
   (add-hook 'before-save-hook #'delete-trailing-whitespace)
 
