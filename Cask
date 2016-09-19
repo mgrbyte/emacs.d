@@ -91,8 +91,6 @@
 (depends-on "paredit")
 (depends-on "pcache")
 (depends-on "peg")
-(depends-on "persp-projectile")
-(depends-on "perspective")
 (depends-on "pkg-info")
 (depends-on "popup")
 (depends-on "powerline")
