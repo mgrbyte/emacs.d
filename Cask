@@ -3,6 +3,7 @@
 (source melpa-stable)
 
 (depends-on "abyss-theme")
+(depends-on "ac-capf")
 (depends-on "ac-cider")
 (depends-on "ace-jump-buffer")
 (depends-on "ace-jump-mode")
@@ -15,7 +16,6 @@
 (depends-on "cask")
 (depends-on "cider")
 (depends-on "cider-decompile")
-(depends-on "cider-profile")
 (depends-on "cider-spy")
 (depends-on "circe")
 (depends-on "clojars")
@@ -29,7 +29,6 @@
 (depends-on "deferred")
 (depends-on "diminish")
 (depends-on "docker")
-(depends-on "dockerfile-mode")
 (depends-on "dracula-theme")
 (depends-on "editorconfig")
 (depends-on "edn")
