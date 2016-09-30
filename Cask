@@ -95,6 +95,7 @@
 (depends-on "popup")
 (depends-on "powerline")
 (depends-on "pretty-symbols")
+(depends-on "projectile")
 (depends-on "psvn")
 (depends-on "py-autopep8")
 (depends-on "py-isort")
