@@ -1,4 +1,4 @@
-SHELL := /bin/bash
+SHELL := /bin/sh
 EMACS ?= $(shell which emacs)
 EMACS_CUSTOMIZE_FILE := ${HOME}/.emacs-customize.el
 VENV_WORKON_HOME := ${HOME}/.virtualenvs
