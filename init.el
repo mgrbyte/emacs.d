@@ -85,10 +85,6 @@
   (put 'narrow-to-page 'disabled nil)
   (bind-key "C-c t" #'tool-bar-mode)
 
-  ;; default whitespace management
-  (add-hook 'before-save-hook #'mgrbyte-delete-trailing-blank-lines)
-  (add-hook 'before-save-hook #'delete-trailing-whitespace)
-
   ;; avoid audio beeping by turning on visible-bell
   (setq visible-bell t)
   (setq debug-on-error t)
@@ -420,6 +416,24 @@ Result will be shown in the flycheck mode-line."
 (use-package text-scale-mode
   :bind (("C-c +" . text-scale-increase)
 	 ("C-c -" . text-scale-decrease)))
+
+(use-package whitespace-cleanup-mode
+  :bind (("C-c _ w" . whitespace-mode)
+	 ("C-c _ t" . whitespace-toggle-options)
+	 ("C-c = w" . global-whitespace-mode)
+	 ("C-c = t" . global-whitespace-toggle-options))
+  :config
+  (setq-default whitespace-cleanup-mode-preserve-point 't)
+  (setq-default whitespace-cleanup-mode-only-if-initially-clean 't)
+  (setq-default whitespace-cleanup-mode-ignore-modes
+		'(cider-mode
+		  cider-repl-mode
+		  comint-mode
+		  haskell-interactive-mode
+		  helm-cider-mode
+		  helm-mode
+		  special-mode
+		  view-mode)))
 
 (use-package vcl
   :mode (("\\.vcl" . vcl-mode)))
