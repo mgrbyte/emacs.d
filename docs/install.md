@@ -1,5 +1,5 @@
 # Install
-Ensure that ``emacs``, ``cask`` are both
+Ensure that ``emacs``, [cask][1] are both
 available as an executable on your shell's $PATH.
 
 ### Cask
@@ -66,3 +66,7 @@ It is suggested to fork this package and maintain it using git should
 you want to use packages not provided by default.  Alternatively, if
 you think given package is really useful, please send a pull request
 and we'll consider adding it to the default configuration.
+
+
+[1]: https://github.com/cask/cask
+
