@@ -29,6 +29,7 @@
 (depends-on "deferred")
 (depends-on "diminish")
 (depends-on "docker")
+(depends-on "docker-tramp")
 (depends-on "dracula-theme")
 (depends-on "editorconfig")
 (depends-on "edn")
