@@ -51,7 +51,7 @@ Launch ``emacs`` and evaluate the following emacs-lisp expression
 ```
 
 ## Updating packages
-When installing new package with the emacs command ``list-packages``,
+When installing new packages with the emacs command ``list-packages``,
 this will will update the ``cask`` configuration file
 ``.emacs.d/Cask``.
 
