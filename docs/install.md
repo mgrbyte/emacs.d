@@ -41,15 +41,6 @@ For the commands below we'll use the ``master`` branch.
   make
 ```
 
-Launch ``emacs`` and evaluate the following emacs-lisp expression
-(e.g in the ``*scratch*`` buffer, or invoke with ``M-x``):
-
-```lisp
-
-    (jedi:install-server)
-
-```
-
 ## Updating packages
 When installing new packages with the emacs command ``list-packages``,
 this will will update the ``cask`` configuration file
