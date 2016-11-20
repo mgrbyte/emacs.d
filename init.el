@@ -648,6 +648,9 @@ Result will be shown in the flycheck mode-line."
 ;; Ensure PATH is preserved from shell.
 (exec-path-from-shell-initialize)
 
+;; Follow links without asking
+(setq-default vc-follow-symlinks 't)
+
 ;;; custom user Lisp (from template on first load)
 (defvar user-custom-file (f-expand "~/.emacs-custom.el"))
 (unless (f-exists? user-custom-file)
