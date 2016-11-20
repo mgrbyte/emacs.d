@@ -117,6 +117,7 @@
 (depends-on "virtualenvwrapper")
 (depends-on "websocket")
 (depends-on "which-key")
+(depends-on "whitespace-cleanup-mode")
 (depends-on "with-editor")
 (depends-on "yaml-mode")
 (depends-on "zencoding-mode")
