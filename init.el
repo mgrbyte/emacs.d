@@ -269,6 +269,8 @@
 
 (use-package cider-mode
   :config
+  (setq cider-repl-use-pretty-printing 't)
+  (setq cider-repl-history-size 10000)
   (setq cider-repl-history-file
 	(f-join  (getenv "HOME") ".cider-repl-history")))
 
