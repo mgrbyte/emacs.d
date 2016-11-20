@@ -24,7 +24,17 @@
   (require 'diminish)
   (require 'f)
   (require 'flycheck)
+  (require 'helm)
+  (require 'helm-files)
+  (require 'helm-lib)
+  (require 'helm-net)
+  (require 'org)
+  (require 'org-agenda)
   (require 'pallet)
+  (require 'reftex)
+  (require 'reftex-cite)
+  (require 'reftex-index)
+  (require 'tex-mode)
   (require 's))
 
 (use-package async
@@ -32,6 +42,144 @@
 
 (use-package dockerfile-mode
   :mode (("Dockerfile" . dockerfile-mode)))
+
+(use-package helm-config
+  :bind (("C-c h" . helm-command-prefix)
+	 ("C-x b" . helm-mini)
+	 ("C-x f" . helm-find-files)
+	 ("C-x C-r" . helm-recentf)
+	 ("M-x" . helm-M-x))
+  :preface
+  (progn
+    (require 'helm)
+    (unbind-key "C-x c")
+    (bind-key "<tab>" #'helm-execute-persistent-action helm-map)
+    (bind-key "C-e" #'recentf-edit-list helm-map)
+    (bind-key "C-z" #'helm-select-action helm-map))
+  :config
+  ;; Don't ask to create new files.
+  (setq helm-ff-newfile-prompt-p nil)
+  ;; open helm buffer inside current window, not occupy whole other window
+  (setq helm-split-window-in-side-p t)
+  ;; move to end or beginning of source when reaching top or bottom of source.
+  (setq helm-move-to-line-cycle-in-source t)
+  ;; search for library in `require' and `declare-function' sexp.
+  (setq helm-ff-search-library-in-sexp t)
+  ;; scroll 8 lines other window using M-<next>/M-<prior>s
+  (setq helm-scroll-amount 8)
+  (setq helm-buffers-fuzzy-matching t
+	helm-recentf-fuzzy-match t)
+  (setq helm-ff-file-name-history-use-recentf t)
+  (when (executable-find "curl")
+    (setq helm-net-prefer-curl t))
+  (when (executable-find "ack-grep")
+    (setq helm-grep-default-command
+	  "ack-grep -Hn --no-group --no-color %e %p %f"
+          helm-grep-default-recurse-command
+	  "ack-grep -H --no-group --no-color %e %p %f")))
+
+(use-package org
+  :ensure org
+  :config
+  (progn
+    (defun mgrbyte--org-use-speed-commands-for-headings-and-lists ()
+      "Activate speed commands on list items too."
+      (or (and (looking-at org-outline-regexp) (looking-back "^\**" 100))
+	  (save-excursion
+	    (and (looking-at (org-item-re)) (looking-back "^[ \t]*" 100)))))
+
+    (defun mgrbyte--org-mode-ask-effort ()
+      "Ask for an effort estimate when clocking in."
+      (require 'org)
+      (unless (org-entry-get (point) "Effort")
+	(let ((effort
+	       (completing-read
+		"Effort: "
+		(org-entry-get-multivalued-property (point) "Effort"))))
+	  (unless (equal effort "")
+	    (org-set-property "Effort" effort)))))
+
+    (setq org-log-done 'time)
+    (setq org-todo-keywords
+	  (quote ((sequence
+		   "TODO(t)"
+		   "NEXT(n)"
+		   "STARTED(s)"
+		   "|"
+		   "DONE(d)")
+		  (sequence
+		   "WAITING(w@/!)"
+		   "HOLD(h@/!)"
+		   "|"
+		   "CANCELLED(c@/!)"
+		   "PHONE"
+		   "MEETING"))))
+    (setq org-default-notes-file "~/org/notes.org")
+    (setq org-agenda-files
+	  (f-entries "~/org" (apply-partially #'s-ends-with? ".org") t))
+    (setq org-directory "~/org")
+    (setq org-default-notes-file "~/org/refile.org")
+    (setq org-use-effective-time t)
+    (setq org-goto-interface 'outline org-goto-max-level 10)
+    (setq org-startup-folded nil)
+    (setq org-cycle-include-plain-lists 'integrate)
+    (add-to-list 'org-speed-commands-user
+		 '("x" org-todo "DONE"))
+    (add-to-list 'org-speed-commands-user
+		 '("y" org-todo-yesterday "DONE"))
+    (add-to-list 'org-speed-commands-user
+		 '("!" my/org-clock-in-and-track))
+    (add-to-list 'org-speed-commands-user
+		 '("s" call-interactively 'org-schedule))
+    (add-to-list 'org-speed-commands-user
+		 '("d" my/org-move-line-to-destination))
+    (add-to-list 'org-speed-commands-user
+		 '("i" call-interactively 'org-clock-in))
+    (add-to-list 'org-speed-commands-user
+		 '("o" call-interactively 'org-clock-out))
+    (add-to-list 'org-speed-commands-user
+		 '("$" call-interactively 'org-archive-subtree))
+    ;; (bind-key "!" 'my/org-clock-in-and-track org-agenda-mode-map)
+    (bind-key "C-c j" 'org-clock-goto) ;; jump to current task from anywhere
+    (bind-key "C-c C-w" 'org-refile)
+    (bind-key "C-c r" 'org-capture)
+    (bind-key "C-c a" 'org-agenda)
+    (bind-key "C-c l" 'org-store-link)
+    (bind-key "C-c L" 'org-insert-link-global)
+    (bind-key "C-c O" 'org-open-at-point-global)
+    ;; (bind-key "<f9> <f9>" 'org-agenda-list)
+    ;; (bind-key "<f9> <f8>" (lambda () (interactive) (org-capture nil "r")))
+    (bind-key "C-TAB" 'org-cycle org-mode-map)
+    (bind-key "C-c v" 'org-show-todo-tree org-mode-map)
+    (bind-key "C-c C-r" 'org-refile org-mode-map)
+    (bind-key "C-c R" 'org-reveal org-mode-map)
+    (org-clock-persistence-insinuate)
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((emacs-lisp . t)
+       (python . t)))
+    (eval-after-load 'org-agenda
+      '(bind-key "i" 'org-agenda-clock-in org-agenda-mode-map)))
+  (add-hook 'org-clock-in-prepare-hook 'mgrbyte--org-mode-ask-effort))
+
+(use-package perspective)
+
+(use-package persp-projectile)
+
+(use-package recentf
+  :bind (("C-x r e" . recentf-edit-list)))
+
+(use-package package
+  :bind (("C-c C-l" . list-packages)))
+
+(use-package helm :diminish helm-mode)
+
+(use-package helm-projectile
+  :config
+  (projectile-mode)
+  (setq projectile-completion-system 'helm)
+  (helm-projectile-on)
+  (persp-mode))
 
 (use-package mgrbyte
   :ensure abyss-theme
@@ -119,6 +267,11 @@
     [menu-bar bookmarks bookmark-jump]
     '("Goto bookmark" . bookmark-jump)))
 
+(use-package cider-mode
+  :config
+  (setq cider-repl-history-file
+	(f-join  (getenv "HOME") ".cider-repl-history")))
+
 (use-package conf-mode
   :mode (("\\.conf" . conf-mode)
          ("\\.cfg" . conf-mode)
@@ -127,6 +280,15 @@
 (use-package css-mode
   :mode (("\\.kss$" . css-mode)
          ("\\.css.dtml$". css-mode)))
+
+(use-package dashboard
+  ;; :init
+  ;; (get-buffer-create "*dashboard*")
+  :config
+  (setq-default dashboard-items '((projects . 10)
+  				  (recents . 10)
+  				  (bookmarks . 10)))
+  (dashboard-setup-startup-hook))
 
 (use-package dired
   :config
@@ -239,7 +401,12 @@ Result will be shown in the flycheck mode-line."
 	 ("C-c r" . jedi:related-names)
 	 ("C-?" . jedi:show-doc))
   :config
-  (setq-default jedi:complete-on-dot t))
+  (setq-default jedi:complete-on-dot t)
+  (jedi:ac-setup)
+  (setq jedi:import-python-el-settings 't)
+  (setq jedi:complete-on-dot 't)
+  (bind-key "." #'jedi:goto-definition-pop-marker esc-map)
+  (bind-key "S-." #'jedi:goto-definition-push-marker esc-map))
 
 (use-package keyfreq)
 
@@ -318,8 +485,8 @@ Result will be shown in the flycheck mode-line."
     (context 2)))
 
 (use-package python
-  :bind (("<kp-5>" . py-insert-debug)
-         ("<f9>" . py-insert-debug))
+  :bind (("C-c d i" . py-insert-debug)
+	 ("RET" . newline-and-indent))
   :mode (("\\.py$" . python-mode)
          ("\\.cpy$" . python-mode)
          ("\\.vpy$" . python-mode))
@@ -361,6 +528,7 @@ Result will be shown in the flycheck mode-line."
 (use-package rst
   :config
   (setq fill-column 79)
+  (setq rst-slides-program "google-chrome")
   (setq rst-adornment-faces-alist
 	(quote ((nil . font-lock-keyword-face)
 		(nil . font-lock-keyword-face)
@@ -370,6 +538,8 @@ Result will be shown in the flycheck mode-line."
 		(4 . rst-level-4-face)
 		(5 . rst-level-5-face)
 		(nil . rst-level-5-face))))
+  :init
+  (auto-fill-mode t)
   :mode (("\\.rst$" . rst-mode)))
 
 (use-package sass-mode
@@ -409,6 +579,39 @@ Result will be shown in the flycheck mode-line."
   :mode (("\\.zsql$" . sql-mode)
          ("\\.sql$" . sql-mode)))
 
+(use-package tex-mode
+  :preface
+  (defun turn-on-outline-minor-mode ()
+    "Turn on the outline minor mode."
+    (outline-minor-mode 1)
+    (add-hook 'LaTeX-mode-hook 'turn-on-outline-minor-mode)
+    (add-hook 'latex-mode-hook 'turn-on-outline-minor-mode)
+    (setq outline-minor-mode-prefix "C-c C-o"))
+  :config
+  (setq-default
+   LaTeX-eqnarray-label "eq"
+   LaTeX-equation-label "eq"
+   LaTeX-figure-label "fig"
+   LaTeX-myChapter-label "chap"
+   LaTeX-section-hook '(LaTeX-section-heading
+			LaTeX-section-title
+			LaTeX-section-toc
+			LaTeX-section-section
+			LaTeX-section-label)
+   LaTeX-table-label "tab"
+   TeX-auto-save t
+   TeX-auto-save t
+   TeX-newline-function #'reindent-then-newline-and-indent
+   TeX-parse-self t
+   TeX-parse-self t
+   Tex-save-query nil)
+  (autoload #'reftex-mode "reftex" "RefTeX Minor Mode" t)
+  (autoload #'turn-on-reftex "reftex" "RefTeX Minor Mode" nil)
+  (autoload #'reftex-citation "reftex-cite" "Make citation" nil)
+  (autoload #'reftex-index-phrase-mode "reftex-index" "Phrase Mode" t)
+  (add-hook #'latex-mode-hook #'turn-on-reftex)
+  (add-hook #'LaTeX-mode-hook #'turn-on-reftex))
+
 (use-package text
   :mode (("\\.po$" . text-mode)
 	 ("\\.pot$" . text-mode)))
@@ -446,18 +649,20 @@ Result will be shown in the flycheck mode-line."
 (exec-path-from-shell-initialize)
 
 ;;; custom user Lisp (from template on first load)
-(defvar user-custom-file "~/.emacs-custom.el")
-(unless (file-exists-p user-custom-file)
+(defvar user-custom-file (f-expand "~/.emacs-custom.el"))
+(unless (f-exists? user-custom-file)
   (with-current-buffer (get-buffer-create "user-custom-file")
     (insert-file-contents
      (locate-user-emacs-file "user-custom-file-template.el") nil 0)
      (write-region (buffer-string) nil user-custom-file)))
 
-(load user-custom-file)
+(if (f-exists? user-custom-file)
+    (load user-custom-file))
 
-;; Code generated by using the Emacs *cusomize* interfaces goes to its own file.
-(setq custom-file "~/.emacs-customize.el")
-(load custom-file)
+;; Code generated by using the Emacs *customize* interfaces goes to its own file.
+(setq custom-file (f-expand "~/.emacs-customize.el"))
+(if (f-exists? custom-file)
+    (load custom-file))
 
 (provide 'init)
 ;;; init.el ends here
