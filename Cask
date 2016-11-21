@@ -25,6 +25,7 @@
 (depends-on "ctable")
 (depends-on "dash")
 (depends-on "dash-functional")
+(depends-on "dashboard")
 (depends-on "deferred")
 (depends-on "diminish")
 (depends-on "docker")
