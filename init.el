@@ -20,7 +20,9 @@
 (eval-when-compile
   (require 'use-package)
   (require 'bind-key)
+  (require 'clojure-mode)
   (require 'dash)
+  (require 'dashboard)
   (require 'diminish)
   (require 'f)
   (require 'flycheck)
@@ -28,8 +30,10 @@
   (require 'helm-files)
   (require 'helm-lib)
   (require 'helm-net)
+  (require 'jedi)
   (require 'org)
   (require 'org-agenda)
+  (require 'org-list)
   (require 'pallet)
   (require 'reftex)
   (require 'reftex-cite)
@@ -284,8 +288,20 @@
          ("\\.css.dtml$". css-mode)))
 
 (use-package dashboard
-  ;; :init
-  ;; (get-buffer-create "*dashboard*")
+  :preface
+  (defun dashboard-setup-startup-hook ()
+    "Setup post initialization hooks.
+If a command line argument is provided, assume a filename and skip displaying Dashboard"
+    (progn
+      (add-hook 'after-init-hook (lambda ()
+				   ;; Display useful lists of items
+				   (dashboard-insert-startupify-lists)))
+      (add-hook 'emacs-startup-hook '(lambda ()
+				       (switch-to-buffer "*dashboard*")
+				       (goto-char (point-min))
+				       (redisplay)))))
+  :init
+  (get-buffer-create "*dashboard*")
   :config
   (setq-default dashboard-items '((projects . 10)
   				  (recents . 10)
@@ -583,11 +599,12 @@ Result will be shown in the flycheck mode-line."
 
 (use-package tex-mode
   :preface
+  (defvar reftex-index-phrase-mode)
   (defun turn-on-outline-minor-mode ()
     "Turn on the outline minor mode."
     (outline-minor-mode 1)
     (add-hook 'LaTeX-mode-hook 'turn-on-outline-minor-mode)
-    (add-hook 'latex-mode-hook 'turn-on-outline-minor-mode)
+    ;; (add-hook 'Latex-mode-hook 'turn-on-outline-minor-mode)
     (setq outline-minor-mode-prefix "C-c C-o"))
   :config
   (setq-default
@@ -611,7 +628,7 @@ Result will be shown in the flycheck mode-line."
   (autoload #'turn-on-reftex "reftex" "RefTeX Minor Mode" nil)
   (autoload #'reftex-citation "reftex-cite" "Make citation" nil)
   (autoload #'reftex-index-phrase-mode "reftex-index" "Phrase Mode" t)
-  (add-hook #'latex-mode-hook #'turn-on-reftex)
+  ;; (add-hook #'LaTeX-mode-hook #'turn-on-reftex)
   (add-hook #'LaTeX-mode-hook #'turn-on-reftex))
 
 (use-package text
