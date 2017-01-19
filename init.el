@@ -291,7 +291,8 @@
   :preface
   (defun dashboard-setup-startup-hook ()
     "Setup post initialization hooks.
-If a command line argument is provided, assume a filename and skip displaying Dashboard"
+If a command line argument is provided,
+assume a filename and skip displaying Dashboard"
     (progn
       (add-hook 'after-init-hook (lambda ()
 				   ;; Display useful lists of items
