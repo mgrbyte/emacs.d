@@ -416,16 +416,9 @@ Result will be shown in the flycheck mode-line."
   :mode (("\\.java$" . java-mode)))
 
 (use-package jedi
-  :bind (("C-." . jedi:goto-definition)
-	 ("C-c r" . jedi:related-names)
-	 ("C-?" . jedi:show-doc))
   :config
-  (setq-default jedi:complete-on-dot t)
-  (jedi:ac-setup)
-  (setq jedi:import-python-el-settings 't)
-  (setq jedi:complete-on-dot 't)
-  (bind-key "." #'jedi:goto-definition-pop-marker esc-map)
-  (bind-key "S-." #'jedi:goto-definition-push-marker esc-map))
+  (setq jedi:complete-on-dot t)
+  (add-hook 'python-mode-hook #'jedi:setup))
 
 (use-package keyfreq)
 
