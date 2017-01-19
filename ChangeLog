@@ -2,6 +2,10 @@
 Changelog
 =========
 
+1.3 (2017-01-19)
+================
+ * Fixed jedi configuration
+
 1.2 (2016-02-14)
 ================
  * Releasing latest "stable" version
