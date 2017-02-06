@@ -30,6 +30,8 @@
 (depends-on "dashboard")
 (depends-on "deferred")
 (depends-on "diminish")
+(depends-on "discover-clj-refactor")
+(depends-on "discover-my-major")
 (depends-on "docker")
 (depends-on "docker-tramp")
 (depends-on "dockerfile-mode")
