@@ -47,6 +47,8 @@
 (use-package dockerfile-mode
   :mode (("Dockerfile" . dockerfile-mode)))
 
+(use-package helm-cider)
+
 (use-package helm-config
   :bind (("C-c h" . helm-command-prefix)
 	 ("C-x b" . helm-mini)
@@ -482,16 +484,15 @@ Result will be shown in the flycheck mode-line."
 				  lisp-mode-hook
 				  clojure-mode-hook
 				  python-mode-hook)))
-(use-package clj-refactor
-  :preface
-  (defun mgrbyte-setup-clj-refactor ()
-    (clj-refactor-mode 1)
-    (yas-minor-mode 1)
-    (cljr-add-keybindings-with-prefix "C-c C-m"))
-  :config
-  (add-hook #'clojure-mode-hook #'mgrbyte-setup-clj-refactor))
+(use-package clj-refactor)
 
 (use-package clojure-mode
+  :preface
+  (defun mgrbyte-setup-clj ()
+    (clj-refactor-mode 1)
+    (helm-cider-mode 1)
+    (yas-minor-mode 1)
+    (cljr-add-keybindings-with-prefix "C-c C-m"))
   :config
   (define-clojure-indent
     (defroutes 'defun)
@@ -501,7 +502,8 @@ Result will be shown in the flycheck mode-line."
     (DELETE 2)
     (HEAD 2)
     (ANY 2)
-    (context 2)))
+    (context 2))
+  (add-hook #'clojure-mode-hook #'mgrbyte-setup-clj))
 
 (use-package python
   :bind (("C-c d i" . py-insert-debug)
