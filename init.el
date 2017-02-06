@@ -339,7 +339,6 @@ assume a filename and skip displaying Dashboard"
 (use-package flycheck
   :preface
   (declare-function flycheck-next-error flycheck nil)
-  (add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode)
   (fringe-mode (quote (4 . 0)))
   (eval-after-load 'flycheck '(flycheck-clojure-setup))
   (eval-after-load 'flycheck

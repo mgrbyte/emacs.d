@@ -45,7 +45,6 @@
 (depends-on "flx-ido")
 (depends-on "flycheck")
 (depends-on "flycheck-clojure")
-(depends-on "flycheck-color-mode-line")
 (depends-on "flycheck-package")
 (depends-on "flycheck-pos-tip")
 (depends-on "flycheck-pyflakes")
