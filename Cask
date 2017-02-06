@@ -18,6 +18,7 @@
 (depends-on "cider-decompile")
 (depends-on "cider-spy")
 (depends-on "circe")
+(depends-on "clj-refactor")
 (depends-on "clojars")
 (depends-on "clojure-cheatsheet")
 (depends-on "clojure-mode")
