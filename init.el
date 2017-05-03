@@ -13,6 +13,20 @@
  #'mgrbyte-delete-trailing-blank-lines
  "~/.emacs.d/lisp/mgrbyte.el")
 
+(setq package-archives
+      '(("gnu" . "http://elpa.gnu.org/packages/")
+	("melpa-stable" . "https://stable.melpa.org/packages/")
+	("melpa" . "https://melpa.org/packages/")))
+(setq package-archive-priorities
+      '(("melpa-stable" . 10)
+	("gnu" . 5)
+	("melpa" . 0)))
+
+(setq package-pinned-packages
+      '((cider . "melpa-stable")
+        (clj-refactor . "melpa-stable")
+        (helm-cider . "melpa-stable")))
+
 (cask-initialize)
 (setq package-enable-at-startup nil)
 (package-initialize)
@@ -275,6 +289,7 @@
 
 (use-package cider-mode
   :config
+  (setq cider-lein-parameters "with-profile +cider repl :headless")
   (setq cider-repl-use-pretty-printing 't)
   (setq cider-repl-history-size 10000)
   (setq cider-repl-history-file
@@ -503,6 +518,7 @@ Result will be shown in the flycheck mode-line."
     (HEAD 2)
     (ANY 2)
     (context 2))
+  (setq-default cljr-favor-prefix-notation 't)
   (add-hook #'clojure-mode-hook #'mgrbyte-setup-clj))
 
 (use-package python
