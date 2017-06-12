@@ -7,6 +7,7 @@
 
 ;; Setup package management (Cask)
 (require 'cask "~/.cask/cask.el")
+(require 'tls)
 (load-library "url-handlers")
 
 (declare-function
@@ -27,6 +28,23 @@
         (clj-refactor . "melpa-stable")
         (helm-cider . "melpa-stable")))
 
+(defun secure-https-setup ()
+  "Set up https securely as per Glyph's recommendations:
+https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
+  (let ((trustfile
+       (replace-regexp-in-string
+        "\\\\" "/"
+        (replace-regexp-in-string
+         "\n" ""
+         (shell-command-to-string "python -m certifi")))))
+  (setq tls-program
+        (list
+         (format "gnutls-cli%s --x509cafile %s -p %%p %%h"
+                 (if (eq window-system 'w32) ".exe" "") trustfile)))
+  (setq gnutls-verify-error t)
+  (setq gnutls-trustfiles (list trustfile))))
+
+(secure-https-setup)
 (cask-initialize)
 (setq package-enable-at-startup nil)
 (package-initialize)
