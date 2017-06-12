@@ -113,7 +113,6 @@
 (depends-on "sass-mode")
 (depends-on "seq")
 (depends-on "shut-up")
-(depends-on "slack")
 (depends-on "sphinx-doc")
 (depends-on "spinner")
 (depends-on "use-package")
@@ -124,4 +123,5 @@
 (depends-on "whitespace-cleanup-mode")
 (depends-on "with-editor")
 (depends-on "yaml-mode")
+(depends-on "yasnippet")
 (depends-on "zencoding-mode")
