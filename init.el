@@ -253,6 +253,11 @@
   (put 'narrow-to-page 'disabled nil)
   (bind-key "C-c t" #'tool-bar-mode)
 
+  ;; Tramp
+  (setq tramp-default-method "ssh")
+  (setq tramp-shell-prompt-pattern
+	"^[^$>\n]*[#$%>] *\\(\[[0-9;]*[a-zA-Z] *\\)*")
+
   ;; avoid audio beeping by turning on visible-bell
   (setq visible-bell t)
   (setq debug-on-error t)
