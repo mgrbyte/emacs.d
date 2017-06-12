@@ -25,3 +25,4 @@ timelog
 /var
 /bookmarks
 /.emacs.desktop
+/eshell/history
