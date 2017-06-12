@@ -518,7 +518,7 @@ Result will be shown in the flycheck mode-line."
     (HEAD 2)
     (ANY 2)
     (context 2))
-  (setq-default cljr-favor-prefix-notation 't)
+  (setq-default cljr-favor-prefix-notation t)
   (add-hook #'clojure-mode-hook #'mgrbyte-setup-clj))
 
 (use-package python
