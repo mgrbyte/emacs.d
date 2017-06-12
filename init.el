@@ -14,7 +14,7 @@
  "~/.emacs.d/lisp/mgrbyte.el")
 
 (setq package-archives
-      '(("gnu" . "http://elpa.gnu.org/packages/")
+      '(("gnu" . "https://elpa.gnu.org/packages/")
 	("melpa-stable" . "https://stable.melpa.org/packages/")
 	("melpa" . "https://melpa.org/packages/")))
 (setq package-archive-priorities
