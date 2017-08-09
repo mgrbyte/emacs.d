@@ -15,13 +15,15 @@ python-setup:
 		cp ${FLAKE8_CONF_SRC} ${FLAKE8_CONF_TARGET})
 	$(shell test -f ${EMACS_CUSTOMIZE_FILE} || touch ${EMACS_CUSTOMIZE_FILE})
 	$(shell test -d ${VENV_WORKON_HOME} || mkdir ${VENV_WORKON_HOME})
-	@python3 -m pip install --user -r requirements.txt
+	@python3 -m pip -q install --user --upgrade pip
+	@python3 -m pip -q install --user -r requirements.txt
 	@cask install
+	@echo "Running post-install stanza for jedi (python support)"
 	${EMACS} \
 		--batch -nw -Q \
 		--load package \
 		--eval "(when (require 'jedi nil :noerr) (jedi:install-server))"
 clean:
-	@python3 -m pip uninstall -y -r requirements.txt
+	@python3 -m pip -q uninstall -y -r requirements.txt
 
 .PHONY: python-setup clean
