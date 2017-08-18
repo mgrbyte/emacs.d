@@ -37,7 +37,7 @@ please [raise an issue].
  
 Always run:
 
-  ```M-x chekdoc``
+  ``M-x chekdoc`
 
 on any `.el` files before commiting them.
 
