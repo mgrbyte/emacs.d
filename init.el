@@ -76,10 +76,25 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
 (use-package async
   :functions async-byte-comp-get-allowed-pkgs)
 
+(use-package company
+  :bind (("C-c h" . company-quickhelp-manual-begin)
+	 ("C-c c" . company-complete))
+  :config
+  (add-hook 'after-init-hook 'global-company-mode)
+  (company-quickhelp-mode 1))
+
+(use-package company-quickhelp)
+
 (use-package dockerfile-mode
   :mode (("Dockerfile" . dockerfile-mode)))
 
 (use-package helm-cider)
+
+;; (use-package helm-company
+;;   :config
+;;   (progn
+;;     (define-key company-mode-map (kbd "C-:") 'helm-company)
+;;     (define-key company-active-map (kbd "C-:") 'helm-company)))
 
 (use-package helm-config
   :bind (("C-c h" . helm-command-prefix)
@@ -316,7 +331,9 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
   (setq cider-repl-use-pretty-printing 't)
   (setq cider-repl-history-size 10000)
   (setq cider-repl-history-file
-	(f-join  (getenv "HOME") ".cider-repl-history")))
+	(f-join  (getenv "HOME") ".cider-repl-history"))
+  (add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
+  (add-hook 'cider-mode-hook #'cider-company-enable-fuzzy-completion))
 
 (use-package conf-mode
   :mode (("\\.conf" . conf-mode)
