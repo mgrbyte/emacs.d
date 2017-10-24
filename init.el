@@ -229,6 +229,10 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
 
 (use-package helm-projectile
   :config
+  ;; XXX fix for projectile-mode issue https://github.com/bbatsov/projectile/issues/1183
+  (setq projectile-mode-line
+         '(:eval (format " Projectile[%s]"
+                        (projectile-project-name))))
   (projectile-mode)
   (setq projectile-completion-system 'helm)
   (helm-projectile-on)
