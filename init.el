@@ -23,10 +23,11 @@
 	("gnu" . 5)
 	("melpa" . 0)))
 
-(setq package-pinned-packages
-      '((cider . "melpa-stable")
-        (clj-refactor . "melpa-stable")
-        (helm-cider . "melpa-stable")))
+;; DISABLED pinning.
+;; (setq package-pinned-packages
+;;       '((cider . "melpa-stable")
+;;         (clj-refactor . "melpa-stable")
+;;         (helm-cider . "melpa-stable")))
 
 (defun secure-https-setup ()
   "Set up https securely as per Glyph's recommendations:
@@ -331,7 +332,6 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
 
 (use-package cider-mode
   :config
-  (setq cider-lein-parameters "with-profile +cider repl :headless")
   (setq cider-repl-use-pretty-printing 't)
   (setq cider-repl-history-size 10000)
   (setq cider-repl-history-file
@@ -401,7 +401,7 @@ assume a filename and skip displaying Dashboard"
   :preface
   (declare-function flycheck-next-error flycheck nil)
   (fringe-mode (quote (4 . 0)))
-  (eval-after-load 'flycheck '(flycheck-clojure-setup))
+  (eval-after-load 'cider '(flycheck-clojure-setup))
   (eval-after-load 'flycheck
     '(setq flycheck-display-errors-function #'flycheck-pos-tip-error-messages))
   (with-eval-after-load 'flycheck
