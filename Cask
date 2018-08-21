@@ -58,7 +58,6 @@
 (depends-on "frame-cmds")
 (depends-on "frame-fns")
 (depends-on "fringe-helper")
-(depends-on "fsm")
 (depends-on "gh")
 (depends-on "ghub")
 (depends-on "gist")
