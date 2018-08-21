@@ -37,8 +37,7 @@ For the commands below we'll use the ``master`` branch.
 ```bash
 
   git clone https://github.com/mgrbyte/emacs.d ~/.emacs.d
-  cd ~/.emacs.d
-  make
+  cask install
 ```
 
 ## Updating packages
