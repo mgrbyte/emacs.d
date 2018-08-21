@@ -471,7 +471,6 @@ Result will be shown in the flycheck mode-line."
   (mgrbyte/add-to-hooks
    #'flyspell-mode `(LaTeX-mode-hook
 		     git-commit-mode-hook
-		     jabber-chat-mode-hook
 		     markdown-mode-hook
 		     message-mode-hook
 		     org-mode-hook

@@ -78,7 +78,6 @@
 (depends-on "hydra")
 (depends-on "hyperbole")
 (depends-on "inflections")
-(depends-on "jabber")
 (depends-on "javap-mode")
 (depends-on "jedi")
 (depends-on "jedi-core")
