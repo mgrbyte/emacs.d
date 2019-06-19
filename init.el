@@ -20,14 +20,13 @@
 	("melpa" . "https://melpa.org/packages/")))
 
 (setq package-archive-priorities
-      '(("melpa-stable" . 10)
-	("gnu" . 5)
-	("melpa" . 0)))
+      '(("gnu" . 0)
+	("melpa-stable" . 5)
+	("melpa" . 10)))
 
 ;; (setq package-pinned-packages
 ;;       '((cider . "melpa-stable")
 ;;         (clj-refactor . "melpa-stable")
-;;         (helm-cider . "melpa-stable")))
 
 (defun secure-https-setup ()
   "Set up https securely as per Glyph's recommendations:
@@ -89,7 +88,17 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
 (use-package dockerfile-mode
   :mode (("Dockerfile" . dockerfile-mode)))
 
-(use-package helm-cider)
+(use-package helm-cider
+  :ensure t
+  :defer t
+  :after cider-mode)
+
+(use-package helm-cider-history
+  :ensure t
+  :defer t
+  :after helm-cider
+  :init
+  (bind-key "C-l" #'helm-cider-history))
 
 ;; (use-package helm-company
 ;;   :config
@@ -334,8 +343,8 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
   (setq cider-repl-history-size 10000)
   (setq cider-repl-history-file
 	(f-join  (getenv "HOME") ".cider-repl-history"))
-  (add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
-  (add-hook 'cider-mode-hook #'cider-company-enable-fuzzy-completion))
+  (setq sayid-inject-dependencies-at-jack-in nil)
+  (setq cljr-inject-dependencies-at-jack-in nil))
 
 (use-package conf-mode
   :mode (("\\.conf" . conf-mode)
@@ -424,6 +433,11 @@ Result will be shown in the flycheck mode-line."
     (advice-add 'flycheck-mode-line-status-text
 		:around #'mgrbyte/flycheck-checker-name-on-mode-line)))
 
+(use-package flycheck-clojure
+  :ensure t
+  :defer t
+  :after flycheck)
+
 ;; Used for constributing 3rd party python packages
 ;; instead of the more imposing flycheck-flake8 checker
 ;;; (which is the default for my own and work packages)
@@ -455,7 +469,6 @@ Result will be shown in the flycheck mode-line."
   (mgrbyte/add-to-hooks
    #'flyspell-mode `(LaTeX-mode-hook
 		     git-commit-mode-hook
-		     jabber-chat-mode-hook
 		     markdown-mode-hook
 		     message-mode-hook
 		     org-mode-hook
