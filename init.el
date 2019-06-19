@@ -18,12 +18,12 @@
       '(("gnu" . "https://elpa.gnu.org/packages/")
 	("melpa-stable" . "https://stable.melpa.org/packages/")
 	("melpa" . "https://melpa.org/packages/")))
+
 (setq package-archive-priorities
       '(("melpa-stable" . 10)
 	("gnu" . 5)
 	("melpa" . 0)))
 
-;; DISABLED pinning.
 ;; (setq package-pinned-packages
 ;;       '((cider . "melpa-stable")
 ;;         (clj-refactor . "melpa-stable")
@@ -218,7 +218,10 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
 
 (use-package perspective)
 
-(use-package persp-projectile)
+(use-package persp-projectile
+  :config
+  (setq projectile-completion-system 'helm)
+  (setq projectile-sort-order 'recentf))
 
 (use-package recentf
   :bind (("C-x r e" . recentf-edit-list)))
@@ -230,12 +233,7 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
 
 (use-package helm-projectile
   :config
-  ;; XXX fix for projectile-mode issue https://github.com/bbatsov/projectile/issues/1183
-  (setq projectile-mode-line
-         '(:eval (format " Projectile[%s]"
-                        (projectile-project-name))))
   (projectile-mode)
-  (setq projectile-completion-system 'helm)
   (helm-projectile-on)
   (persp-mode))
 
@@ -517,10 +515,7 @@ Result will be shown in the flycheck mode-line."
   (unbind-key "M-s" paredit-mode-map)
   (unbind-key "M-r" paredit-mode-map)
   (mgrbyte/add-to-hooks
-   #'enable-paredit-mode `(cider-repl-mode-hook
-			   clojure-mode-hook
-			   emacs-lisp-mode-hook
-			   lisp-mode-hook)))
+   #'enable-paredit-mode `(clojure-mode-hook emacs-lisp-mode-hook lisp-mode-hook)))
 
 (use-package paren
   :config
