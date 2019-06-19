@@ -16,10 +16,6 @@
 (depends-on "cask")
 (depends-on "cider")
 (depends-on "cider-decompile")
-<<<<<<< HEAD
-(depends-on "cider-hydra")
-=======
->>>>>>> 428f1664344a87c230491897eddadadf8f22b75c
 (depends-on "circe")
 (depends-on "clj-refactor")
 (depends-on "cljr-helm")
