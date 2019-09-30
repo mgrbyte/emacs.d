@@ -115,15 +115,14 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
   ;; Don't ask to create new files.
   (setq helm-ff-newfile-prompt-p nil)
   ;; open helm buffer inside current window, not occupy whole other window
-  (setq helm-split-window-in-side-p t)
+  (setq helm-split-window-inside-p t)
   ;; move to end or beginning of source when reaching top or bottom of source.
   (setq helm-move-to-line-cycle-in-source t)
   ;; search for library in `require' and `declare-function' sexp.
   (setq helm-ff-search-library-in-sexp t)
   ;; scroll 8 lines other window using M-<next>/M-<prior>s
   (setq helm-scroll-amount 8)
-  (setq helm-buffers-fuzzy-matching t
-	helm-recentf-fuzzy-match t)
+  (setq helm-buffers-fuzzy-matching t)
   (setq helm-ff-file-name-history-use-recentf t)
   (when (executable-find "curl")
     (setq helm-net-prefer-curl t))
