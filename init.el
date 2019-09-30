@@ -53,7 +53,6 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
   (require 'bind-key)
   (require 'clojure-mode)
   (require 'dash)
-  (require 'dashboard)
   (require 'diminish)
   (require 'f)
   (require 'flycheck)
