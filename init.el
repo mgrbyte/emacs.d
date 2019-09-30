@@ -332,10 +332,7 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
   :config
   (setq cider-repl-use-pretty-printing 't)
   (setq cider-repl-history-size 10000)
-  (setq cider-repl-history-file
-	(f-join  (getenv "HOME") ".cider-repl-history"))
-  (setq sayid-inject-dependencies-at-jack-in nil)
-  (setq cljr-inject-dependencies-at-jack-in nil))
+  (setq cider-repl-history-file (f-join (getenv "HOME") ".cider-repl-history")))
 
 (use-package conf-mode
   :mode (("\\.conf" . conf-mode)
@@ -347,25 +344,21 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
          ("\\.css.dtml$". css-mode)))
 
 (use-package dashboard
+  :ensure t
   :preface
-  (defun dashboard-setup-startup-hook ()
-    "Setup post initialization hooks.
-If a command line argument is provided,
-assume a filename and skip displaying Dashboard"
-    (progn
-      (add-hook 'after-init-hook (lambda ()
-				   ;; Display useful lists of items
-				   (dashboard-insert-startupify-lists)))
-      (add-hook 'emacs-startup-hook '(lambda ()
-				       (switch-to-buffer "*dashboard*")
-				       (goto-char (point-min))
-				       (redisplay)))))
-  :init
-  (get-buffer-create "*dashboard*")
+  (defun mgrbyte-dashboard-insert-custom (list-size)
+    (ignore list-size)
+    (insert (format "CIDER tip: %s" (cider-drink-a-sip))))
   :config
-  (setq-default dashboard-items '((projects . 10)
-  				  (recents . 10)
-  				  (bookmarks . 10)))
+  (setq dashboard-items '((projects . 10)
+			  (recents . 10)
+			  (bookmarks . 10)))
+  (setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
+  (add-to-list 'dashboard-item-generators '(custom . mgrbyte-dashboard-insert-custom))
+  (add-to-list 'dashboard-items '(custom) t)
+  (add-hook 'emacs-startup-hook '(lambda ()
+				   (switch-to-buffer "*dashboard*")
+				   (delete-other-windows)))
   (dashboard-setup-startup-hook))
 
 (use-package dired
