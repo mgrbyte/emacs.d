@@ -25,8 +25,7 @@
 	("melpa" . 10)))
 
 ;; (setq package-pinned-packages
-;;       '((cider . "melpa-stable")
-;;         (clj-refactor . "melpa-stable")
+;;       '((cider . "melpa-stable")))
 
 (defun secure-https-setup ()
   "Set up https securely as per Glyph's recommendations:
