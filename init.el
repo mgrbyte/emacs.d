@@ -99,12 +99,6 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
   :init
   (bind-key "C-l" #'helm-cider-history))
 
-;; (use-package helm-company
-;;   :config
-;;   (progn
-;;     (define-key company-mode-map (kbd "C-:") 'helm-company)
-;;     (define-key company-active-map (kbd "C-:") 'helm-company)))
-
 (use-package helm-config
   :bind (("C-c h" . helm-command-prefix)
 	 ("C-x b" . helm-mini)
