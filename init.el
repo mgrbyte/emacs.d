@@ -535,15 +535,12 @@ Result will be shown in the flycheck mode-line."
 				  lisp-mode-hook
 				  clojure-mode-hook
 				  python-mode-hook)))
-(use-package clj-refactor)
 
 (use-package clojure-mode
   :preface
   (defun mgrbyte-setup-clj ()
-    (clj-refactor-mode 1)
     (helm-cider-mode 1)
-    (yas-minor-mode 1)
-    (cljr-add-keybindings-with-prefix "C-c C-m"))
+    (yas-minor-mode 1))
   :config
   (define-clojure-indent
     (defroutes 'defun)
@@ -554,7 +551,6 @@ Result will be shown in the flycheck mode-line."
     (HEAD 2)
     (ANY 2)
     (context 2))
-  (setq-default cljr-favor-prefix-notation t)
   (add-hook #'clojure-mode-hook #'mgrbyte-setup-clj))
 
 (use-package python
