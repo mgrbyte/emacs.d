@@ -68,9 +68,6 @@ take effect."
   :keymap mgrbyte-keymap
   :group 'mgrbyte-keys)
 
-(defconst netisght-devtools-directory "/home/dev/devtools"
-  "The directory where the Mgrbyte devtools source is checked out.")
-
 (defun mgrbyte-log-if-loaded (pkgname)
   "Print a message after some package has been loaded.
 Argument PKGNAME The name of the package being loaded."
