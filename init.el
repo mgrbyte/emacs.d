@@ -251,6 +251,10 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
   ;; Turn off UI elements
   (mapc #'apply
 	`((menu-bar-mode -1) (tool-bar-mode -1) (scroll-bar-mode -1)))
+  ;; setup frame
+  (if (daemonp)
+      (add-hook 'after-make-frame-functions #'mgrbyte-setup-frame)
+    (mgrbyte-setup-frame))
 
   ;; Misc settings.
   (setq-default indent-line-function 'insert-tab)

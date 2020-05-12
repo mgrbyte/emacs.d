@@ -186,6 +186,15 @@ Nicked from http://emacsredux.com/blog/2013/04/21/edit-files-as-root/"
       (goto-char (point-max))
       (delete-blank-lines))))
 
+(defun mgrbyte-setup-frame (&optional frame)
+  "Configure look of FRAME.
+
+If FRAME is nil, configure current FRAME.
+If non-nil make FRAME current."
+  (when frame
+    (select-frame frame))
+  (when (window-system)
+    (set-face-attribute 'default nil :font "Ubuntu Mono 24")))
 
 (provide 'mgrbyte)
 ;;; mgrbyte.el ends here
