@@ -412,8 +412,6 @@ Result will be shown in the flycheck mode-line."
     (setq flycheck-emacs-lisp-load-path 'inherit)
     (setq flycheck-flake8-maximum-line-length 79)
     (setq flycheck-highlighting-mode 'lines)
-    (advice-add 'flycheck-select-checker
-		:after 'pyautomagic--remember-flycheck-checker)
     (advice-add 'flycheck-mode-line-status-text
 		:around #'mgrbyte/flycheck-checker-name-on-mode-line)))
 
@@ -421,6 +419,9 @@ Result will be shown in the flycheck mode-line."
   :ensure t
   :defer t
   :after flycheck)
+
+(use-package flycheck-clj-kondo
+  :ensure t)
 
 ;; Used for constributing 3rd party python packages
 ;; instead of the more imposing flycheck-flake8 checker
@@ -542,6 +543,7 @@ Result will be shown in the flycheck mode-line."
     (helm-cider-mode 1)
     (yas-minor-mode 1))
   :config
+  (require 'flycheck-clj-kondo)
   (define-clojure-indent
     (defroutes 'defun)
     (GET 2)
