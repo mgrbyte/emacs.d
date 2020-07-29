@@ -194,7 +194,7 @@ If non-nil make FRAME current."
   (when frame
     (select-frame frame))
   (when (window-system)
-    (set-face-attribute 'default nil :font "Ubuntu Mono 24")))
+    (set-face-attribute 'default nil :font "Ubuntu Mono 18")))
 
 (provide 'mgrbyte)
 ;;; mgrbyte.el ends here
