@@ -174,7 +174,6 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
     (setq org-directory "~/org")
     (setq org-default-notes-file "~/org/refile.org")
     (setq org-use-effective-time t)
-    (setq org-goto-interface 'outline org-goto-max-level 10)
     (setq org-startup-folded nil)
     (setq org-cycle-include-plain-lists 'integrate)
     (add-to-list 'org-speed-commands-user
@@ -248,8 +247,7 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
   :config
   ;; Track changes to install packages with Cask
   (pallet-mode t)
-
-  (when (getenv "DISPLAY")
+  (when (mgrbyte-X11?)
     ;; Turn off UI elements
     (mapc #'apply
 	  `((menu-bar-mode -1) (tool-bar-mode -1) (scroll-bar-mode -1)))
@@ -397,7 +395,8 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
 (use-package flycheck
   :preface
   (declare-function flycheck-next-error flycheck nil)
-  (fringe-mode (quote (4 . 0)))
+  (when (mgrbyte-X11?)
+    (fringe-mode (quote (4 . 0))))
   (eval-after-load 'cider '(flycheck-clojure-setup))
   (eval-after-load 'flycheck
     '(setq flycheck-display-errors-function #'flycheck-pos-tip-error-messages))
@@ -456,6 +455,14 @@ Result will be shown in the flycheck mode-line."
 
 (use-package ispell
   :bind (("C-c i" . ispell-buffer))
+  :config
+  (mapc (lambda (envvar) (setenv envvar "en_GB.UTF8")) '("LANG" "LANGUAGE"))
+  (setq-default ispell-program-name "hunspell")
+  (let ((langs "cy_GB,en_GB"))
+    (setq ispell-dictionary langs)
+    (ispell-set-spellchecker-params)
+    (ispell-hunspell-add-multi-dic langs)
+    (setq ispell-personal-dictionary "~/.hunspell_personal"))
   :init
   (mgrbyte/add-to-hooks
    #'flyspell-mode `(LaTeX-mode-hook
@@ -718,6 +725,10 @@ Result will be shown in the flycheck mode-line."
 
 (use-package vcl
   :mode (("\\.vcl" . vcl-mode)))
+
+(use-package with-editor
+  :config
+  (with-editor-emacsclient-executable nil))
 
 (use-package yaml-mode
   :mode (("\\.yml" . yaml-mode)
