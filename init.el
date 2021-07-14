@@ -7,7 +7,6 @@
 
 ;; Setup package management (Cask)
 (require 'cask "~/.cask/cask.el")
-(require 'tls)
 (load-library "url-handlers")
 
 (declare-function
@@ -247,14 +246,6 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
   :config
   ;; Track changes to install packages with Cask
   (pallet-mode t)
-  (when (mgrbyte-X11?)
-    ;; Turn off UI elements
-    (mapc #'apply
-	  `((menu-bar-mode -1) (tool-bar-mode -1) (scroll-bar-mode -1)))
-    ;; setup frame
-    (if (daemonp)
-	(add-hook 'after-make-frame-functions #'mgrbyte-setup-frame)
-      (mgrbyte-setup-frame)))
 
   ;; Misc settings.
   (setq-default indent-line-function 'insert-tab)
@@ -395,8 +386,6 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
 (use-package flycheck
   :preface
   (declare-function flycheck-next-error flycheck nil)
-  (when (mgrbyte-X11?)
-    (fringe-mode (quote (4 . 0))))
   (eval-after-load 'cider '(flycheck-clojure-setup))
   (eval-after-load 'flycheck
     '(setq flycheck-display-errors-function #'flycheck-pos-tip-error-messages))
@@ -443,6 +432,22 @@ Result will be shown in the flycheck mode-line."
 	 ("<M-down>" . move-frame-down)
 	 ("<M-left>" . move-frame-left)
  	 ("<M-right>" . move-frame-right)))
+
+(use-package fringe
+  :after (mgrbyte)
+  :config
+  (when (mgrbyte-runs-X11)
+    (fringe-mode (quote (4 . 0)))))
+
+(use-package menu-bar
+  :after (mgrbyte scroll-bar)
+  :config
+  ;; Turn off UI elements
+  (mapc #'apply `((menu-bar-mode -1) (tool-bar-mode -1) (scroll-bar-mode -1)))
+  ;; setup frame
+  (if (daemonp)
+      (add-hook 'after-make-frame-functions #'mgrbyte-setup-frame)
+    (mgrbyte-setup-frame)))
 
 (use-package gist)
 
@@ -728,7 +733,7 @@ Result will be shown in the flycheck mode-line."
 
 (use-package with-editor
   :config
-  (with-editor-emacsclient-executable nil))
+  (setq with-editor-emacsclient-executable nil))
 
 (use-package yaml-mode
   :mode (("\\.yml" . yaml-mode)

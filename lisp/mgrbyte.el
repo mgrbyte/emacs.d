@@ -196,9 +196,10 @@ If non-nil make FRAME current."
   (when (window-system)
     (set-face-attribute 'default nil :font "Ubuntu Mono 18")))
 
-(defun mgrbyte-X11? ()
+(defun mgrbyte-runs-X11 ()
   "Test whether or not we are running under the X11 window system."
   (getenv "DISPLAY"))
 
+(message "mgrbyte.el loaded")
 (provide 'mgrbyte)
 ;;; mgrbyte.el ends here
