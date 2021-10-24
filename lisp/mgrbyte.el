@@ -23,6 +23,9 @@
 ;;
 ;;; Code:
 
+;;; TODO: All lof of this needs updating to work with Emacs 27, or
+;;; removed an alternative found.
+
 (defgroup mgrbyte nil
   "Mgrbyte Development environment"
   :group 'tools
@@ -194,11 +197,41 @@ If non-nil make FRAME current."
   (when frame
     (select-frame frame))
   (when (window-system)
-    (set-face-attribute 'default nil :font "Ubuntu Mono 18")))
+    (set-face-attribute 'default nil :font "Ubuntu Mono 14")))
 
 (defun mgrbyte-runs-X11 ()
   "Test whether or not we are running under the X11 window system."
   (getenv "DISPLAY"))
+
+(defun mgrbyte-project-directory (buffer-name)
+  "Return the root directory of the project that contain the given BUFFER-NAME.
+
+Any directory with a .git or .jedi file/directory is considered
+to be a project root."
+  (interactive)
+  (let ((root-dir (file-name-directory buffer-name)))
+    (while (and root-dir
+                (not (file-exists-p (concat root-dir ".git")))
+                (not (file-exists-p (concat root-dir ".jedi"))))
+      (setq root-dir
+            (if (equal root-dir "/")
+                nil
+              (file-name-directory (directory-file-name root-dir)))))
+    root-dir))
+
+(defun mgrbyte-project-name (buffer-name)
+  "Return the name of the project that contain the given BUFFER-NAME."
+  (let ((root-dir (mgrbyte-project-directory buffer-name)))
+    (if root-dir
+        (file-name-nondirectory
+         (directory-file-name root-dir))
+      nil)))
+
+(defun mgrbyte-jedi-setup-venv ()
+  "Activates the virtualenv of the current buffer."
+  (let ((project-name (mgrbyte-project-name buffer-file-name)))
+    (when project-name (venv-workon project-name))))
+
 
 (message "mgrbyte.el loaded")
 (provide 'mgrbyte)
