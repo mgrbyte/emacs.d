@@ -5,47 +5,22 @@
 ;;
 ;;; Code:
 
-;; Setup package management (Cask)
-(require 'cask "~/.cask/cask.el")
-(load-library "url-handlers")
+;; Packages managed with cask, so disable at startup.
+(setq package-enable-at-startup nil)
 
 (declare-function
  #'mgrbyte-delete-trailing-blank-lines
  "~/.emacs.d/lisp/mgrbyte.el")
 
 (setq package-archives
-      '(("gnu" . "https://elpa.gnu.org/packages/")
-	("melpa-stable" . "https://stable.melpa.org/packages/")
-	("melpa" . "https://melpa.org/packages/")))
+  '(("gnu" . "http://elpa.gnu.org/packages/")
+    ("melpa-stable" . "https://stable.melpa.org/packages/")
+    ("melpa" . "https://melpa.org/packages/")))
 
 (setq package-archive-priorities
-      '(("gnu" . 0)
-	("melpa-stable" . 5)
-	("melpa" . 10)))
-
-;; (setq package-pinned-packages
-;;       '((cider . "melpa-stable")))
-
-(defun secure-https-setup ()
-  "Set up https securely as per Glyph's recommendations:
-https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
-  (let ((trustfile
-       (replace-regexp-in-string
-        "\\\\" "/"
-        (replace-regexp-in-string
-         "\n" ""
-         (shell-command-to-string "python -m certifi")))))
-  (setq tls-program
-        (list
-         (format "gnutls-cli%s --x509cafile %s -p %%p %%h"
-                 (if (eq window-system 'w32) ".exe" "") trustfile)))
-  (setq gnutls-verify-error t)
-  (setq gnutls-trustfiles (list trustfile))))
-
-(secure-https-setup)
-(cask-initialize)
-(setq package-enable-at-startup nil)
-(package-initialize)
+  '(("gnu" . 0)
+     ("melpa-stable" . 5)
+     ("melpa" . 10)))
 
 (eval-when-compile
   (require 'use-package)
@@ -63,7 +38,6 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
   (require 'org)
   (require 'org-agenda)
   (require 'org-list)
-  (require 'pallet)
   (require 'reftex)
   (require 'reftex-cite)
   (require 'reftex-index)
@@ -72,15 +46,6 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
 
 (use-package async
   :functions async-byte-comp-get-allowed-pkgs)
-
-(use-package company
-  :bind (("C-c h" . company-quickhelp-manual-begin)
-	 ("C-c c" . company-complete))
-  :config
-  (add-hook 'after-init-hook 'global-company-mode)
-  (company-quickhelp-mode 1))
-
-(use-package company-quickhelp)
 
 (use-package dockerfile-mode
   :mode (("Dockerfile" . dockerfile-mode)))
@@ -132,7 +97,6 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
 	  "ack-grep -H --no-group --no-color %e %p %f")))
 
 (use-package org
-  :ensure org
   :config
   (progn
     (defun mgrbyte--org-use-speed-commands-for-headings-and-lists ()
@@ -175,21 +139,21 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
     (setq org-use-effective-time t)
     (setq org-startup-folded nil)
     (setq org-cycle-include-plain-lists 'integrate)
-    (add-to-list 'org-speed-commands-user
+    (add-to-list 'org-speed-commands
 		 '("x" org-todo "DONE"))
-    (add-to-list 'org-speed-commands-user
+    (add-to-list 'org-speed-commands
 		 '("y" org-todo-yesterday "DONE"))
-    (add-to-list 'org-speed-commands-user
+    (add-to-list 'org-speed-commands
 		 '("!" my/org-clock-in-and-track))
-    (add-to-list 'org-speed-commands-user
+    (add-to-list 'org-speed-commands
 		 '("s" call-interactively 'org-schedule))
-    (add-to-list 'org-speed-commands-user
+    (add-to-list 'org-speed-commands
 		 '("d" my/org-move-line-to-destination))
-    (add-to-list 'org-speed-commands-user
+    (add-to-list 'org-speed-commands
 		 '("i" call-interactively 'org-clock-in))
-    (add-to-list 'org-speed-commands-user
+    (add-to-list 'org-speed-commands
 		 '("o" call-interactively 'org-clock-out))
-    (add-to-list 'org-speed-commands-user
+    (add-to-list 'org-speed-commands
 		 '("$" call-interactively 'org-archive-subtree))
     ;; (bind-key "!" 'my/org-clock-in-and-track org-agenda-mode-map)
     (bind-key "C-c j" 'org-clock-goto) ;; jump to current task from anywhere
@@ -214,15 +178,16 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
       '(bind-key "i" 'org-agenda-clock-in org-agenda-mode-map)))
   (add-hook 'org-clock-in-prepare-hook 'mgrbyte--org-mode-ask-effort))
 
-(use-package perspective)
-
 (use-package persp-projectile
   :config
   (setq projectile-completion-system 'helm)
   (setq projectile-sort-order 'recentf))
 
 (use-package recentf
-  :bind (("C-x r e" . recentf-edit-list)))
+  :bind (("C-x r e" . recentf-edit-list))
+  :config
+  ;; Don't keep history of Cask updates in recent-f
+  (add-to-list 'recentf-exclude (expand-file-name "~/git/emacs.d/.cask.*")))
 
 (use-package package
   :bind (("C-c C-l" . list-packages)))
@@ -230,13 +195,14 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
 (use-package helm :diminish helm-mode)
 
 (use-package helm-projectile
+  :bind (("C-x f" . projectile-find-file)
+         ("C-x p g" . projectile-grep))
   :config
   (projectile-mode)
   (helm-projectile-on)
   (persp-mode))
 
 (use-package mgrbyte
-  :ensure abyss-theme
   :load-path "lisp"
   :bind (("C-c f g" . find-grep-dired))
   :preface
@@ -244,9 +210,6 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
     "Add FUNCTION to multiple modes MODE-HOOKS."
     (mapc (lambda (hook) (add-hook hook function)) mode-hooks))
   :config
-  ;; Track changes to install packages with Cask
-  (pallet-mode t)
-
   ;; Misc settings.
   (setq-default indent-line-function 'insert-tab)
   (setq indent-tabs-mode nil)
@@ -297,8 +260,7 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
   (add-to-list 'auto-mode-alist '("Makfile.*" . makefile-gmake-mode))
   (keyfreq-mode)
   (menu-bar-mode 0)
-  (helm-mode 1)
-  (load-theme 'abyss t))
+  (helm-mode 1))
 
 (use-package bookmark
   :config
@@ -341,6 +303,7 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
 (use-package dashboard
   :ensure t
   :preface
+  (persp-mode)
   (defun mgrbyte-dashboard-insert-custom (list-size)
     (ignore list-size)
     (insert (format "CIDER tip: %s" (cider-drink-a-sip))))
@@ -375,7 +338,9 @@ https://glyph.twistedmatrix.com/2015/11/editor-malware.html"
   (setq-default ediff-split-window-function
 		(quote split-window-vertically)))
 
-(use-package editorconfig)
+(use-package editorconfig
+  :config
+  (editorconfig-mode 1))
 
 (use-package emacs-lisp-mode
   :mode (("*scratch*" . emacs-lisp-mode)
@@ -459,6 +424,7 @@ Result will be shown in the flycheck mode-line."
 (use-package google-this)
 
 (use-package ispell
+  :ensure flyspell
   :bind (("C-c i" . ispell-buffer))
   :config
   (mapc (lambda (envvar) (setenv envvar "en_GB.UTF8")) '("LANG" "LANGUAGE"))
@@ -471,12 +437,18 @@ Result will be shown in the flycheck mode-line."
   :init
   (mgrbyte/add-to-hooks
    #'flyspell-mode `(LaTeX-mode-hook
-		     git-commit-mode-hook
-		     markdown-mode-hook
-		     message-mode-hook
-		     org-mode-hook
-		     rst-mode-hook
-		     sphinx-doc-mode-hook)))
+		                 git-commit-mode-hook
+		                 markdown-mode-hook
+		                 message-mode-hook
+		                 org-mode-hook
+		                 rst-mode-hook
+		                 sphinx-doc-mode-hook)))
+
+(use-package jinja2-mode
+  :mode (("\\.jinja$" . jinja2-mode)
+          ("\\.html$" . jinja2-mode))
+  :config
+  (setq sgml-basic-offset 2))
 
 (use-package js2-mode
   :mode (("\\.js$" . js2-mode))
@@ -492,6 +464,7 @@ Result will be shown in the flycheck mode-line."
 (use-package jedi
   :config
   (setq jedi:complete-on-dot t)
+  (add-hook 'python-mode-hook #'mgrbyte-jedi-setup-venv)
   (add-hook 'python-mode-hook #'jedi:setup))
 
 (use-package keyfreq)
@@ -575,10 +548,11 @@ Result will be shown in the flycheck mode-line."
 
 (use-package python
   :bind (("C-c d i" . py-insert-debug)
-	 ("RET" . newline-and-indent))
+	       ("RET" . newline-and-indent))
   :mode (("\\.py$" . python-mode)
          ("\\.cpy$" . python-mode)
-         ("\\.vpy$" . python-mode))
+         ("\\.vpy$" . python-mode)
+         ("\\.html$" . jinja2-mode))
   :config
   (declare-function py-insert-debug mgrbyte nil)
   (setq fill-column 79)
@@ -590,7 +564,7 @@ Result will be shown in the flycheck mode-line."
 (use-package pyautomagic
   :load-path "lisp"
   :bind (("C-c v e" . pyautomagic--activate-venv-safely)
-	 ("C-c f c" . pyautomagic--configure-flycheck-checkers)))
+	 ("C-c f c" . pyautomagic--configureq-flycheck-checkers)))
 
 (use-package virtualenvwrapper
   :bind (("C-c w o" . venv-workon)
@@ -652,14 +626,12 @@ Result will be shown in the flycheck mode-line."
 
 (use-package sgml-mode
   :config
-  (setq sgml-basic-offset 4)
+  (setq sgml-basic-offset 2)
   (add-hook 'sgml-mode-hook
 	    (lambda ()
 	      (setq indent-tabs-mode nil)))
   :mode (("\\.pt$" . sgml-mode)
-         ("\\.cpt$" . sgml-mode)
-         ("\\.html" . sgml-mode)
-         ("\\.htm" . sgml-mode)))
+         ("\\.cpt$" . sgml-mode)))
 
 (use-package shell
   :config (setq shell-prompt-pattern "\\u@\\h: \\w $ "))
@@ -759,7 +731,10 @@ Result will be shown in the flycheck mode-line."
 ;; Code generated by using the Emacs *customize* interfaces goes to its own file.
 (setq custom-file (f-expand "~/.emacs-customize.el"))
 (if (f-exists? custom-file)
-    (load custom-file))
+  (load custom-file))
+
+;;; Load custom theme
+(load-theme 'abyss 'no-confirm)
 
 (provide 'init)
 ;;; init.el ends here
