@@ -69,7 +69,7 @@ repository, and seeing if there is a `python-mode' entry with a
 sub-entry for `flycheck-flake8rc' defined."
   (when directory-name
     (let* ((dl (file-name-as-directory directory-name))
-	   (class (if (f-exists? dl) (dir-localsf-read-from-dir dl) ""))
+	   (class (if (f-exists? dl) (dir-locals-read-from-dir dl) ""))
 	   (variables (dir-locals-get-class-variables class))
 	   (variables
 	    (dir-locals-collect-variables
