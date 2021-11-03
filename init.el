@@ -19,8 +19,8 @@
 
 (setq package-archive-priorities
   '(("gnu" . 0)
-     ("melpa-stable" . 5)
-     ("melpa" . 10)))
+    ("melpa-stable" . 5)
+    ("melpa" . 10)))
 
 (eval-when-compile
   (require 'use-package)
@@ -43,6 +43,12 @@
   (require 'reftex-index)
   (require 'tex-mode)
   (require 's))
+
+
+(use-package all-the-icons)
+
+(use-package all-the-icons-dired
+  :hook (dired-mode . all-the-icons-dired-mode))
 
 (use-package async
   :functions async-byte-comp-get-allowed-pkgs)
@@ -97,6 +103,7 @@
 	  "ack-grep -H --no-group --no-color %e %p %f")))
 
 (use-package org
+  :ensure t
   :config
   (progn
     (defun mgrbyte--org-use-speed-commands-for-headings-and-lists ()
@@ -132,12 +139,10 @@
 		   "PHONE"
 		   "MEETING"))))
     (setq org-default-notes-file "~/org/notes.org")
-    (setq org-agenda-files
-	  (f-entries "~/org" (apply-partially #'s-ends-with? ".org") t))
+    (setq org-agenda-files (f-entries "~/org" (apply-partially #'s-ends-with? ".org") t))
     (setq org-directory "~/org")
-    (setq org-default-notes-file "~/org/refile.org")
     (setq org-use-effective-time t)
-    (setq org-startup-folded nil)
+    (setq org-startup-folded t)
     (setq org-cycle-include-plain-lists 'integrate)
     (add-to-list 'org-speed-commands
 		 '("x" org-todo "DONE"))
@@ -163,8 +168,6 @@
     (bind-key "C-c l" 'org-store-link)
     (bind-key "C-c L" 'org-insert-link-global)
     (bind-key "C-c O" 'org-open-at-point-global)
-    ;; (bind-key "<f9> <f9>" 'org-agenda-list)
-    ;; (bind-key "<f9> <f8>" (lambda () (interactive) (org-capture nil "r")))
     (bind-key "C-TAB" 'org-cycle org-mode-map)
     (bind-key "C-c v" 'org-show-todo-tree org-mode-map)
     (bind-key "C-c C-r" 'org-refile org-mode-map)
@@ -173,7 +176,8 @@
     (org-babel-do-load-languages
      'org-babel-load-languages
      '((emacs-lisp . t)
-       (python . t)))
+       (python . t)
+       (clojure . t)))
     (eval-after-load 'org-agenda
       '(bind-key "i" 'org-agenda-clock-in org-agenda-mode-map)))
   (add-hook 'org-clock-in-prepare-hook 'mgrbyte--org-mode-ask-effort))
@@ -205,10 +209,6 @@
 (use-package mgrbyte
   :load-path "lisp"
   :bind (("C-c f g" . find-grep-dired))
-  :preface
-  (defun mgrbyte/add-to-hooks (function mode-hooks)
-    "Add FUNCTION to multiple modes MODE-HOOKS."
-    (mapc (lambda (hook) (add-hook hook function)) mode-hooks))
   :config
   ;; Misc settings.
   (setq-default indent-line-function 'insert-tab)
@@ -297,32 +297,49 @@
          ("\\.ini" . conf-mode)))
 
 (use-package css-mode
-  :mode (("\\.kss$" . css-mode)
-         ("\\.css.dtml$". css-mode)))
+  :mode (("\\.css$" . css-mode)))
+
+(use-package font-lock+
+  :load-path "lisp")
 
 (use-package dashboard
   :ensure t
   :preface
   (persp-mode)
-  (defun mgrbyte-dashboard-insert-custom (list-size)
-    (ignore list-size)
-    (insert (format "CIDER tip: %s" (cider-drink-a-sip))))
   :config
-  (setq dashboard-items '((projects . 10)
-			  (recents . 10)
-			  (bookmarks . 10)))
+  (setq dashboard-item-shortcuts '((agenda . "a")
+                                   (recents . "r")
+                                   (projects . "p")
+                                   (bookmarks . "m")))
   (setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
-  (add-to-list 'dashboard-item-generators '(custom . mgrbyte-dashboard-insert-custom))
-  (add-to-list 'dashboard-items '(custom) t)
-  (add-hook 'emacs-startup-hook '(lambda ()
-				   (switch-to-buffer "*dashboard*")
-				   (delete-other-windows)))
+  (setq dashboard-set-file-icons t)
+  (setq dashboard-set-heading-icons t)
+  (setq dashboard-projects-switch-function 'projectile-persp-switch-project)
+  (setq dashboard-items '((recents  . 5)
+                          (bookmarks . 5)
+                          (projects . 5)
+                          (agenda . 5)))
   (dashboard-setup-startup-hook))
+
+;;   (defun mgrbyte-dashboard-insert-custom (list-size)
+;;     (ignore list-size)
+;;     (insert (format "CIDER tip: %s" (cider-drink-a-sip))))
+;;   :config
+;;   (setq dashboard-items '((projects . 10)
+;; 			                    (recents . 10)
+;; 			                    (bookmarks . 10)))
+;;   (setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
+;;   (add-to-list 'dashboard-item-generators '(custom . mgrbyte-dashboard-insert-custom))
+;;   (add-to-list 'dashboard-items '(custom) t)
+;;   (add-hook 'emacs-startup-hook '(lambda ()
+;; 				                           (switch-to-buffer "*dashboard*")
+;; 				                           (delete-other-windows)))
+;;   (dashboard-setup-startup-hook))
 
 (use-package dired
   :config
   (defadvice dired-readin
-      (after dired-after-updating-hook first () activate)
+    (after dired-after-updating-hook first () activate)
     "Sort dired listings with directories first before adding mark."
     (mgrbyte-sort-directories-first)))
 
@@ -344,7 +361,7 @@
 
 (use-package emacs-lisp-mode
   :mode (("*scratch*" . emacs-lisp-mode)
-	 ("\\.el$" . emacs-lisp-mode)))
+         ("\\.el$" . emacs-lisp-mode)))
 
 (use-package erc)
 
@@ -424,7 +441,6 @@ Result will be shown in the flycheck mode-line."
 (use-package google-this)
 
 (use-package ispell
-  :ensure flyspell
   :bind (("C-c i" . ispell-buffer))
   :config
   (mapc (lambda (envvar) (setenv envvar "en_GB.UTF8")) '("LANG" "LANGUAGE"))
@@ -433,16 +449,7 @@ Result will be shown in the flycheck mode-line."
     (setq ispell-dictionary langs)
     (ispell-set-spellchecker-params)
     (ispell-hunspell-add-multi-dic langs)
-    (setq ispell-personal-dictionary "~/.hunspell_personal"))
-  :init
-  (mgrbyte/add-to-hooks
-   #'flyspell-mode `(LaTeX-mode-hook
-		                 git-commit-mode-hook
-		                 markdown-mode-hook
-		                 message-mode-hook
-		                 org-mode-hook
-		                 rst-mode-hook
-		                 sphinx-doc-mode-hook)))
+    (setq ispell-personal-dictionary "~/.hunspell_personal")))
 
 (use-package jinja2-mode
   :mode (("\\.jinja$" . jinja2-mode)
@@ -463,9 +470,7 @@ Result will be shown in the flycheck mode-line."
 
 (use-package jedi
   :config
-  (setq jedi:complete-on-dot t)
-  (add-hook 'python-mode-hook #'mgrbyte-jedi-setup-venv)
-  (add-hook 'python-mode-hook #'jedi:setup))
+  (setq jedi:complete-on-dot t))
 
 (use-package keyfreq)
 
@@ -500,11 +505,11 @@ Result will be shown in the flycheck mode-line."
 
 (use-package paredit
   :diminish paredit-mode
+  :init
+  (enable-paredit-mode)
   :config
   (unbind-key "M-s" paredit-mode-map)
-  (unbind-key "M-r" paredit-mode-map)
-  (mgrbyte/add-to-hooks
-   #'enable-paredit-mode `(clojure-mode-hook emacs-lisp-mode-hook lisp-mode-hook)))
+  (unbind-key "M-r" paredit-mode-map))
 
 (use-package paren
   :config
@@ -516,23 +521,12 @@ Result will be shown in the flycheck mode-line."
   :config
   (setq-default powerline-default-separator 'wave))
 
-(use-package pretty-symbols
-  :diminish pretty-symbols-mode
-  :preface
-  (defun enable-pretty-symbols-mode ()
-    (pretty-symbols-mode 1))
-  :config
-  (mgrbyte/add-to-hooks
-   #'enable-pretty-symbols-mode `(emacs-lisp-mode-hook
-				  lisp-mode-hook
-				  clojure-mode-hook
-				  python-mode-hook)))
-
 (use-package clojure-mode
   :preface
   (defun mgrbyte-setup-clj ()
     (helm-cider-mode 1)
     (yas-minor-mode 1))
+  :hook (mgrbyte-setup-clj)
   :config
   (require 'flycheck-clj-kondo)
   (define-clojure-indent
@@ -543,8 +537,7 @@ Result will be shown in the flycheck mode-line."
     (DELETE 2)
     (HEAD 2)
     (ANY 2)
-    (context 2))
-  (add-hook #'clojure-mode-hook #'mgrbyte-setup-clj))
+    (context 2)))
 
 (use-package python
   :bind (("C-c d i" . py-insert-debug)
@@ -553,6 +546,9 @@ Result will be shown in the flycheck mode-line."
          ("\\.cpy$" . python-mode)
          ("\\.vpy$" . python-mode)
          ("\\.html$" . jinja2-mode))
+  :hook ((python-mode . mgrbyte-jedi-setup-venv)
+         (python-mode . jedi:setup)
+         (python-mode . jedi-mode))
   :config
   (declare-function py-insert-debug mgrbyte nil)
   (setq fill-column 79)
@@ -568,17 +564,15 @@ Result will be shown in the flycheck mode-line."
 
 (use-package virtualenvwrapper
   :bind (("C-c w o" . venv-workon)
-	 ("C-c w d" . venv-deactivate))
+      	 ("C-c w d" . venv-deactivate))
   :preface
   (defun mgrbyte/auto-activate-venv ()
     (hack-local-variables)
     (when (boundp 'mgrbyte-project-venv-name)
       (venv-workon mgrbyte-project-venv-name)))
   :config
-  (mgrbyte/add-to-hooks
-   #'mgrbyte/auto-activate-venv
-   `(python-mode-hook
-     rst-mode-hook))
+  (add-hook 'python-mode #'mgrbyte/auto-activate-venv)
+  (add-hook 'rst-mode #'mgrbyte/auto-activate-venv)
   (setq-default mode-line-format
 		(append
 		 mode-line-format
@@ -646,9 +640,8 @@ Result will be shown in the flycheck mode-line."
   (defun turn-on-outline-minor-mode ()
     "Turn on the outline minor mode."
     (outline-minor-mode 1)
-    (add-hook 'LaTeX-mode-hook 'turn-on-outline-minor-mode)
-    ;; (add-hook 'Latex-mode-hook 'turn-on-outline-minor-mode)
     (setq outline-minor-mode-prefix "C-c C-o"))
+  :hook ((turn-on-outline-minor-mode turn-on-reftex))
   :config
   (setq-default
    LaTeX-eqnarray-label "eq"
@@ -670,13 +663,11 @@ Result will be shown in the flycheck mode-line."
   (autoload #'reftex-mode "reftex" "RefTeX Minor Mode" t)
   (autoload #'turn-on-reftex "reftex" "RefTeX Minor Mode" nil)
   (autoload #'reftex-citation "reftex-cite" "Make citation" nil)
-  (autoload #'reftex-index-phrase-mode "reftex-index" "Phrase Mode" t)
-  ;; (add-hook #'LaTeX-mode-hook #'turn-on-reftex)
-  (add-hook #'LaTeX-mode-hook #'turn-on-reftex))
+  (autoload #'reftex-index-phrase-mode "reftex-index" "Phrase Mode" t))
 
 (use-package text
   :mode (("\\.po$" . text-mode)
-	 ("\\.pot$" . text-mode)))
+	       ("\\.pot$" . text-mode)))
 
 (use-package text-scale-mode
   :bind (("C-c +" . text-scale-increase)
