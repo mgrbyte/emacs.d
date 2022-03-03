@@ -230,7 +230,21 @@ to be a project root."
 (defun mgrbyte-jedi-setup-venv ()
   "Activates the virtualenv of the current buffer."
   (let ((project-name (mgrbyte-project-name buffer-file-name)))
-    (when project-name (venv-workon project-name))))
+    (setenv "WORKON_HOME" (concat
+                            (if-let (remote (file-remote-p
+                                              (buffer-file-name)))
+                              "~/.virtualenvs"
+                              "")))
+      (when project-name (venv-workon project-name))))
+
+(defun mgrbyte-configure-encoding (encoding)
+  "Configure the preferred buffer and file ENCODING."
+  (setq locale-coding-system encoding)
+  (set-language-environment encoding)
+  (set-default-coding-systems encoding)
+  (set-terminal-coding-system encoding)
+  (set-selection-coding-system encoding)
+  (prefer-coding-system encoding))
 
 
 (message "mgrbyte.el loaded")
