@@ -34,7 +34,7 @@
   (require 'helm-files)
   (require 'helm-lib)
   (require 'helm-net)
-  (require 'jedi)
+  ;; (require 'jedi)
   (require 'org)
   (require 'org-agenda)
   (require 'org-list)
@@ -44,14 +44,22 @@
   (require 'tex-mode)
   (require 's))
 
+(use-package anaconda-mode
+  :config
+  (setq anaconda-mode-localhost-address "localhost"))
+
+(use-package async
+  :functions async-byte-comp-get-allowed-pkgs)
 
 (use-package all-the-icons)
 
 (use-package all-the-icons-dired
   :hook (dired-mode . all-the-icons-dired-mode))
 
-(use-package async
-  :functions async-byte-comp-get-allowed-pkgs)
+(use-package auth-source
+  :config
+  (setq auth-source-debug t)
+  (setq auth-sources (-filter #'file-exists-p '("~/.authinfo.gpg" "~/.authinfo" "~/.netrc"))))
 
 (use-package dockerfile-mode
   :mode (("Dockerfile" . dockerfile-mode)))
@@ -208,8 +216,17 @@
 
 (use-package mgrbyte
   :load-path "lisp"
-  :bind (("C-c f g" . find-grep-dired))
+  :bind (("C-x t w" . delete-trailing-whitespace)
+         ("C-c f g" . find-grep-dired))
   :config
+  ;; encoding
+  (mgrbyte-configure-encoding 'utf-8)
+
+  ;; VC
+  ;; Follow links without asking
+  (setq-default vc-follow-symlinks 't)
+  (setq vc-handled-backends '(Git))
+
   ;; Misc settings.
   (setq-default indent-line-function 'insert-tab)
   (setq indent-tabs-mode nil)
@@ -247,11 +264,6 @@
   (put 'narrow-to-page 'disabled nil)
   (bind-key "C-c t" #'tool-bar-mode)
 
-  ;; Tramp
-  (setq tramp-default-method "ssh")
-  (setq tramp-shell-prompt-pattern
-	"^[^$>\n]*[#$%>] *\\(\[[0-9;]*[a-zA-Z] *\\)*")
-
   ;; avoid audio beeping by turning on visible-bell
   (setq visible-bell t)
   (setq debug-on-error t)
@@ -261,6 +273,15 @@
   (keyfreq-mode)
   (menu-bar-mode 0)
   (helm-mode 1))
+
+(use-package tramp
+  :config
+  (setq tramp-default-method "ssh")
+  (setq tramp-default-remote-shell "/bin/zsh")
+  (setq tramp-encoding-shell "/bin/zsh")
+  (setq tramp-shell-prompt-pattern
+	"^[^$>\n]*[#$%>] *\\(\[[0-9;]*[a-zA-Z] *\\)*"))
+
 
 (use-package bookmark
   :config
@@ -468,9 +489,9 @@ Result will be shown in the flycheck mode-line."
 (use-package java-mode
   :mode (("\\.java$" . java-mode)))
 
-(use-package jedi
-  :config
-  (setq jedi:complete-on-dot t))
+;; (use-package jedi
+;;   :config
+;;   (setq jedi:complete-on-dot t))
 
 (use-package keyfreq)
 
@@ -484,13 +505,9 @@ Result will be shown in the flycheck mode-line."
   :mode (("\\.md$" . markdown-mode)))
 
 (use-package mule
-  :config (setq locale-coding-system 'utf-8)
-  :init
-  (set-language-environment 'utf-8)
-  (set-default-coding-systems 'utf-8)
-  (set-terminal-coding-system 'utf-8)
-  (set-selection-coding-system 'utf-8)
-  (prefer-coding-system 'utf-8))
+  :after (mgrbyte)
+  :config
+  (mgrbyte-configure-encoding 'utf-8))
 
 (use-package notify
   :load-path "lisp")
@@ -546,9 +563,7 @@ Result will be shown in the flycheck mode-line."
          ("\\.cpy$" . python-mode)
          ("\\.vpy$" . python-mode)
          ("\\.html$" . jinja2-mode))
-  :hook ((python-mode . mgrbyte-jedi-setup-venv)
-         (python-mode . jedi:setup)
-         (python-mode . jedi-mode))
+  :hook ((python-mode . anaconda-mode))
   :config
   (declare-function py-insert-debug mgrbyte nil)
   (setq fill-column 79)
@@ -562,21 +577,21 @@ Result will be shown in the flycheck mode-line."
   :bind (("C-c v e" . pyautomagic--activate-venv-safely)
 	 ("C-c f c" . pyautomagic--configureq-flycheck-checkers)))
 
-(use-package virtualenvwrapper
-  :bind (("C-c w o" . venv-workon)
-      	 ("C-c w d" . venv-deactivate))
-  :preface
-  (defun mgrbyte/auto-activate-venv ()
-    (hack-local-variables)
-    (when (boundp 'mgrbyte-project-venv-name)
-      (venv-workon mgrbyte-project-venv-name)))
-  :config
-  (add-hook 'python-mode #'mgrbyte/auto-activate-venv)
-  (add-hook 'rst-mode #'mgrbyte/auto-activate-venv)
-  (setq-default mode-line-format
-		(append
-		 mode-line-format
-		 '(:exec venv-current-name))))
+;; (use-package virtualenvwrapper
+;;   :bind (("C-c w o" . venv-workon)
+;;       	  ("C-c w d" . venv-deactivate))
+;;   :preface
+;;   (defun mgrbyte/auto-activate-venv ()
+;;     (hack-local-variables)
+;;     (when (boundp 'mgrbyte-project-venv-name)
+;;       (venv-workon mgrbyte-project-venv-name)))
+;;   :config
+;;   (add-hook 'python-mode #'mgrbyte/auto-activate-venv)
+;;   (add-hook 'rst-mode #'mgrbyte/auto-activate-venv)
+;;   (setq-default mode-line-format
+;; 		(append
+;; 		 mode-line-format
+;; 		 '(:exec venv-current-name))))
 
 (use-package rainbow-delimiters
   :config
@@ -704,9 +719,6 @@ Result will be shown in the flycheck mode-line."
 
 ;; Ensure PATH is preserved from shell.
 (exec-path-from-shell-initialize)
-
-;; Follow links without asking
-(setq-default vc-follow-symlinks 't)
 
 ;;; custom user Lisp (from template on first load)
 (defvar user-custom-file (f-expand "~/.emacs-custom.el"))
