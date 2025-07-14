@@ -538,21 +538,11 @@ Result will be shown in the flycheck mode-line."
   :bind (("C-c v e" . pyautomagic--activate-venv-safely)
 	 ("C-c f c" . pyautomagic--configureq-flycheck-checkers)))
 
-;; (use-package virtualenvwrapper
-;;   :bind (("C-c w o" . venv-workon)
-;;       	  ("C-c w d" . venv-deactivate))
-;;   :preface
-;;   (defun mgrbyte/auto-activate-venv ()
-;;     (hack-local-variables)
-;;     (when (boundp 'mgrbyte-project-venv-name)
-;;       (venv-workon mgrbyte-project-venv-name)))
-;;   :config
-;;   (add-hook 'python-mode #'mgrbyte/auto-activate-venv)
-;;   (add-hook 'rst-mode #'mgrbyte/auto-activate-venv)
-;;   (setq-default mode-line-format
-;; 		(append
-;; 		 mode-line-format
-;; 		 '(:exec venv-current-name))))
+(use-package py-snippets
+  :ensure t
+  :after yasnippet
+  :config
+  (py-snippets-initialize))
 
 (use-package rainbow-delimiters
   :config
