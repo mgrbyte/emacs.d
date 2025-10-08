@@ -236,7 +236,6 @@
   (setq inhibit-startup-message t)
   (setq search-highlight t)
   (setq query-replace-highlight t)
-  (global-linum-mode 0)
 
   ;; Desktop mode
   ;; Useful for remembering a set of file you're working on -
@@ -416,8 +415,6 @@ Result will be shown in the flycheck mode-line."
     (mgrbyte-setup-frame)))
 
 (use-package gist)
-
-(use-package git-gutter+)
 
 (use-package gnus
   :bind (("C-x g" . gnus-other-frame)))
@@ -655,10 +652,6 @@ Result will be shown in the flycheck mode-line."
 (use-package vcl
   :mode (("\\.vcl" . vcl-mode)))
 
-(use-package with-editor
-  :config
-  (setq with-editor-emacsclient-executable nil))
-
 (use-package yaml-mode
   :mode (("\\.yml" . yaml-mode)
 	 ("\\.yaml" . yaml-mode)))
@@ -683,9 +676,7 @@ Result will be shown in the flycheck mode-line."
   (load custom-file))
 
 ;;; Load custom theme
-(if (window-system)
-  (load-theme 'abyss 'no-confirm)
-  (load-theme 'tango-dark 'no-confirm))
+(load-theme 'tango-dark 'no-confirm)
 
 (provide 'init)
 ;;; init.el ends here
