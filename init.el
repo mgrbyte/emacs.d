@@ -454,8 +454,6 @@ Result will be shown in the flycheck mode-line."
 
 (use-package gist)
 
-(use-package git-gutter+)
-
 (use-package gnus
   :bind (("C-x g" . gnus-other-frame)))
 
