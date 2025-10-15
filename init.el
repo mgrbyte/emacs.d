@@ -25,7 +25,6 @@
 (eval-when-compile
   (require 'use-package)
   (require 'bind-key)
-  (require 'clojure-mode)
   (require 'dash)
   (require 'diminish)
   (require 'f)
@@ -34,7 +33,6 @@
   (require 'helm-files)
   (require 'helm-lib)
   (require 'helm-net)
-  ;; (require 'jedi)
   (require 'org)
   (require 'org-agenda)
   (require 'org-list)
@@ -63,18 +61,6 @@
 
 (use-package dockerfile-mode
   :mode (("Dockerfile" . dockerfile-mode)))
-
-(use-package helm-cider
-  :ensure t
-  :defer t
-  :after cider-mode)
-
-(use-package helm-cider-history
-  :ensure t
-  :defer t
-  :after helm-cider
-  :init
-  (bind-key "C-l" #'helm-cider-history))
 
 (use-package helm-config
   :bind (("C-c h" . helm-command-prefix)
@@ -190,6 +176,15 @@
       '(bind-key "i" 'org-agenda-clock-in org-agenda-mode-map)))
   (add-hook 'org-clock-in-prepare-hook 'mgrbyte--org-mode-ask-effort))
 
+(use-package perspective
+  :bind
+  ("C-x C-b" . persp-list-buffers)
+  :custom
+  (persp-mode-prefix-key (kbd "C-c M-p"))
+  :init
+  (persp-mode))
+
+
 (use-package persp-projectile
   :config
   (setq projectile-completion-system 'helm)
@@ -211,7 +206,6 @@
          ("C-x p g" . projectile-grep))
   :config
   (projectile-mode)
-  (helm-projectile-on)
   (persp-mode))
 
 (use-package mgrbyte
@@ -242,7 +236,6 @@
   (setq inhibit-startup-message t)
   (setq search-highlight t)
   (setq query-replace-highlight t)
-  (global-linum-mode 0)
 
   ;; Desktop mode
   ;; Useful for remembering a set of file you're working on -
@@ -282,7 +275,6 @@
   (setq tramp-shell-prompt-pattern
 	"^[^$>\n]*[#$%>] *\\(\[[0-9;]*[a-zA-Z] *\\)*"))
 
-
 (use-package bookmark
   :config
   (define-key global-map [menu-bar bookmarks]
@@ -305,12 +297,6 @@
   (define-key global-map
     [menu-bar bookmarks bookmark-jump]
     '("Goto bookmark" . bookmark-jump)))
-
-(use-package cider-mode
-  :config
-  (setq cider-repl-use-pretty-printing 't)
-  (setq cider-repl-history-size 10000)
-  (setq cider-repl-history-file (f-join (getenv "HOME") ".cider-repl-history")))
 
 (use-package conf-mode
   :mode (("\\.conf" . conf-mode)
@@ -341,21 +327,6 @@
                           (projects . 5)
                           (agenda . 5)))
   (dashboard-setup-startup-hook))
-
-;;   (defun mgrbyte-dashboard-insert-custom (list-size)
-;;     (ignore list-size)
-;;     (insert (format "CIDER tip: %s" (cider-drink-a-sip))))
-;;   :config
-;;   (setq dashboard-items '((projects . 10)
-;; 			                    (recents . 10)
-;; 			                    (bookmarks . 10)))
-;;   (setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
-;;   (add-to-list 'dashboard-item-generators '(custom . mgrbyte-dashboard-insert-custom))
-;;   (add-to-list 'dashboard-items '(custom) t)
-;;   (add-hook 'emacs-startup-hook '(lambda ()
-;; 				                           (switch-to-buffer "*dashboard*")
-;; 				                           (delete-other-windows)))
-;;   (dashboard-setup-startup-hook))
 
 (use-package dired
   :config
@@ -389,7 +360,6 @@
 (use-package flycheck
   :preface
   (declare-function flycheck-next-error flycheck nil)
-  (eval-after-load 'cider '(flycheck-clojure-setup))
   (eval-after-load 'flycheck
     '(setq flycheck-display-errors-function #'flycheck-pos-tip-error-messages))
   (with-eval-after-load 'flycheck
@@ -411,14 +381,6 @@ Result will be shown in the flycheck mode-line."
     (setq flycheck-highlighting-mode 'lines)
     (advice-add 'flycheck-mode-line-status-text
 		:around #'mgrbyte/flycheck-checker-name-on-mode-line)))
-
-(use-package flycheck-clojure
-  :ensure t
-  :defer t
-  :after flycheck)
-
-(use-package flycheck-clj-kondo
-  :ensure t)
 
 ;; Used for constributing 3rd party python packages
 ;; instead of the more imposing flycheck-flake8 checker
@@ -462,13 +424,12 @@ Result will be shown in the flycheck mode-line."
 (use-package ispell
   :bind (("C-c i" . ispell-buffer))
   :config
-  (mapc (lambda (envvar) (setenv envvar "en_GB.UTF8")) '("LANG" "LANGUAGE"))
-  (setq-default ispell-program-name "hunspell")
-  (let ((langs "cy_GB,en_GB"))
-    (setq ispell-dictionary langs)
-    (ispell-set-spellchecker-params)
-    (ispell-hunspell-add-multi-dic langs)
-    (setq ispell-personal-dictionary "~/.hunspell_personal")))
+  (mapc (lambda (envvar) (setenv envvar "en_GB.UTF8")) '("LANG"))
+  (setq-default ispell-program-name "aspell")
+  (setq ispell-dictionary "cy")
+  (ispell-set-spellchecker-params)
+  ;; (ispell-hunspell-add-multi-dic langs)
+  (setq ispell-personal-dictionary "~/.hunspell_personal"))
 
 (use-package jinja2-mode
   :mode (("\\.jinja$" . jinja2-mode)
@@ -539,7 +500,6 @@ Result will be shown in the flycheck mode-line."
 (use-package clojure-mode
   :preface
   (defun mgrbyte-setup-clj ()
-    (helm-cider-mode 1)
     (yas-minor-mode 1))
   :hook (mgrbyte-setup-clj)
   :config
@@ -575,21 +535,11 @@ Result will be shown in the flycheck mode-line."
   :bind (("C-c v e" . pyautomagic--activate-venv-safely)
 	 ("C-c f c" . pyautomagic--configureq-flycheck-checkers)))
 
-;; (use-package virtualenvwrapper
-;;   :bind (("C-c w o" . venv-workon)
-;;       	  ("C-c w d" . venv-deactivate))
-;;   :preface
-;;   (defun mgrbyte/auto-activate-venv ()
-;;     (hack-local-variables)
-;;     (when (boundp 'mgrbyte-project-venv-name)
-;;       (venv-workon mgrbyte-project-venv-name)))
-;;   :config
-;;   (add-hook 'python-mode #'mgrbyte/auto-activate-venv)
-;;   (add-hook 'rst-mode #'mgrbyte/auto-activate-venv)
-;;   (setq-default mode-line-format
-;; 		(append
-;; 		 mode-line-format
-;; 		 '(:exec venv-current-name))))
+(use-package py-snippets
+  :ensure t
+  :after yasnippet
+  :config
+  (py-snippets-initialize))
 
 (use-package rainbow-delimiters
   :config
@@ -695,21 +645,12 @@ Result will be shown in the flycheck mode-line."
   (setq-default whitespace-cleanup-mode-preserve-point 't)
   (setq-default whitespace-cleanup-mode-only-if-initially-clean 't)
   (setq-default whitespace-cleanup-mode-ignore-modes
-		'(cider-mode
-		  cider-repl-mode
-		  comint-mode
-		  haskell-interactive-mode
-		  helm-cider-mode
-		  helm-mode
+		'(helm-mode
 		  special-mode
 		  view-mode)))
 
 (use-package vcl
   :mode (("\\.vcl" . vcl-mode)))
-
-(use-package with-editor
-  :config
-  (setq with-editor-emacsclient-executable nil))
 
 (use-package yaml-mode
   :mode (("\\.yml" . yaml-mode)
@@ -735,7 +676,7 @@ Result will be shown in the flycheck mode-line."
   (load custom-file))
 
 ;;; Load custom theme
-(load-theme 'abyss 'no-confirm)
+(load-theme 'tango-dark 'no-confirm)
 
 (provide 'init)
 ;;; init.el ends here
