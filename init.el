@@ -28,7 +28,6 @@
   (require 'dash)
   (require 'diminish)
   (require 'f)
-  (require 'flycheck)
   (require 'helm)
   (require 'helm-files)
   (require 'helm-lib)
@@ -41,10 +40,6 @@
   (require 'reftex-index)
   (require 'tex-mode)
   (require 's))
-
-(use-package anaconda-mode
-  :config
-  (setq anaconda-mode-localhost-address "localhost"))
 
 (use-package async
   :functions async-byte-comp-get-allowed-pkgs)
@@ -356,36 +351,6 @@
          ("\\.el$" . emacs-lisp-mode)))
 
 (use-package erc)
-
-(use-package flycheck
-  :preface
-  (declare-function flycheck-next-error flycheck nil)
-  (eval-after-load 'flycheck
-    '(setq flycheck-display-errors-function #'flycheck-pos-tip-error-messages))
-  (with-eval-after-load 'flycheck
-    (flycheck-pos-tip-mode))
-  (global-flycheck-mode 1)
-  (defun mgrbyte/flycheck-checker-name-on-mode-line (oldfun &optional status)
-    "Show the current checker name using OLDFUN and STATUS.
-
-Result will be shown in the flycheck mode-line."
-    (let ((res (apply oldfun status)))
-      ;; Unless there is no current checker
-      (if flycheck-checker
-	  (s-replace "FlyC" (format "FlyC[%s]" flycheck-checker) res)
-	res)))
-  :config
-  (progn
-    (setq flycheck-emacs-lisp-load-path 'inherit)
-    (setq flycheck-flake8-maximum-line-length 79)
-    (setq flycheck-highlighting-mode 'lines)
-    (advice-add 'flycheck-mode-line-status-text
-		:around #'mgrbyte/flycheck-checker-name-on-mode-line)))
-
-;; Used for constributing 3rd party python packages
-;; instead of the more imposing flycheck-flake8 checker
-;;; (which is the default for my own and work packages)
-(use-package flycheck-pyflakes)
 
 (use-package flymake :disabled t)
 
