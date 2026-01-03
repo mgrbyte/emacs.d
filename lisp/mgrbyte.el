@@ -65,7 +65,6 @@
 Interactively with no argument, this command toggles the mode.
 When activated, this mode makes the 'standard' mgrbyte keybindings
 take effect."
-  nil
   :lighter " Mgrbyte"
   :global t
   :keymap mgrbyte-keymap
@@ -197,11 +196,15 @@ If non-nil make FRAME current."
   (when frame
     (select-frame frame))
   (when (window-system)
-    (set-face-attribute 'default nil :font "Ubuntu Mono 14")))
+    (let ((font (cond
+                 ((eq system-type 'darwin) "Menlo 14")
+                 (t "Ubuntu Mono 14"))))
+      (set-face-attribute 'default nil :font font))))
 
-(defun mgrbyte-runs-X11 ()
-  "Test whether or not we are running under the X11 window system."
-  (getenv "DISPLAY"))
+(defun mgrbyte-display-is-graphical ()
+  "Test whether or not we are running in a GUI."
+  (memq window-system '(mac ns x)))
+
 
 (defun mgrbyte-project-directory (buffer-name)
   "Return the root directory of the project that contain the given BUFFER-NAME.

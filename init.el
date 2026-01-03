@@ -5,15 +5,10 @@
 ;;
 ;;; Code:
 
-;; Packages managed with cask, so disable at startup.
-(setq package-enable-at-startup nil)
-
-(declare-function
- #'mgrbyte-delete-trailing-blank-lines
- "~/.emacs.d/lisp/mgrbyte.el")
-
+;; Package management with package.el
+(require 'package)
 (setq package-archives
-  '(("gnu" . "http://elpa.gnu.org/packages/")
+  '(("gnu" . "https://elpa.gnu.org/packages/")
     ("melpa-stable" . "https://stable.melpa.org/packages/")
     ("melpa" . "https://melpa.org/packages/")))
 
@@ -22,24 +17,28 @@
     ("melpa-stable" . 5)
     ("melpa" . 10)))
 
-(eval-when-compile
-  (require 'use-package)
-  (require 'bind-key)
-  (require 'dash)
-  (require 'diminish)
-  (require 'f)
-  (require 'helm)
-  (require 'helm-files)
-  (require 'helm-lib)
-  (require 'helm-net)
-  (require 'org)
-  (require 'org-agenda)
-  (require 'org-list)
-  (require 'reftex)
-  (require 'reftex-cite)
-  (require 'reftex-index)
-  (require 'tex-mode)
-  (require 's))
+(package-initialize)
+
+;; Install use-package if not present
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+(require 'use-package)
+;; Don't auto-ensure - we'll specify per package
+;; Built-in packages don't need :ensure
+
+;; macOS: swap Command/Option - Command is Meta, Option passes through
+(when (eq system-type 'darwin)
+  (setq mac-command-modifier 'meta)
+  (setq mac-option-modifier nil))
+
+;; Start on external monitor (right of laptop) and maximized
+(setq initial-frame-alist '((left . 1728) (top . 6) (fullscreen . maximized)))
+
+(declare-function
+ #'mgrbyte-delete-trailing-blank-lines
+ "~/.emacs.d/lisp/mgrbyte.el")
 
 (use-package async
   :functions async-byte-comp-get-allowed-pkgs)
@@ -49,7 +48,12 @@
 (use-package all-the-icons-dired
   :hook (dired-mode . all-the-icons-dired-mode))
 
+(use-package dash :ensure t)
+(use-package f :ensure t)
+(use-package s :ensure t)
+
 (use-package auth-source
+  :after dash
   :config
   (setq auth-source-debug t)
   (setq auth-sources (-filter #'file-exists-p '("~/.authinfo.gpg" "~/.authinfo" "~/.netrc"))))
@@ -57,20 +61,19 @@
 (use-package dockerfile-mode
   :mode (("Dockerfile" . dockerfile-mode)))
 
-(use-package helm-config
+(use-package helm
+  :ensure t
   :bind (("C-c h" . helm-command-prefix)
 	 ("C-x b" . helm-mini)
 	 ("C-x f" . helm-find-files)
 	 ("C-x C-r" . helm-recentf)
 	 ("M-x" . helm-M-x))
-  :preface
-  (progn
-    (require 'helm)
-    (unbind-key "C-x c")
-    (bind-key "<tab>" #'helm-execute-persistent-action helm-map)
-    (bind-key "C-e" #'recentf-edit-list helm-map)
-    (bind-key "C-z" #'helm-select-action helm-map))
+  :init
+  (unbind-key "C-x c")
   :config
+  (bind-key "<tab>" #'helm-execute-persistent-action helm-map)
+  (bind-key "C-e" #'recentf-edit-list helm-map)
+  (bind-key "C-z" #'helm-select-action helm-map)
   ;; Don't ask to create new files.
   (setq helm-ff-newfile-prompt-p nil)
   ;; open helm buffer inside current window, not occupy whole other window
@@ -93,6 +96,7 @@
 
 (use-package org
   :ensure t
+  :after (f s)
   :config
   (progn
     (defun mgrbyte--org-use-speed-commands-for-headings-and-lists ()
@@ -171,19 +175,24 @@
       '(bind-key "i" 'org-agenda-clock-in org-agenda-mode-map)))
   (add-hook 'org-clock-in-prepare-hook 'mgrbyte--org-mode-ask-effort))
 
-(use-package perspective
-  :bind
-  ("C-x C-b" . persp-list-buffers)
-  :custom
-  (persp-mode-prefix-key (kbd "C-c M-p"))
-  :init
-  (persp-mode))
+;; perspective removed - incompatible with Emacs 30
 
-
-(use-package persp-projectile
+(use-package projectile
   :config
   (setq projectile-completion-system 'helm)
   (setq projectile-sort-order 'recentf))
+
+(use-package treemacs
+  :ensure t
+  :bind (("C-c e" . treemacs)
+         ("C-c E" . treemacs-select-window))
+  :config
+  (setq treemacs-width 35)
+  (setq treemacs-position 'right))
+
+(use-package treemacs-projectile
+  :ensure t
+  :after (treemacs projectile))
 
 (use-package recentf
   :bind (("C-x r e" . recentf-edit-list))
@@ -200,8 +209,7 @@
   :bind (("C-x f" . projectile-find-file)
          ("C-x p g" . projectile-grep))
   :config
-  (projectile-mode)
-  (persp-mode))
+  (projectile-mode))
 
 (use-package mgrbyte
   :load-path "lisp"
@@ -253,7 +261,7 @@
   (bind-key "C-c t" #'tool-bar-mode)
 
   ;; avoid audio beeping by turning on visible-bell
-  (setq visible-bell t)
+  (setq visible-bell nil)
   (setq debug-on-error t)
   (setq custom-theme-directory (locate-user-emacs-file "themes"))
   (setq-default theme-load-from-file t)
@@ -301,13 +309,8 @@
 (use-package css-mode
   :mode (("\\.css$" . css-mode)))
 
-(use-package font-lock+
-  :load-path "lisp")
-
 (use-package dashboard
   :ensure t
-  :preface
-  (persp-mode)
   :config
   (setq dashboard-item-shortcuts '((agenda . "a")
                                    (recents . "r")
@@ -316,7 +319,7 @@
   (setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
   (setq dashboard-set-file-icons t)
   (setq dashboard-set-heading-icons t)
-  (setq dashboard-projects-switch-function 'projectile-persp-switch-project)
+  (setq dashboard-projects-switch-function 'projectile-switch-project)
   (setq dashboard-items '((recents  . 5)
                           (bookmarks . 5)
                           (projects . 5)
@@ -325,10 +328,7 @@
 
 (use-package dired
   :config
-  (defadvice dired-readin
-    (after dired-after-updating-hook first () activate)
-    "Sort dired listings with directories first before adding mark."
-    (mgrbyte-sort-directories-first)))
+  (advice-add 'dired-readin :after #'mgrbyte-sort-directories-first))
 
 (use-package dired-x
   :config
@@ -341,6 +341,15 @@
   (setq ediff-shell (getenv "$SHELL"))
   (setq-default ediff-split-window-function
 		(quote split-window-vertically)))
+
+(use-package vc
+  :config
+  (defun my-vc-diff-side-by-side (orig-fun &rest args)
+    "Run vc-diff with side-by-side split."
+    (let ((split-height-threshold nil)
+          (split-width-threshold 0))
+      (apply orig-fun args)))
+  (advice-add 'vc-diff :around #'my-vc-diff-side-by-side))
 
 (use-package editorconfig
   :config
@@ -366,8 +375,8 @@
 (use-package fringe
   :after (mgrbyte)
   :config
-  (when (mgrbyte-runs-X11)
-    (fringe-mode (quote (4 . 0)))))
+  (when (mgrbyte-display-is-graphical)
+    (fringe-mode (quote (5 . 5)))))
 
 (use-package menu-bar
   :after (mgrbyte scroll-bar)
@@ -423,9 +432,17 @@
   :config (setq ls-lisp-use-insert-directory-program nil))
 
 (use-package magit
-  :bind (("C-c m" . magit-status)))
+  :bind (("C-c m" . magit-status))
+  :config
+  (defun my-magit-side-by-side (orig-fun &rest args)
+    "Run magit-status with side-by-side split."
+    (let ((split-height-threshold nil)
+          (split-width-threshold 0))
+      (apply orig-fun args)))
+  (advice-add 'magit-status :around #'my-magit-side-by-side))
 
-(use-package mardown-mode
+(use-package markdown-mode
+  :ensure t
   :mode (("\\.md$" . markdown-mode)))
 
 (use-package mule
@@ -486,14 +503,55 @@
          ("\\.cpy$" . python-mode)
          ("\\.vpy$" . python-mode)
          ("\\.html$" . jinja2-mode))
-  :hook ((python-mode . anaconda-mode))
   :config
   (declare-function py-insert-debug mgrbyte nil)
   (setq fill-column 79)
-  (setq-default flycheck-flake8rc "~/.config/flake8rc")
-  (setq python-check-command "flake8")
-  (setq tab-width 4)
-  (sphinx-doc-mode t))
+  (setq tab-width 4))
+
+(use-package python-pytest
+  :ensure t
+  :bind (:map python-mode-map
+         ("C-c p p" . python-pytest-dispatch)
+         ("C-c p f" . python-pytest-file)
+         ("C-c p ." . python-pytest-run-def-or-class-at-point)
+         ("C-c p r" . python-pytest-repeat)
+         ("C-c p l" . python-pytest-last-failed))
+  :config
+  (setq python-pytest-executable "uv run pytest"))
+
+(use-package lsp-mode
+  :ensure t
+  :commands lsp
+  :hook ((python-mode . lsp)
+         (python-mode . (lambda ()
+                          (add-hook 'before-save-hook #'lsp-organize-imports nil t)
+                          (add-hook 'before-save-hook #'lsp-format-buffer nil t))))
+  :bind (:map lsp-mode-map
+         ("C-c f" . lsp-format-buffer)
+         ("C-c o" . lsp-organize-imports))
+  :config
+  (setq lsp-auto-guess-root t)
+  ;; Disable ruff LSP server (we use python-lsp-ruff plugin in pylsp instead)
+  (add-to-list 'lsp-disabled-clients 'ruff)
+  (setq lsp-pylsp-plugins-ruff-enabled t)
+  (setq lsp-pylsp-plugins-ruff-format-enabled t)
+  (setq lsp-pylsp-plugins-mypy-enabled t)
+  (setq lsp-pylsp-plugins-mypy-live-mode t)    ; run live as you type
+  (setq lsp-pylsp-plugins-mypy-dmypy nil)      ; don't use daemon (avoids cache issues)
+  ;; Disable built-in linters (ruff handles these)
+  (setq lsp-pylsp-plugins-pycodestyle-enabled nil)
+  (setq lsp-pylsp-plugins-pyflakes-enabled nil)
+  (setq lsp-pylsp-plugins-mccabe-enabled nil))
+
+(use-package lsp-ui
+  :ensure t
+  :commands lsp-ui-mode
+  :bind (:map lsp-ui-mode-map
+         ("C-?" . lsp-ui-doc-glance))
+  :config
+  (setq lsp-ui-sideline-enable t)
+  (setq lsp-ui-doc-enable t)
+  (setq lsp-ui-doc-position 'at-point))
 
 (use-package pyautomagic
   :load-path "lisp"
@@ -531,19 +589,9 @@
   :config (setq sass-indent-offset 2))
 
 ;; Emacs server configuration
-;; Allows use with screen
-;; Start either gnuserv or emacsserver for external access
 (use-package server
   :config
-  (setq server-socket-dir
-	(format "%semacs%d"
-		temporary-file-directory
-		(user-uid)))
-  (setq server-use-tcp 't)
-  :init
-  (when (not (or
-	      (window-system)
-	      (eq 'windows-nt system-type)))
+  (unless (server-running-p)
     (server-start)))
 
 (use-package sgml-mode
@@ -601,6 +649,19 @@
   :bind (("C-c +" . text-scale-increase)
 	 ("C-c -" . text-scale-decrease)))
 
+(use-package vterm
+  :ensure t
+  :config
+  (setq vterm-max-scrollback 10000))
+
+(use-package vterm-toggle
+  :ensure t
+  :bind (("C-c v" . vterm-toggle)
+         ("C-c V" . vterm-toggle-cd))
+  :config
+  (setq vterm-toggle-fullscreen-p nil)
+  (setq vterm-toggle-scope 'project))
+
 (use-package whitespace-cleanup-mode
   :bind (("C-c _ w" . whitespace-mode)
 	 ("C-c _ t" . whitespace-toggle-options)
@@ -622,7 +683,11 @@
 	 ("\\.yaml" . yaml-mode)))
 
 ;; Ensure PATH is preserved from shell.
-(exec-path-from-shell-initialize)
+;; Use login shell only (not interactive) to avoid slow startup.
+
+(setq exec-path-from-shell-arguments '("-l"))
+(when (memq window-system '(mac ns x))
+  (exec-path-from-shell-initialize))
 
 ;;; custom user Lisp (from template on first load)
 (defvar user-custom-file (f-expand "~/.emacs-custom.el"))
