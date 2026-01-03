@@ -21,6 +21,7 @@
 /projects
 /sandbox
 /tramp
+/transient
 /url
 /var
 ido.last
@@ -31,4 +32,3 @@ recentf
 server
 session.*
 timelog
- 
