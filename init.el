@@ -28,17 +28,22 @@
 ;; Don't auto-ensure - we'll specify per package
 ;; Built-in packages don't need :ensure
 
-;; macOS: swap Command/Option - Command is Meta, Option passes through
-(when (eq system-type 'darwin)
-  (setq mac-command-modifier 'meta)
-  (setq mac-option-modifier nil))
-
-;; Start on external monitor (right of laptop) and maximized
-(setq initial-frame-alist '((left . 1728) (top . 6) (fullscreen . maximized)))
+;; Ensure PATH and SSH_AUTH_SOCK are preserved from shell EARLY
+;; (before other packages load, especially Magit)
+;; Use login shell only (not interactive) to avoid slow startup.
+(use-package exec-path-from-shell
+  :ensure t
+  :config
+  (setq exec-path-from-shell-arguments '("-l"))
+  (when (memq window-system '(mac ns x))
+    (exec-path-from-shell-initialize)
+    (exec-path-from-shell-copy-env "SSH_AUTH_SOCK")))
 
 (declare-function
  #'mgrbyte-delete-trailing-blank-lines
  "~/.emacs.d/lisp/mgrbyte.el")
+
+(use-package abyss-theme  :ensure t)
 
 (use-package async
   :functions async-byte-comp-get-allowed-pkgs)
@@ -164,7 +169,7 @@
     (bind-key "C-TAB" 'org-cycle org-mode-map)
     (bind-key "C-c v" 'org-show-todo-tree org-mode-map)
     (bind-key "C-c C-r" 'org-refile org-mode-map)
-    (bind-key "C-c R" 'org-reveal org-mode-map)
+    (bind-key "C-c R" '¯org-reveal org-mode-map)
     (org-clock-persistence-insinuate)
     (org-babel-do-load-languages
      'org-babel-load-languages
@@ -268,7 +273,18 @@
   (add-to-list 'auto-mode-alist '("Makfile.*" . makefile-gmake-mode))
   (keyfreq-mode)
   (menu-bar-mode 0)
-  (helm-mode 1))
+  (helm-mode 1)
+
+  ;; macOS: swap Command/Option - Command is Meta, Option passes through
+  (when (eq system-type 'darwin)
+    (setq mac-command-modifier 'meta)
+    (setq mac-option-modifier nil))
+
+  ;; Start on external monitor (right of laptop) and maximized
+  (setq initial-frame-alist '((left . 1728) (top . 6) (fullscreen . maximized)))
+
+  ;; Set default theme
+  (load-theme 'abyss t))
 
 (use-package tramp
   :config
@@ -682,13 +698,6 @@
   :mode (("\\.yml" . yaml-mode)
 	 ("\\.yaml" . yaml-mode)))
 
-;; Ensure PATH is preserved from shell.
-;; Use login shell only (not interactive) to avoid slow startup.
-
-(setq exec-path-from-shell-arguments '("-l"))
-(when (memq window-system '(mac ns x))
-  (exec-path-from-shell-initialize))
-
 ;;; custom user Lisp (from template on first load)
 (defvar user-custom-file (f-expand "~/.emacs-custom.el"))
 (unless (f-exists? user-custom-file)
@@ -704,9 +713,6 @@
 (setq custom-file (f-expand "~/.emacs-customize.el"))
 (if (f-exists? custom-file)
   (load custom-file))
-
-;;; Load custom theme
-(load-theme 'tango-dark 'no-confirm)
 
 (provide 'init)
 ;;; init.el ends here
