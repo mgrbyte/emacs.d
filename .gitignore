@@ -1,3 +1,5 @@
+*.backup
+*.bak
 *.dat
 **/*autosave*
 *.elc
@@ -5,7 +7,7 @@
 *~
 .cache/
 .lsp-session-v*
-/#recentf#
+/#*
 /.cask
 /.emacs.desktop
 /.mc-lists.el
@@ -15,7 +17,6 @@
 /elpa
 /eshell
 /flycheck_init.el
-/jabber-avatar-cache
 /persp-confs
 /projectile.cache
 /projects
@@ -25,7 +26,6 @@
 /url
 /var
 ido.last
-org-*.el
 places
 projectile-*
 recentf
