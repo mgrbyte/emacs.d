@@ -19,25 +19,21 @@
 
 (package-initialize)
 
-;; Install use-package if not present
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
 
 (require 'use-package)
-;; Don't auto-ensure - we'll specify per package
-;; Built-in packages don't need :ensure
 
-;; Ensure PATH and SSH_AUTH_SOCK are preserved from shell EARLY
-;; (before other packages load, especially Magit)
-;; Use login shell only (not interactive) to avoid slow startup.
 (use-package exec-path-from-shell
   :ensure t
   :config
-  (setq exec-path-from-shell-arguments '("-l"))
+  (setq exec-path-from-shell-arguments '("-l" "-i"))
+  (dolist (var '("SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO" "LANG" "LC_CTYPE"))
+    (add-to-list 'exec-path-from-shell-variables var))
   (when (memq window-system '(mac ns x))
-    (exec-path-from-shell-initialize)
-    (exec-path-from-shell-copy-env "SSH_AUTH_SOCK")))
+    (exec-path-from-shell-initialize)))
+
 
 (declare-function
  #'mgrbyte-delete-trailing-blank-lines
@@ -48,10 +44,20 @@
 (use-package async
   :functions async-byte-comp-get-allowed-pkgs)
 
-(use-package all-the-icons)
+(use-package nerd-icons
+  :ensure t
+  :demand t
+  :custom
+  ;; The Nerd Font you want to use in GUI
+  ;; "Symbols Nerd Font Mono" is the default and is recommended
+  ;; but you can use any other Nerd Font if you want
+  (nerd-icons-font-family "Symbols Nerd Font Mono"))
 
-(use-package all-the-icons-dired
-  :hook (dired-mode . all-the-icons-dired-mode))
+(use-package nerd-icons-dired
+  :ensure t
+  :after nerd-icons
+  :hook (dired-mode . nerd-icons-dired-mode))
+
 
 (use-package dash :ensure t)
 (use-package f :ensure t)
@@ -76,10 +82,7 @@
   :init
   (unbind-key "C-x c")
   :config
-  (bind-key "<tab>" #'helm-execute-persistent-action helm-map)
-  (bind-key "C-e" #'recentf-edit-list helm-map)
-  (bind-key "C-z" #'helm-select-action helm-map)
-  ;; Don't ask to create new files.
+  (helm-mode 1)
   (setq helm-ff-newfile-prompt-p nil)
   ;; open helm buffer inside current window, not occupy whole other window
   (setq helm-split-window-inside-p t)
@@ -98,6 +101,67 @@
 	  "ack-grep -Hn --no-group --no-color %e %p %f"
           helm-grep-default-recurse-command
 	  "ack-grep -H --no-group --no-color %e %p %f")))
+
+(use-package mgrbyte
+  :load-path "lisp"
+  :demand t
+  :bind (("C-x t w" . delete-trailing-whitespace)
+         ("C-c f g" . find-grep-dired))
+  :config
+  ;; backups
+  (setq backup-by-copying t
+	backup-directory-alist '(("." . "~/.emacs.d/backup"))
+	delete-old-versions t
+	kept-new-versions 2
+	kept-old-versions 5)
+
+  ;; VC
+  ;; Follow links without asking
+  (setq-default version-control t)
+  (setq-default vc-follow-symlinks 't)
+  (setq vc-handled-backends '(Git))
+
+  ;; Misc settings.
+  (setq-default indent-line-function 'insert-tab)
+  (setq indent-tabs-mode nil)
+  (setq tab-always-indent nil)
+
+  ;; Scrolling - do not add newlines when cursoring past last line in file
+  (setq scroll-step 1)
+  (setq next-line-add-newlines nil)
+
+  ;; Display
+  (setq transient-mark-mode t)
+  (setq column-number-mode t)
+  (setq inhibit-startup-message t)
+  (setq search-highlight t)
+  (setq query-replace-highlight t)
+
+  ;; Desktop mode
+  ;; Useful for remembering a set of file you're working on -
+  ;;  - enables switching between projects and keeping state.
+  (setq desktop-save-mode t)
+
+  ;; Misc settings
+  (setq mail-interactive t)
+
+  ;; Annoyance factor
+  (fset 'yes-or-no-p 'y-or-n-p)
+  (setq font-lock-verbose nil)
+  (setq confirm-nonexistent-file-or-buffer nil)
+
+  ;; Un-disable some 'dangerous!' commands
+  (put 'upcase-region 'disabled nil)
+  (put 'downcase-region 'disabled nil)
+  (put 'narrow-to-region 'disabled nil)
+  (put 'narrow-to-page 'disabled nil)
+
+  ;; avoid audio beeping by turning on visible-bell
+  (setq visible-bell nil)
+  (setq debug-on-error t)
+  (setq custom-theme-directory (locate-user-emacs-file "themes"))
+  (setq-default theme-load-from-file t)
+  (add-to-list 'auto-mode-alist '("Makfile.*" . makefile-gmake-mode)))
 
 (use-package org
   :ensure t
@@ -180,12 +244,20 @@
       '(bind-key "i" 'org-agenda-clock-in org-agenda-mode-map)))
   (add-hook 'org-clock-in-prepare-hook 'mgrbyte--org-mode-ask-effort))
 
-;; perspective removed - incompatible with Emacs 30
 
 (use-package projectile
+  :ensure t
+  :demand t
+  :bind-keymap (("C-c p" . projectile-command-map))
+  :bind (("C-c k" . mgrbyte-show-dashboard))
   :config
+  (projectile-mode +1)
   (setq projectile-completion-system 'helm)
-  (setq projectile-sort-order 'recentf))
+  (setq projectile-sort-order 'recentf)
+  (setq projectile-switch-project-action (lambda () (mgrbyte-project-layout)))
+  (setq projectile-project-search-path '(("~/github/mgrbyte" . 1)
+                                         ("~/gitlab/mtr21pqh" . 2)
+                                         ("~/gitlab/cyfieithu-ac-llms" . 3))))
 
 (use-package treemacs
   :ensure t
@@ -193,11 +265,40 @@
          ("C-c E" . treemacs-select-window))
   :config
   (setq treemacs-width 35)
-  (setq treemacs-position 'right))
+  (setq treemacs-position 'right)
+  (setq treemacs-project-follow-cleanup t)
+  ;; Hide gitignored files
+  (treemacs-hide-gitignored-files-mode t)
+  ;; Hide common dot files not in .gitignore
+  (setq treemacs-file-ignore-extensions nil)
+  (setq treemacs-file-ignore-globs
+        '(".coverage"
+          ".coveragerc"
+          ".devcontainer"
+          ".ropeproject"
+          ".pre-commit-config.yaml"
+          ".pre-commit-config.yml"
+          ".cruft.json"
+          "__pycache__"
+          "*.pyc"
+          ".mypy_cache"
+          ".ruff_cache"
+          ".pytest_cache"
+          "*.egg-info"))
+  (treemacs-project-follow-mode t))
 
 (use-package treemacs-projectile
   :ensure t
   :after (treemacs projectile))
+
+(use-package treemacs-nerd-icons
+  :ensure t
+  :demand t)
+
+(use-package treemacs-magit
+  :ensure t
+  :after (treemacs-nerd-icons treemacs-projectile))
+
 
 (use-package recentf
   :bind (("C-x r e" . recentf-edit-list))
@@ -215,76 +316,6 @@
          ("C-x p g" . projectile-grep))
   :config
   (projectile-mode))
-
-(use-package mgrbyte
-  :load-path "lisp"
-  :bind (("C-x t w" . delete-trailing-whitespace)
-         ("C-c f g" . find-grep-dired))
-  :config
-  ;; encoding
-  (mgrbyte-configure-encoding 'utf-8)
-
-  ;; VC
-  ;; Follow links without asking
-  (setq-default vc-follow-symlinks 't)
-  (setq vc-handled-backends '(Git))
-
-  ;; Misc settings.
-  (setq-default indent-line-function 'insert-tab)
-  (setq indent-tabs-mode nil)
-  (setq tab-always-indent nil)
-
-  ;; Scrolling - do not add newlines when cursoring past last line in file
-  (setq scroll-step 1)
-  (setq next-line-add-newlines nil)
-
-  ;; Display
-  (setq transient-mark-mode t)
-  (setq column-number-mode t)
-  (setq inhibit-startup-message t)
-  (setq search-highlight t)
-  (setq query-replace-highlight t)
-
-  ;; Desktop mode
-  ;; Useful for remembering a set of file you're working on -
-  ;;  - enables switching between projects and keeping state.
-  (setq desktop-save-mode t)
-
-  ;; Misc settings
-  (setq mail-interactive t)
-
-  ;; Annoyance factor
-  (fset 'yes-or-no-p 'y-or-n-p)
-  (setq font-lock-verbose nil)
-  (setq confirm-nonexistent-file-or-buffer nil)
-
-  ;; Un-disable some 'dangerous!' commands
-  (put 'upcase-region 'disabled nil)
-  (put 'downcase-region 'disabled nil)
-  (put 'narrow-to-region 'disabled nil)
-  (put 'narrow-to-page 'disabled nil)
-  (bind-key "C-c t" #'tool-bar-mode)
-
-  ;; avoid audio beeping by turning on visible-bell
-  (setq visible-bell nil)
-  (setq debug-on-error t)
-  (setq custom-theme-directory (locate-user-emacs-file "themes"))
-  (setq-default theme-load-from-file t)
-  (add-to-list 'auto-mode-alist '("Makfile.*" . makefile-gmake-mode))
-  (keyfreq-mode)
-  (menu-bar-mode 0)
-  (helm-mode 1)
-
-  ;; macOS: swap Command/Option - Command is Meta, Option passes through
-  (when (eq system-type 'darwin)
-    (setq mac-command-modifier 'meta)
-    (setq mac-option-modifier nil))
-
-  ;; Start on external monitor (right of laptop) and maximized
-  (setq initial-frame-alist '((left . 1728) (top . 6) (fullscreen . maximized)))
-
-  ;; Set default theme
-  (load-theme 'abyss t))
 
 (use-package tramp
   :config
@@ -325,24 +356,68 @@
 (use-package css-mode
   :mode (("\\.css$" . css-mode)))
 
-(use-package dashboard
+(use-package dirvish
+  :after (dired-mode)
   :ensure t
   :config
-  (setq dashboard-item-shortcuts '((agenda . "a")
-                                   (recents . "r")
-                                   (projects . "p")
-                                   (bookmarks . "m")))
-  (setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
+  (dirvish-override-dired-mode))
+
+(use-package dashboard
+  :ensure t
+  :after (nerd-icons projectile)
+  :config  
+  (setq dashboard-projects-backend 'projectile)
+  ;; (setq dashboard-item-shortcuts '((agenda . "a")
+  ;;                                  (recents . "r")
+  ;;                                  (projects . "p")
+  ;;                                  (bookmarks . "m")))
+
+  ;; (setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
+
+  ;; Centering and layout
+  (setq dashboard-center-content t)
+  (setq dashboard-vertically-center-content t)
+  (setq dashboard-startup-banner "~/Pictures/Logos/techiaith-swirl.png")
+  (setq dashboard-banner-logo-title "Techiaith")
+
+  ;; Project(ile)
+  (setq dashboard-projects-switch-function
+        (lambda (project-dir)
+          (projectile-switch-project-by-name project-dir)))
+
+  ;; Items to show
+  (setq dashboard-items '((agenda . 20)
+                          (projects . 15)
+                          (recents  . 10)
+                          (bookmarks . 10)))
+
+  ;; Agenda settings - show today and this week
+  ;; (add-to-list 'dashboard-items '(agenda) t)
+  (setq dashboard-agenda-release-buffers nil)
+  (setq dashboard-filter-agenda-entry 'dashboard-no-filter-agenda)
+  (setq dashboard-week-agenda t)
+
+  
+    ;; Icons
+  (setq dashboard-heading-icon-height 1.5)
+  (setq dashboard-heading-icon-v-adjust -0.125)
+  (setq dashboard-icon-file-height 1.5)
+  (setq dashboard-icon-file-v-adjust -0.125)
+  (setq dashboard-icon-type 'nerd-icons)
+  (setq dashboard-set-file-icons t)
   (setq dashboard-set-file-icons t)
   (setq dashboard-set-heading-icons t)
-  (setq dashboard-projects-switch-function 'projectile-switch-project)
-  (setq dashboard-items '((recents  . 5)
-                          (bookmarks . 5)
-                          (projects . 5)
-                          (agenda . 5)))
+
+  ;; Remove random relgious footer messages
+  ;; TODO: use something useful here (cannot be empty, don't want the default church of emacs eVIl ones)
+  (setq dashboard-footer-messages '("")) 
+  (setq dashboard-agenda-time-string-format "%d/%m/%Y")
+  ;; Keep init info (packages loaded in N seconds)
+  (setq dashboard-set-init-info t)
   (dashboard-setup-startup-hook))
 
 (use-package dired
+  :after mgrbyte
   :config
   (advice-add 'dired-readin :after #'mgrbyte-sort-directories-first))
 
@@ -394,20 +469,11 @@
   (when (mgrbyte-display-is-graphical)
     (fringe-mode (quote (5 . 5)))))
 
-(use-package menu-bar
-  :after (mgrbyte scroll-bar)
-  :config
-  ;; Turn off UI elements
-  (mapc #'apply `((menu-bar-mode -1) (tool-bar-mode -1) (scroll-bar-mode -1)))
-  ;; setup frame
-  (if (daemonp)
-      (add-hook 'after-make-frame-functions #'mgrbyte-setup-frame)
-    (mgrbyte-setup-frame)))
-
 (use-package gist)
 
 (use-package gnus
-  :bind (("C-x g" . gnus-other-frame)))
+  :bind (("C-x g" . gnus-other-frame)
+	 ("C-c C-x m" . gnus)))
 
 (use-package google-this)
 
@@ -442,7 +508,9 @@
 ;;   :config
 ;;   (setq jedi:complete-on-dot t))
 
-(use-package keyfreq)
+(use-package keyfreq
+  :config
+  (keyfreq-mode))
 
 (use-package ls-lisp
   :config (setq ls-lisp-use-insert-directory-program nil))
@@ -460,6 +528,10 @@
 (use-package markdown-mode
   :ensure t
   :mode (("\\.md$" . markdown-mode)))
+
+(use-package menu-bar
+  :after mgrbyte
+  :config (menu-bar-mode 0))
 
 (use-package mule
   :after (mgrbyte)
@@ -584,6 +656,10 @@
   :config
   (rainbow-delimiters-mode-enable))
 
+(use-package reload-dir-locals
+  :load-path "lisp"
+  :bind (("C-c d l r" . reload-dir-locals-for-current-buffer)))
+
 (use-package rst
   :config
   (setq fill-column 79)
@@ -665,6 +741,11 @@
   :bind (("C-c +" . text-scale-increase)
 	 ("C-c -" . text-scale-decrease)))
 
+(use-package tool-bar
+  :config
+  (tool-bar-mode 0)
+  :bind (("C-c t" . tool-bar-mode)))
+
 (use-package vterm
   :ensure t
   :config
@@ -698,21 +779,29 @@
   :mode (("\\.yml" . yaml-mode)
 	 ("\\.yaml" . yaml-mode)))
 
-;;; custom user Lisp (from template on first load)
-(defvar user-custom-file (f-expand "~/.emacs-custom.el"))
-(unless (f-exists? user-custom-file)
-  (with-current-buffer (get-buffer-create "user-custom-file")
-    (insert-file-contents
-     (locate-user-emacs-file "user-custom-file-template.el") nil 0)
-     (write-region (buffer-string) nil user-custom-file)))
+(use-package zygospore  :ensure t)  
 
-(if (f-exists? user-custom-file)
-    (load user-custom-file))
+(use-package nix-mode :ensure t)
 
 ;; Code generated by using the Emacs *customize* interfaces goes to its own file.
 (setq custom-file (f-expand "~/.emacs-customize.el"))
 (if (f-exists? custom-file)
   (load custom-file))
+
+;; macOS: swap Command/Option - Command is Meta, Option passes through
+(when (eq system-type 'darwin)
+  (setq mac-command-modifier 'meta)
+  (setq mac-option-modifier nil))
+
+;; Late initialization - runs after init.el fully loaded
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            (when (window-system)
+              (set-face-attribute 'default nil :font
+                                  (if (eq system-type 'darwin) "Menlo 14" "Ubuntu Mono 14"))
+              (set-frame-position (selected-frame) 1728 6)
+              (toggle-frame-maximized))
+            (load-theme 'abyss t)))
 
 (provide 'init)
 ;;; init.el ends here

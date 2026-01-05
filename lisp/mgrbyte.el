@@ -188,22 +188,40 @@ Nicked from http://emacsredux.com/blog/2013/04/21/edit-files-as-root/"
       (goto-char (point-max))
       (delete-blank-lines))))
 
-(defun mgrbyte-setup-frame (&optional frame)
-  "Configure look of FRAME.
-
-If FRAME is nil, configure current FRAME.
-If non-nil make FRAME current."
-  (when frame
-    (select-frame frame))
-  (when (window-system)
-    (let ((font (cond
-                 ((eq system-type 'darwin) "Menlo 14")
-                 (t "Ubuntu Mono 14"))))
-      (set-face-attribute 'default nil :font font))))
 
 (defun mgrbyte-display-is-graphical ()
   "Test whether or not we are running in a GUI."
   (memq window-system '(mac ns x)))
+
+(defun mgrbyte-project-layout ()
+  "Set up project layout: pyproject.toml | magit | treemacs."
+  (interactive)
+  (when (treemacs-get-local-window)
+    (treemacs-quit))
+  (delete-other-windows)
+  ;; Left: pyprojec.toml or *scratch* buffer
+  (let ((pyproject (file-name-concat projectile-project-root "pyproject.toml")))
+    (if pyproject
+	(find-file pyproject)
+      (switch-to-buffer "*scratch*")))
+  ;; Magit with its natural side-by-side behavior
+  (magit-status (projectile-project-root))
+  ;; Treemacs on right
+  (treemacs-add-and-display-current-project-exclusively)
+  ;; Move point to leftmost (editor) window
+  (select-window (frame-first-window)))
+
+(defun mgrbyte-show-dashboard ()
+  "Return to dashboard, full frame."
+  (interactive)
+  (when (eq (treemacs-current-visibility) 'visible)
+    (treemacs))
+  (delete-other-windows)
+  (dashboard-open))
+
+(defun mgrbyte-switch-to-project (project-dir)
+  "Switch to PROJECT-DIR and set up layout."
+  (projectile-switch-project-by-name project-dir))
 
 
 (defun mgrbyte-project-directory (buffer-name)
