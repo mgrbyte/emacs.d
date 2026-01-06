@@ -17,6 +17,15 @@
 (use-package dirvish
   :ensure t
   :after dired
+  :custom
+  ;; Simpler mode-line format (avoids yellow font-lock-negation-char-face)
+  (dirvish-mode-line-format '(:left (sort symlink) :right (index)))
+  ;; Header shows path breadcrumbs
+  (dirvish-header-line-format '(:left (path) :right ()))
+  ;; File attributes to show
+  (dirvish-attributes '(file-size file-time))
+  ;; Hide the bar image that can cause display issues
+  (dirvish-mode-line-bar-image-width 0)
   :config
   (dirvish-override-dired-mode))
 

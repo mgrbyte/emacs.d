@@ -8,6 +8,7 @@
   :diminish helm-mode
   :bind (("C-c h" . helm-command-prefix)
          ("C-x b" . helm-mini)
+         ("C-x C-f" . helm-find-files)
          ("C-x f" . helm-find-files)
          ("C-x C-r" . helm-recentf)
          ("M-x" . helm-M-x))
