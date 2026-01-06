@@ -35,7 +35,7 @@
   :config
   (setq-default powerline-default-separator 'wave))
 
-;; Late initialization - runs after init.el fully loaded
+;; Late initialization - runs after init.el fully loaded (daemon startup)
 (add-hook 'emacs-startup-hook
           (lambda ()
             (when (window-system)
@@ -44,6 +44,14 @@
               (set-frame-position (selected-frame) 1728 6)
               (toggle-frame-maximized))
             (load-theme 'abyss t)))
+
+;; New client frames - runs for each emacsclient -c
+(add-hook 'server-after-make-frame-hook
+          (lambda ()
+            (when (display-graphic-p)
+              (set-frame-parameter nil 'fullscreen 'maximized)
+              (switch-to-buffer "*dashboard*")
+              (dashboard-refresh-buffer))))
 
 (provide 'init-gui-frames)
 ;;; init-gui-frames.el ends here
