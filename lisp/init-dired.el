@@ -22,10 +22,12 @@
   (setq dirvish-use-mode-line nil)
   ;; Keep header with path breadcrumbs
   (setq dirvish-header-line-format '(:left (path) :right ()))
-  ;; File attributes to show
-  (setq dirvish-attributes '(file-size file-time))
+  ;; File attributes to show (nerd-icons for file icons)
+  (setq dirvish-attributes '(nerd-icons file-size file-time))
   :config
-  (dirvish-override-dired-mode))
+  (dirvish-override-dired-mode)
+  ;; Workaround: auto-refresh to render attributes on first load
+  (add-hook 'dired-mode-hook (lambda () (run-at-time 0.1 nil #'revert-buffer nil t))))
 
 (use-package ls-lisp
   :config (setq ls-lisp-use-insert-directory-program nil))
