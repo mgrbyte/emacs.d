@@ -25,6 +25,9 @@
   ;; scroll 8 lines other window using M-<next>/M-<prior>s
   (setq helm-scroll-amount 8)
   (setq helm-buffers-fuzzy-matching t)
+  (setq helm-mode-fuzzy-match t)
+  (setq helm-completion-in-region-fuzzy-match t)
+  (setq helm-ff-fuzzy-matching t)
   (setq helm-ff-file-name-history-use-recentf t)
   (when (executable-find "curl")
     (setq helm-net-prefer-curl t))
