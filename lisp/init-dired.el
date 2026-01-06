@@ -16,7 +16,7 @@
 
 (use-package dirvish
   :ensure t
-  :after dired
+  :demand t  ;; Load immediately, not deferred
   :init
   ;; Disable dirvish mode-line (use standard dired mode-line)
   (setq dirvish-use-mode-line nil)
