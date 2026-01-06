@@ -65,22 +65,27 @@
     ;; Small delay for macOS to process the move, then maximize
     (run-at-time 0.1 nil (lambda () (set-frame-parameter nil 'fullscreen 'maximized)))))
 
+;; Maximize frames by default (works better than hooks for multi-monitor)
+(add-to-list 'initial-frame-alist '(fullscreen . maximized))
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
+
 ;; Late initialization - runs after init.el fully loaded (daemon startup)
 (add-hook 'emacs-startup-hook
           (lambda ()
             (when (window-system)
               (set-face-attribute 'default nil :font
-                                  (if (eq system-type 'darwin) "Menlo 14" "Ubuntu Mono 14"))
-              (mgrbyte-frame-to-external-maximized))
+                                  (if (eq system-type 'darwin) "Menlo 14" "Ubuntu Mono 14")))
             (load-theme 'abyss t)))
 
 ;; New client frames - runs for each emacsclient -c
 (add-hook 'server-after-make-frame-hook
           (lambda ()
             (when (display-graphic-p)
-              (mgrbyte-frame-to-external-maximized)
-              (switch-to-buffer "*dashboard*")
-              (dashboard-refresh-buffer))))
+              (run-at-time 0.3 nil
+                           (lambda ()
+                             (mgrbyte-frame-to-external-maximized)
+                             (switch-to-buffer "*dashboard*")
+                             (dashboard-refresh-buffer))))))
 
 (provide 'init-gui-frames)
 ;;; init-gui-frames.el ends here
