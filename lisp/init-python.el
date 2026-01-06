@@ -59,11 +59,6 @@
   (setq lsp-ui-doc-enable t)
   (setq lsp-ui-doc-position 'at-point))
 
-(use-package pyautomagic
-  :load-path "lisp"
-  :bind (("C-c v e" . pyautomagic--activate-venv-safely)
-         ("C-c f c" . pyautomagic--configure-flycheck-checkers)))
-
 (use-package py-snippets
   :ensure t
   :after yasnippet
