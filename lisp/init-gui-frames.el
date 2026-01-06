@@ -35,21 +35,50 @@
   :config
   (setq-default powerline-default-separator 'wave))
 
+;; Multi-monitor support: prefer external monitor over built-in
+(defun mgrbyte-get-external-monitor-workarea ()
+  "Get the workarea of external monitor (non-primary or largest)."
+  (let* ((monitors (display-monitor-attributes-list))
+         ;; External monitor is usually not at origin (0,0) or is larger
+         (external (cl-find-if
+                    (lambda (m)
+                      (let ((geom (cdr (assq 'geometry m))))
+                        (> (nth 0 geom) 0)))  ; x position > 0 means not primary
+                    monitors))
+         ;; Fallback: pick largest by pixel area if all at origin
+         (largest (car (cl-sort (copy-sequence monitors)
+                                (lambda (a b)
+                                  (let ((ga (cdr (assq 'geometry a)))
+                                        (gb (cdr (assq 'geometry b))))
+                                    (> (* (nth 2 ga) (nth 3 ga))
+                                       (* (nth 2 gb) (nth 3 gb)))))))))
+    (cdr (assq 'workarea (or external largest)))))
+
+(defun mgrbyte-frame-to-external-maximized ()
+  "Move frame to external monitor and maximize it."
+  (interactive)
+  (when-let ((workarea (mgrbyte-get-external-monitor-workarea)))
+    ;; Clear any existing fullscreen state first
+    (set-frame-parameter nil 'fullscreen nil)
+    ;; Move to external monitor
+    (set-frame-position (selected-frame) (nth 0 workarea) (nth 1 workarea))
+    ;; Small delay for macOS to process the move, then maximize
+    (run-at-time 0.1 nil (lambda () (set-frame-parameter nil 'fullscreen 'maximized)))))
+
 ;; Late initialization - runs after init.el fully loaded (daemon startup)
 (add-hook 'emacs-startup-hook
           (lambda ()
             (when (window-system)
               (set-face-attribute 'default nil :font
                                   (if (eq system-type 'darwin) "Menlo 14" "Ubuntu Mono 14"))
-              (set-frame-position (selected-frame) 1728 6)
-              (toggle-frame-maximized))
+              (mgrbyte-frame-to-external-maximized))
             (load-theme 'abyss t)))
 
 ;; New client frames - runs for each emacsclient -c
 (add-hook 'server-after-make-frame-hook
           (lambda ()
             (when (display-graphic-p)
-              (set-frame-parameter nil 'fullscreen 'maximized)
+              (mgrbyte-frame-to-external-maximized)
               (switch-to-buffer "*dashboard*")
               (dashboard-refresh-buffer))))
 
