@@ -18,11 +18,12 @@
   :ensure t
   :after dired
   :init
-  ;; Set these BEFORE dirvish loads
-  (setq dirvish-mode-line-format '(:left (sort symlink) :right (index)))
+  ;; Disable dirvish mode-line (use standard dired mode-line)
+  (setq dirvish-use-mode-line nil)
+  ;; Keep header with path breadcrumbs
   (setq dirvish-header-line-format '(:left (path) :right ()))
+  ;; File attributes to show
   (setq dirvish-attributes '(file-size file-time))
-  (setq dirvish-mode-line-bar-image-width 0)
   :config
   (dirvish-override-dired-mode))
 
