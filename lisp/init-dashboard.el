@@ -12,7 +12,7 @@
   ;; Centering and layout
   (setq dashboard-center-content t)
   (setq dashboard-vertically-center-content t)
-  (setq dashboard-startup-banner "~/Pictures/Logos/techiaith-swirl.png")
+  (setq dashboard-startup-banner (expand-file-name "images/techiaith-swirl.png" user-emacs-directory))
   (setq dashboard-banner-logo-title "Techiaith")
 
   ;; Project(ile)
