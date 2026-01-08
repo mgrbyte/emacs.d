@@ -42,15 +42,6 @@
   :config
   (editorconfig-mode 1))
 
-(use-package ispell
-  :bind (("C-c i" . ispell-buffer))
-  :config
-  (mapc (lambda (envvar) (setenv envvar "en_GB.UTF8")) '("LANG"))
-  (setq-default ispell-program-name "aspell")
-  (setq ispell-dictionary "cy")
-  (ispell-set-spellchecker-params)
-  (setq ispell-personal-dictionary "~/.hunspell_personal"))
-
 (use-package keyfreq
   :ensure t
   :config
