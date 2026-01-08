@@ -194,15 +194,20 @@ Nicked from http://emacsredux.com/blog/2013/04/21/edit-files-as-root/"
   (memq window-system '(mac ns x)))
 
 (defun mgrbyte-project-layout ()
-  "Set up project layout: pyproject.toml | magit | treemacs."
+  "Set up project layout: project-file | magit | treemacs."
   (interactive)
   (when (treemacs-get-local-window)
     (treemacs-quit))
   (delete-other-windows)
-  ;; Left: pyprojec.toml or *scratch* buffer
-  (let ((pyproject (file-name-concat projectile-project-root "pyproject.toml")))
-    (if pyproject
-	(find-file pyproject)
+  ;; Left: find first matching project file, or *scratch*
+  (let* ((project-root (projectile-project-root))
+         (candidates '("pyproject.toml" "flake.nix" "package.json"
+                       "Cargo.toml" "go.mod" "deps.edn"))
+         (found (cl-find-if
+                 (lambda (f) (file-exists-p (file-name-concat project-root f)))
+                 candidates)))
+    (if found
+        (find-file (file-name-concat project-root found))
       (switch-to-buffer "*scratch*")))
   ;; Magit with its natural side-by-side behavior
   (magit-status (projectile-project-root))
