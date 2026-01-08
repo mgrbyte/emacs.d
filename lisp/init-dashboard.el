@@ -12,7 +12,7 @@
   ;; Centering and layout
   (setq dashboard-center-content t)
   (setq dashboard-vertically-center-content t)
-  (setq dashboard-startup-banner (expand-file-name "images/techiaith-swirl.png" user-emacs-directory))
+  (setq dashboard-startup-banner 'logo)  ; Use built-in ASCII logo
   (setq dashboard-banner-logo-title "Techiaith")
 
   ;; Project(ile)
@@ -45,6 +45,9 @@
   (setq dashboard-agenda-time-string-format "%d/%m/%Y")
   ;; Keep init info (packages loaded in N seconds)
   (setq dashboard-set-init-info t)
+
+  ;; Show dashboard in new frames (works with emacsclient)
+  (setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
   (dashboard-setup-startup-hook))
 
 ;; Prevent dashboard from interfering with magit
