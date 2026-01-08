@@ -9,6 +9,10 @@
          ("C-c s r" . ispell-region)
          ("C-c s d" . ispell-change-dictionary))
   :config
+  ;; Set DICPATH for hunspell (emacs daemon doesn't inherit shell env)
+  (setenv "DICPATH"
+          (concat (expand-file-name "~/.local/share/hunspell") ":"
+                  (expand-file-name "~/.nix-profile/share/hunspell")))
   (setq ispell-program-name "hunspell")
   (setq ispell-dictionary "en_GB")
   (setq ispell-local-dictionary-alist
