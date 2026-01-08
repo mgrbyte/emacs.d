@@ -38,6 +38,7 @@
 (require 'init-git)
 (require 'init-dired)
 (require 'init-editing)
+(require 'init-spell)
 (require 'init-misc)
 
 ;; Platform/GUI
