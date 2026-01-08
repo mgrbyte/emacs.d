@@ -81,11 +81,7 @@
 (add-hook 'server-after-make-frame-hook
           (lambda ()
             (when (display-graphic-p)
-              (run-at-time 0.3 nil
-                           (lambda ()
-                             (mgrbyte-frame-to-external-maximized)
-                             (switch-to-buffer "*dashboard*")
-                             (dashboard-refresh-buffer))))))
+              (run-at-time 0.3 nil #'mgrbyte-frame-to-external-maximized))))
 
 (provide 'init-gui-frames)
 ;;; init-gui-frames.el ends here

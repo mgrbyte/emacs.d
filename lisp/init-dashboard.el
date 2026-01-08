@@ -47,5 +47,18 @@
   (setq dashboard-set-init-info t)
   (dashboard-setup-startup-hook))
 
+;; Prevent dashboard from interfering with magit
+(with-eval-after-load 'magit
+  (add-hook 'magit-status-mode-hook
+            (lambda ()
+              (when-let ((buf (get-buffer "*dashboard*")))
+                (kill-buffer buf)))))
+
+;; Never display dashboard over other buffers
+(add-to-list 'display-buffer-alist
+             '("\\*dashboard\\*"
+               (display-buffer-same-window)
+               (inhibit-switch-frame . t)))
+
 (provide 'init-dashboard)
 ;;; init-dashboard.el ends here

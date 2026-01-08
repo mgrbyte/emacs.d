@@ -7,7 +7,7 @@
   :ensure t
   :demand t
   :bind-keymap (("C-c p" . projectile-command-map))
-  :bind (("C-c k" . mgrbyte-show-dashboard))
+  :bind (("<home>" . mgrbyte-show-dashboard))
   :config
   (projectile-mode +1)
   (setq projectile-completion-system 'helm)
