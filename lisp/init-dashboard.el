@@ -5,14 +5,14 @@
 
 (use-package dashboard
   :ensure t
-  :after (nerd-icons projectile)
+  :after (nerd-icons projectile mgrbyte)
   :config
   (setq dashboard-projects-backend 'projectile)
 
   ;; Centering and layout
   (setq dashboard-center-content t)
   (setq dashboard-vertically-center-content t)
-  (setq dashboard-startup-banner 'logo)  ; Use built-in ASCII logo
+  (setq dashboard-startup-banner (expand-file-name "images/techiaith-swirl.png" user-emacs-directory))
   (setq dashboard-banner-logo-title "Techiaith")
 
   ;; Project(ile)
@@ -40,8 +40,8 @@
   (setq dashboard-set-file-icons t)
   (setq dashboard-set-heading-icons t)
 
-  ;; Remove random footer messages
-  (setq dashboard-footer-messages '(""))
+  ;; Footer messages from CLAUDE_TIPS_FILE
+  (setq dashboard-footer-messages (mgrbyte-dashboard-motd-messages))
   (setq dashboard-agenda-time-string-format "%d/%m/%Y")
   ;; Keep init info (packages loaded in N seconds)
   (setq dashboard-set-init-info t)

@@ -268,6 +268,16 @@ to be a project root."
   (prefer-coding-system encoding))
 
 
+(defun mgrbyte-dashboard-motd-messages ()
+  "Return list of tips for dashboard footer from CLAUDE_TIPS_FILE.
+The environment variable should point to a file with one tip per line."
+  (let ((tips-file (getenv "CLAUDE_TIPS_FILE")))
+    (if (and tips-file (file-exists-p tips-file))
+        (with-temp-buffer
+          (insert-file-contents tips-file)
+          (split-string (buffer-string) "\n" t))
+      '("Set CLAUDE_TIPS_FILE to show tips here"))))
+
 (message "mgrbyte.el loaded")
 (provide 'mgrbyte)
 ;;; mgrbyte.el ends here
