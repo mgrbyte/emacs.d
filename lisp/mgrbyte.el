@@ -202,29 +202,31 @@ Nicked from http://emacsredux.com/blog/2013/04/21/edit-files-as-root/"
 						   "go.mod"
 						   "tsconfig.json"
 						   "viteconfig.json"
+  						   "init.el"
      						   "deps.edn")
   "List of filenames to search for to open first when visiting a project, order matters.")
 
 (defun mgrbyte-project-layout ()
-  "Set up project layout: project-file | magit | treemacs."
+  "Set up project layout: project-file | treemacs."
   (interactive)
-  (when (treemacs-get-local-window)
-    (treemacs-quit))
-  (delete-other-windows)
-  ;; Left: find first matching project file, or *scratch*
-  (let* ((project-root (projectile-project-root))
-         (found (cl-find-if
-                 (lambda (f) (file-exists-p (file-name-concat project-root f)))
-                 mgrbyte-projectile-open-first-match-list)))
-    (if found
-        (find-file (file-name-concat project-root found))
-      (switch-to-buffer "*scratch*")))
-  ;; Magit with its natural side-by-side behavior
-  (magit-status (projectile-project-root))
-  ;; Treemacs on right
-  (treemacs-add-and-display-current-project-exclusively)
-  ;; Move point to leftmost (editor) window
-  (select-window (frame-first-window)))
+  (let ((project-root (projectile-project-root)))
+    (unless project-root
+      (user-error "Not in a project"))
+    ;; Open project file first to establish context
+    (let ((found (cl-find-if
+                  (lambda (f) (file-exists-p (file-name-concat project-root f)))
+                  mgrbyte-projectile-open-first-match-list)))
+      (if found
+          (find-file (file-name-concat project-root found))
+        (switch-to-buffer "*scratch*")))
+    ;; Show treemacs on right (defer to after projectile finishes)
+    (let ((editor-win (selected-window)))
+      (run-with-idle-timer
+       0 nil
+       (lambda ()
+         (call-interactively #'treemacs)
+         (when (window-live-p editor-win)
+           (select-window editor-win)))))))
 
 (defun mgrbyte-show-dashboard ()
   "Return to dashboard, full frame."
