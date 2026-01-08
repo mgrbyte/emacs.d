@@ -193,6 +193,18 @@ Nicked from http://emacsredux.com/blog/2013/04/21/edit-files-as-root/"
   "Test whether or not we are running in a GUI."
   (memq window-system '(mac ns x)))
 
+(defvar mgrbyte-projectile-open-first-match-list '("pyproject.toml"
+						   "compose.yml"
+						   "docker-compose.yml"
+     						   "flake.nix"
+						   "package.json"
+						   "Cargo.toml"
+						   "go.mod"
+						   "tsconfig.json"
+						   "viteconfig.json"
+     						   "deps.edn")
+  "List of filenames to search for to open first when visiting a project, order matters.")
+
 (defun mgrbyte-project-layout ()
   "Set up project layout: project-file | magit | treemacs."
   (interactive)
@@ -201,11 +213,9 @@ Nicked from http://emacsredux.com/blog/2013/04/21/edit-files-as-root/"
   (delete-other-windows)
   ;; Left: find first matching project file, or *scratch*
   (let* ((project-root (projectile-project-root))
-         (candidates '("pyproject.toml" "flake.nix" "package.json"
-                       "Cargo.toml" "go.mod" "deps.edn"))
          (found (cl-find-if
                  (lambda (f) (file-exists-p (file-name-concat project-root f)))
-                 candidates)))
+                 mgrbyte-projectile-open-first-match-list)))
     (if found
         (find-file (file-name-concat project-root found))
       (switch-to-buffer "*scratch*")))
