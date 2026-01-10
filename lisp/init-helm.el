@@ -3,6 +3,13 @@
 ;; Setup Helm for completion and navigation
 ;;; Code:
 
+;; TAB to expand paths instead of showing actions
+(defun mgrbyte-helm-tab-fix ()
+  "Rebind TAB to persistent action in helm."
+  (define-key helm-map (kbd "<tab>") #'helm-execute-persistent-action)
+  (define-key helm-map (kbd "TAB") #'helm-execute-persistent-action)
+  (define-key helm-map (kbd "M-/") #'helm-execute-persistent-action))
+
 (use-package helm
   :ensure t
   :demand t
@@ -17,12 +24,6 @@
   (unbind-key "C-x c")
   :config
   (helm-mode 1)
-  ;; TAB to expand paths instead of showing actions
-  (defun mgrbyte-helm-tab-fix ()
-    "Rebind TAB to persistent action in helm."
-    (define-key helm-map (kbd "<tab>") #'helm-execute-persistent-action)
-    (define-key helm-map (kbd "TAB") #'helm-execute-persistent-action)
-    (define-key helm-map (kbd "M-/") #'helm-execute-persistent-action))
   (add-hook 'helm-before-initialize-hook #'mgrbyte-helm-tab-fix)
   (setq helm-ff-newfile-prompt-p nil)
   ;; open helm buffer inside current window, not occupy whole other window
