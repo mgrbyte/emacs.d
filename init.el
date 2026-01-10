@@ -51,7 +51,6 @@
 ;; Custom keybindings
 (use-package mgrbyte
   :load-path "lisp"
-  :after (git-commit magit)
   :demand t
   :bind (("C-x t w" . delete-trailing-whitespace)
          ("C-c f g" . find-grep-dired))
