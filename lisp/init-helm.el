@@ -11,15 +11,15 @@
          ("C-x C-f" . helm-find-files)
          ("C-x f" . helm-find-files)
          ("C-x C-r" . helm-recentf)
-         ("M-x" . helm-M-x)
-         :map helm-map
-         ("<tab>" . helm-execute-persistent-action)
-         ("TAB" . helm-execute-persistent-action)
-         ("M-/" . helm-execute-persistent-action))
+         ("M-x" . helm-M-x))
   :init
   (unbind-key "C-x c")
   :config
   (helm-mode 1)
+  ;; TAB to expand paths instead of showing actions
+  (define-key helm-map (kbd "<tab>") #'helm-execute-persistent-action)
+  (define-key helm-map (kbd "TAB") #'helm-execute-persistent-action)
+  (define-key helm-map (kbd "M-/") #'helm-execute-persistent-action)
   (setq helm-ff-newfile-prompt-p nil)
   ;; open helm buffer inside current window, not occupy whole other window
   (setq helm-split-window-inside-p t)
