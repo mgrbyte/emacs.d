@@ -16,9 +16,6 @@
   (unbind-key "C-x c")
   :config
   (helm-mode 1)
-  ;; TAB to expand paths instead of showing actions
-  (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
-  (define-key helm-map (kbd "TAB") 'helm-execute-persistent-action)
   (setq helm-ff-newfile-prompt-p nil)
   ;; open helm buffer inside current window, not occupy whole other window
   (setq helm-split-window-inside-p t)
