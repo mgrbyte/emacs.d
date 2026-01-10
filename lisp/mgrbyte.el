@@ -298,14 +298,14 @@ The environment variable should point to a file with one tip per line."
 
 (defun mgrbyte-setup-pylsp-for-project ()
   "Configure pylsp for a project's virtual environment at PROJECT-ROOT/.venv, if it exists."
-  (when-let* ((project-root (projectile-project-root))
-	      (venv (expand-file-name ".venv" project-root))
-	          (file-directory-p venv))
-    (setq lsp-pylsp-plugins-jedi-environment venv)
-    (setq lsp-pylsp-plugins-mypy-overrides
-          (vector "--python-executable" (expand-file-name "bin/python" venv)))
-    (when (bound-and-true-p lsp-mode)
-      (lsp-workspace-restart (lsp--read-workspace)))))
+  (when-let ((project-root (projectile-project-root)))
+    (let ((venv (expand-file-name ".venv" project-root)))
+      (when (file-directory-p venv)
+        (setq-local lsp-pylsp-plugins-jedi-environment venv)
+        (setq-local lsp-pylsp-plugins-mypy-overrides
+                    (vector t "--python-executable" (expand-file-name "bin/python" venv)))
+        (when (bound-and-true-p lsp-mode)
+          (lsp-workspace-restart (lsp--read-workspace)))))))
 
 (defun mgrbyte-hunspell-dict-for-git-remote ()
   "Return the dictionary name for the current magit-git-remote."

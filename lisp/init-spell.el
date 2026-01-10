@@ -28,7 +28,7 @@
   :init
   (remove-hook 'prog-mode-hook #'flyspell-prog-mode)
   :config
-  (setq wucuo-personal-font-faces-to-check
+  (setq wucuo-font-faces-to-check
         '(font-lock-comment-face font-lock-doc-face)))
 
 (provide 'init-spell)

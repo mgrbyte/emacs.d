@@ -32,6 +32,9 @@
          (python-mode . (lambda ()
                           (add-hook 'before-save-hook #'lsp-organize-imports nil t)
                           (add-hook 'before-save-hook #'lsp-format-buffer nil t))))
+  :init
+  ;; Run before lsp starts so jedi-environment is set when workspace initializes
+  (add-hook 'python-mode-hook #'mgrbyte-setup-pylsp-for-project -10)
   :bind (:map lsp-mode-map
          ("C-c f" . lsp-format-buffer)
          ("C-c o" . lsp-organize-imports))
