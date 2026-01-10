@@ -20,8 +20,9 @@
   :config
   (setq company-minimum-prefix-chars 1)
   (setq company-idle-delay 0.05)
-  (setq company-tooltip-margin 2)
   ;; High contrast faces for colour blindness
+  ;; (setq company-tooltip-margin 3)
+  (setq company-format-margin-function 'company-text-icons-margin)
   (set-face-attribute 'company-tooltip nil
                       :background "black" :foreground "white")
   (set-face-attribute 'company-tooltip-selection nil
@@ -52,7 +53,10 @@
                           (add-hook 'before-save-hook #'lsp-format-buffer nil t))))
   :bind (:map lsp-mode-map
          ("C-c f" . lsp-format-buffer)
-         ("C-c o" . lsp-organize-imports))
+         ("C-c o" . lsp-organize-imports)
+         ("C-c l r" . lsp-find-references)
+         ("C-c l R" . lsp-rename)
+         ("C-c l d" . lsp-find-definition))
   :config
   (setq lsp-auto-guess-root t)
   ;; Disable ruff LSP server (we use python-lsp-ruff plugin in pylsp instead)
@@ -60,12 +64,13 @@
   (setq lsp-pylsp-plugins-ruff-enabled t)
   (setq lsp-pylsp-plugins-ruff-format-enabled t)
   (setq lsp-pylsp-plugins-mypy-enabled t)
-  (setq lsp-pylsp-plugins-mypy-live-mode t)
+  (setq lsp-pylsp-plugins-mypy-live-mode nil)  ; Run mypy on save only for speed
   (setq lsp-pylsp-plugins-mypy-dmypy nil)
   ;; Disable built-in linters (ruff handles these)
   (setq lsp-pylsp-plugins-pycodestyle-enabled nil)
   (setq lsp-pylsp-plugins-pyflakes-enabled nil)
-  (setq lsp-pylsp-plugins-mccabe-enabled nil))
+  (setq lsp-pylsp-plugins-mccabe-enabled nil)
+  (setq lsp-completion-show-kind nil))
 
 (use-package lsp-ui
   :ensure t
