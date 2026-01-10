@@ -298,7 +298,7 @@ The environment variable should point to a file with one tip per line."
 
 (defun mgrbyte-setup-pylsp-for-project ()
   "Configure pylsp for a project's virtual environment at PROJECT-ROOT/.venv, if it exists."
-  (when-let* ((project-root (projectiile-project-root))
+  (when-let* ((project-root (projectile-project-root))
 	      (venv (expand-file-name ".venv" project-root))
 	          (file-directory-p venv))
     (setq lsp-pylsp-plugins-jedi-environment venv)
@@ -318,12 +318,11 @@ The environment variable should point to a file with one tip per line."
 
 (defun mgrbyte-setup-commit-spelling ()
   "Set Welsh dictionary for commits to techiaith/cymru remotes."
-  (when (and (derived-mode-p 'git-commit-mode))
-    (ispell-change-dictionary (mgrbyte-hunspell-dict-for-git-remote))
-    ;; Skip lines starting with # (git comments)
-    (setq-local ispell-skip-region-alist
-                (append ispell-skip-region-alist
-                        '(("^#" . "\n"))))))
+  (setq-local ispell-local-dictionary (mgrbyte-hunspell-dict-for-git-remote))
+  ;; Skip lines starting with # (git comments)
+  (setq-local ispell-skip-region-alist
+              (append ispell-skip-region-alist
+                      '(("^#" . "\n")))))
 
 (message "mgrbyte.el loaded")
 (provide 'mgrbyte)
