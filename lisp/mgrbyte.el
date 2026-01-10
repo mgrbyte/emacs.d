@@ -295,6 +295,36 @@ The environment variable should point to a file with one tip per line."
           (split-string (buffer-string) "\n" t))
       '("Set CLAUDE_TIPS_FILE to show tips here"))))
 
+
+(defun mgrbyte-setup-pylsp-for-project ()
+  "Configure pylsp for a project's virtual environment at PROJECT-ROOT/.venv, if it exists."
+  (when-let* ((project-root (projectiile-project-root))
+	      (venv (expand-file-name ".venv" project-root))
+	          (file-directory-p venv))
+    (setq lsp-pylsp-plugins-jedi-environment venv)
+    (setq lsp-pylsp-plugins-mypy-overrides
+          (vector "--python-executable" (expand-file-name "bin/python" venv)))
+    (when (bound-and-true-p lsp-mode)
+      (lsp-workspace-restart (lsp--read-workspace)))))
+
+(defun mgrbyte-hunspell-dict-for-git-remote ()
+  "Return the dictionary name for the current magit-git-remote."
+  (message ">>> commit-spelling hook fired, mode: %s" major-mode)
+  (when-let ((remote (magit-get "remote" (magit-get-current-remote) "url")))
+    (if (or (string-match-p "techiaith" remote)
+            (string-match-p "cymru" remote))
+	"cy_GB"
+      "en_GB")))
+
+(defun mgrbyte-setup-commit-spelling ()
+  "Set Welsh dictionary for commits to techiaith/cymru remotes."
+  (when (and (derived-mode-p 'git-commit-mode))
+    (ispell-change-dictionary (mgrbyte-hunspell-dict-for-git-remote))
+    ;; Skip lines starting with # (git comments)
+    (setq-local ispell-skip-region-alist
+                (append ispell-skip-region-alist
+                        '(("^#" . "\n"))))))
+
 (message "mgrbyte.el loaded")
 (provide 'mgrbyte)
 ;;; mgrbyte.el ends here

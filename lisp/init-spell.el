@@ -20,8 +20,16 @@
           ("cy_GB" "[[:alpha:]]" "[^[:alpha:]]" "[']" nil ("-d" "cy_GB") nil utf-8))))
 
 (use-package flyspell
-  :hook ((text-mode . flyspell-mode)
-         (prog-mode . flyspell-prog-mode)))
+  :hook (text-mode . flyspell-mode))
+
+(use-package wucuo
+  :ensure t
+  :hook (prog-mode . wucuo-start)
+  :init
+  (add-hook 'prog-mode-hook (lambda () (flyspell-mode -1)) -10)
+  :config
+  (setq wucuo-personal-font-faces-to-check
+        '(font-lock-comment-face font-lock-doc-face)))
 
 (provide 'init-spell)
 ;;; init-spell.el ends here
