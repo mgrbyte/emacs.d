@@ -26,7 +26,7 @@
   :ensure t
   :hook (prog-mode . wucuo-start)
   :init
-  (add-hook 'prog-mode-hook (lambda () (flyspell-mode -1)) -10)
+  (remove-hook 'prog-mode-hook #'flyspell-prog-mode)
   :config
   (setq wucuo-personal-font-faces-to-check
         '(font-lock-comment-face font-lock-doc-face)))
