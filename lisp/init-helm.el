@@ -11,7 +11,11 @@
          ("C-x C-f" . helm-find-files)
          ("C-x f" . helm-find-files)
          ("C-x C-r" . helm-recentf)
-         ("M-x" . helm-M-x))
+         ("M-x" . helm-M-x)
+         :map helm-map
+         ("<tab>" . helm-execute-persistent-action)
+         ("TAB" . helm-execute-persistent-action)
+         ("M-/" . helm-execute-persistent-action))
   :init
   (unbind-key "C-x c")
   :config

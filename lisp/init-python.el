@@ -3,6 +3,17 @@
 ;; Setup Python mode, LSP, pytest
 ;;; Code:
 
+(require 'projectile)
+
+(defun mgrbyte-setup-pylsp-for-project ()
+  "Configure pylsp to use the project's .venv for jedi and mypy."
+  (when-let ((project-root (projectile-project-root)))
+    (let ((venv (expand-file-name ".venv" project-root)))
+      (when (file-directory-p venv)
+        (setq-local lsp-pylsp-plugins-jedi-environment venv)
+        (setq-local lsp-pylsp-plugins-mypy-overrides
+                    (vector t "--python-executable" (expand-file-name "bin/python" venv)))))))
+
 (use-package python
   :bind (("C-c d i" . py-insert-debug)
          ("RET" . newline-and-indent))
@@ -19,7 +30,18 @@
   :hook (prog-mode . company-mode)
   :config
   (setq company-minimum-prefix-chars 1)
-  (setq company-idle-delay 0.1))
+  (setq company-idle-delay 0.05)
+  (setq company-tooltip-margin 2)
+  ;; High contrast faces for colour blindness
+  (set-face-attribute 'company-tooltip nil
+                      :background "black" :foreground "white")
+  (set-face-attribute 'company-tooltip-selection nil
+                      :background "transparent" :foreground "yellow")
+  (set-face-attribute 'company-tooltip-common nil
+                      :foreground "yellow")
+  (set-face-attribute 'company-tooltip-common-selection nil
+                      :foreground "cyan"))
+
 
 (use-package python-pytest
   :ensure t
@@ -66,8 +88,9 @@
          ("C-?" . lsp-ui-doc-glance))
   :config
   (setq lsp-ui-sideline-enable t)
-  (setq lsp-ui-doc-enable t)
-  (setq lsp-ui-doc-position 'at-point))
+  ;; Disable auto-show to prevent accidental insertion
+  (setq lsp-ui-doc-enable nil)
+  (setq lsp-ui-doc-show-with-cursor nil))
 
 (use-package py-snippets
   :ensure t
