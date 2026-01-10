@@ -3,17 +3,6 @@
 ;; Setup Python mode, LSP, pytest
 ;;; Code:
 
-(require 'projectile)
-
-(defun mgrbyte-setup-pylsp-for-project ()
-  "Configure pylsp to use the project's .venv for jedi and mypy."
-  (when-let ((project-root (projectile-project-root)))
-    (let ((venv (expand-file-name ".venv" project-root)))
-      (when (file-directory-p venv)
-        (setq-local lsp-pylsp-plugins-jedi-environment venv)
-        (setq-local lsp-pylsp-plugins-mypy-overrides
-                    (vector t "--python-executable" (expand-file-name "bin/python" venv)))))))
-
 (use-package python
   :bind (("C-c d i" . py-insert-debug)
          ("RET" . newline-and-indent))
@@ -61,9 +50,6 @@
          (python-mode . (lambda ()
                           (add-hook 'before-save-hook #'lsp-organize-imports nil t)
                           (add-hook 'before-save-hook #'lsp-format-buffer nil t))))
-  :init
-  ;; Run before lsp starts so jedi-environment is set when workspace initializes
-  (add-hook 'python-mode-hook #'mgrbyte-setup-pylsp-for-project -10)
   :bind (:map lsp-mode-map
          ("C-c f" . lsp-format-buffer)
          ("C-c o" . lsp-organize-imports))
