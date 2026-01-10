@@ -5,6 +5,7 @@
 
 (use-package helm
   :ensure t
+  :demand t
   :diminish helm-mode
   :bind (("C-c h" . helm-command-prefix)
          ("C-x b" . helm-mini)
