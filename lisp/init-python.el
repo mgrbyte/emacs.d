@@ -14,6 +14,13 @@
   (setq fill-column 79)
   (setq tab-width 4))
 
+(use-package company
+  :ensure t
+  :hook (prog-mode . company-mode)
+  :config
+  (setq company-minimum-prefix-chars 1)
+  (setq company-idle-delay 0.1))
+
 (use-package python-pytest
   :ensure t
   :bind (:map python-mode-map
