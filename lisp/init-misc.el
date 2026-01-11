@@ -94,8 +94,8 @@
 (use-package notify
   :load-path "lisp")
 
-;; Flymake (disabled)
-(use-package flymake :disabled t)
+(use-package envrc
+  :hook (after-init . envrc-global-mode))
 
 (provide 'init-misc)
 ;;; init-misc.el ends here
