@@ -15,7 +15,7 @@
   (setq tab-width 4))
 
 (use-package company
-  :ensure t
+
   :hook (prog-mode . company-mode)
   :config
   (setq company-minimum-prefix-chars 1)
@@ -34,7 +34,7 @@
 
 
 (use-package python-pytest
-  :ensure t
+
   :bind (:map python-mode-map
          ("C-c p p" . python-pytest-dispatch)
          ("C-c p f" . python-pytest-file)
@@ -45,7 +45,7 @@
   (setq python-pytest-executable "uv run pytest"))
 
 (use-package lsp-mode
-  :ensure t
+
   :commands lsp
   :hook ((python-mode . lsp)
          (python-mode . (lambda ()
@@ -73,7 +73,7 @@
   (setq lsp-completion-show-kind nil))
 
 (use-package lsp-ui
-  :ensure t
+
   :commands lsp-ui-mode
   :bind (:map lsp-ui-mode-map
          ("C-?" . lsp-ui-doc-glance))
@@ -84,7 +84,7 @@
   (setq lsp-ui-doc-show-with-cursor nil))
 
 (use-package py-snippets
-  :ensure t
+
   :after yasnippet
   :config
   (py-snippets-initialize))

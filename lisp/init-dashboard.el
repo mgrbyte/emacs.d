@@ -4,7 +4,7 @@
 ;;; Code:
 
 (use-package dashboard
-  :ensure t
+
   :after (nerd-icons projectile mgrbyte)
   :config
   (setq dashboard-projects-backend 'projectile)

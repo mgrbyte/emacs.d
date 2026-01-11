@@ -4,7 +4,7 @@
 ;;; Code:
 
 (use-package projectile
-  :ensure t
+
   :demand t
   :bind-keymap (("C-c p" . projectile-command-map))
   :bind (("<home>" . mgrbyte-show-dashboard))

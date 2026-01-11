@@ -15,7 +15,7 @@
         (concat dired-omit-files "\\|^\\..+$")))
 
 (use-package dirvish
-  :ensure t
+
   :demand t  ;; Load immediately, not deferred
   :init
   ;; Disable dirvish mode-line (use standard dired mode-line)

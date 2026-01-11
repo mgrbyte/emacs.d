@@ -4,7 +4,7 @@
 ;;; Code:
 
 (use-package paredit
-  :ensure t
+
   :diminish paredit-mode
   :init
   (enable-paredit-mode)
@@ -19,12 +19,12 @@
   (show-paren-mode 1))
 
 (use-package rainbow-delimiters
-  :ensure t
+
   :config
   (rainbow-delimiters-mode-enable))
 
 (use-package whitespace-cleanup-mode
-  :ensure t
+
   :bind (("C-c _ w" . whitespace-mode)
          ("C-c _ t" . whitespace-toggle-options)
          ("C-c = w" . global-whitespace-mode)
@@ -38,16 +38,16 @@
                   view-mode)))
 
 (use-package editorconfig
-  :ensure t
+
   :config
   (editorconfig-mode 1))
 
 (use-package keyfreq
-  :ensure t
+
   :config
   (keyfreq-mode))
 
-(use-package zygospore :ensure t)
+(use-package zygospore)
 
 (provide 'init-editing)
 ;;; init-editing.el ends here

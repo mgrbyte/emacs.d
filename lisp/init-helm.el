@@ -4,7 +4,7 @@
 ;;; Code:
 
 (use-package helm
-  :ensure t
+
   :diminish helm-mode
   :bind (("C-c h" . helm-command-prefix)
          ("C-x b" . helm-mini)
@@ -44,6 +44,39 @@
          ("C-x p g" . projectile-grep))
   :config
   (helm-projectile-on))
+
+;;; Cherry-picked settings from Thierry Volpiatto's config
+;;; https://github.com/thierryvolpiatto/emacs-config/blob/main/init-helm.el
+
+;; Adaptive history - helm learns from your selections
+(require 'helm-adaptive)
+(setq helm-adaptive-history-file
+      (expand-file-name "helm-adaptive-history" user-emacs-directory))
+(helm-adaptive-mode 1)
+
+;; Better completion styles for Emacs 27+
+(add-hook 'helm-mode-hook
+          (lambda ()
+            (setq completion-styles
+                  (if (assq 'flex completion-styles-alist)
+                      '(flex)
+                    '(helm-flex)))))
+
+;; Icons in helm-find-files and buffers
+(with-eval-after-load 'helm-files
+  (helm-ff-icon-mode 1))
+(with-eval-after-load 'helm-buffers
+  (customize-set-variable 'helm-buffers-show-icons t))
+
+;; Popup tips showing buffer/filename in grep results
+(with-eval-after-load 'helm-utils
+  (helm-popup-tip-mode 1))
+
+;; Better grep with ripgrep (if available)
+(with-eval-after-load 'helm-grep
+  (when (executable-find "rg")
+    (setq helm-grep-ag-command
+          "rg --color=always --smart-case --no-heading --line-number %s -- %s %s")))
 
 (provide 'init-helm)
 ;;; init-helm.el ends here

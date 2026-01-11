@@ -4,7 +4,7 @@
 ;;; Code:
 
 (use-package exec-path-from-shell
-  :ensure t
+
   :config
   (setq exec-path-from-shell-arguments '("-l" "-i"))
   (dolist (var '("SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO" "LANG" "LC_CTYPE"))

@@ -4,7 +4,7 @@
 ;;; Code:
 
 (use-package clojure-mode
-  :ensure t
+
   :preface
   (defun mgrbyte-setup-clj ()
     (yas-minor-mode 1))
@@ -22,7 +22,7 @@
     (context 2)))
 
 (use-package flycheck-clj-kondo
-  :ensure t)
+)
 
 (provide 'init-clojure)
 ;;; init-clojure.el ends here

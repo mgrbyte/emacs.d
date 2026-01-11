@@ -4,7 +4,7 @@
 ;;; Code:
 
 (use-package nerd-icons
-  :ensure t
+
   :demand t
   :custom
   (nerd-icons-font-family "Symbols Nerd Font Mono")
@@ -21,7 +21,7 @@
     (add-hook 'server-after-make-frame-hook #'mgrbyte-setup-nerd-fonts)))
 
 (use-package nerd-icons-dired
-  :ensure t
+
   :after nerd-icons
   :hook (dired-mode . nerd-icons-dired-mode))
 

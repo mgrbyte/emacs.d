@@ -5,7 +5,7 @@
 
 ;; Dockerfile
 (use-package dockerfile-mode
-  :ensure t
+
   :mode (("Dockerfile" . dockerfile-mode)))
 
 ;; Config files
@@ -20,14 +20,14 @@
 
 ;; JavaScript
 (use-package js2-mode
-  :ensure t
+
   :mode (("\\.js$" . js2-mode))
   :config
   (setq-default indent-tabs-mode nil))
 
 ;; JSON
 (use-package json-mode
-  :ensure t
+
   :mode (("\\.json$" . json-mode)))
 
 ;; Java
@@ -36,7 +36,7 @@
 
 ;; Jinja2/HTML templates
 (use-package jinja2-mode
-  :ensure t
+
   :mode (("\\.jinja$" . jinja2-mode)
          ("\\.html$" . jinja2-mode))
   :config
@@ -44,11 +44,11 @@
 
 ;; Markdown
 (use-package markdown-mode
-  :ensure t
+
   :mode (("\\.md$" . markdown-mode)))
 
 ;; Nix
-(use-package nix-mode :ensure t)
+(use-package nix-mode)
 
 ;; XML/ZCML
 (use-package nxml-mode
@@ -79,7 +79,7 @@
 
 ;; Sass
 (use-package sass-mode
-  :ensure t
+
   :config (setq sass-indent-offset 2))
 
 ;; SGML/Page Templates
@@ -104,12 +104,12 @@
 
 ;; VCL (Varnish)
 (use-package vcl-mode
-  :ensure t
+
   :mode (("\\.vcl" . vcl-mode)))
 
 ;; YAML
 (use-package yaml-mode
-  :ensure t
+
   :mode (("\\.yml" . yaml-mode)
          ("\\.yaml" . yaml-mode)))
 

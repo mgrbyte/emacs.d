@@ -23,9 +23,9 @@
 (require 'use-package)
 
 ;; Common libraries
-(use-package dash :ensure t)
-(use-package f :ensure t)
-(use-package s :ensure t)
+(use-package dash)
+(use-package f)
+(use-package s)
 (use-package async
   :functions async-byte-comp-get-allowed-pkgs)
 

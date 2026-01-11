@@ -7,8 +7,14 @@
   :bind (("C-c s b" . ispell-buffer)
          ("C-c s w" . ispell-word)
          ("C-c s r" . ispell-region)
-         ("C-c s d" . ispell-change-dictionary))
+         ("C-c s d" . mgrbyte-ispell-change-dictionary))
   :config
+  (defun mgrbyte-ispell-change-dictionary ()
+    "Change dictionary and re-check buffer with flyspell."
+    (interactive)
+    (call-interactively #'ispell-change-dictionary)
+    (when flyspell-mode
+      (flyspell-buffer)))
   ;; Set DICPATH for hunspell (emacs daemon doesn't inherit shell env)
   (setenv "DICPATH"
           (concat (expand-file-name "~/.local/share/hunspell") ":"
@@ -23,7 +29,7 @@
   :hook (text-mode . flyspell-mode))
 
 (use-package wucuo
-  :ensure t
+
   :hook (prog-mode . wucuo-start)
   :init
   (remove-hook 'prog-mode-hook #'flyspell-prog-mode)

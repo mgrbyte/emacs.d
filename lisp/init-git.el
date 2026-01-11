@@ -4,7 +4,7 @@
 ;;; Code:
 
 (use-package magit
-  :ensure t
+
   :bind (("C-c m" . magit-status))
   :config
   (defun my-magit-side-by-side (orig-fun &rest args)
@@ -30,7 +30,7 @@
                 (quote split-window-vertically)))
 
 (use-package gist
-  :ensure t)
+)
 
 (provide 'init-git)
 ;;; init-git.el ends here

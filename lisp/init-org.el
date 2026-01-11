@@ -4,7 +4,7 @@
 ;;; Code:
 
 (use-package org
-  :ensure t
+
   :after (f s)
   :bind (("C-c j" . org-clock-goto)
          ("C-c C-w" . org-refile)

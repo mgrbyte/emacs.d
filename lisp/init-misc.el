@@ -52,7 +52,7 @@
 
 ;; Google search
 (use-package google-this
-  :ensure t
+
   :defer t)
 
 ;; Gnus
@@ -63,12 +63,12 @@
 
 ;; Terminal
 (use-package vterm
-  :ensure t
+
   :config
   (setq vterm-max-scrollback 10000))
 
 (use-package vterm-toggle
-  :ensure t
+
   :bind (("C-c v" . vterm-toggle)
          ("C-c V" . vterm-toggle-cd))
   :config

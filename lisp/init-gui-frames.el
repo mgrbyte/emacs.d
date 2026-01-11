@@ -31,7 +31,7 @@
 
 ;; Powerline
 (use-package powerline
-  :ensure t
+
   :config
   (setq-default powerline-default-separator 'wave))
 

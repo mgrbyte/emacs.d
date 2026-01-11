@@ -67,7 +67,7 @@
   (setq auth-sources (-filter #'file-exists-p '("~/.authinfo.gpg" "~/.authinfo" "~/.netrc"))))
 
 ;; Abyss theme
-(use-package abyss-theme :ensure t)
+(use-package abyss-theme)
 
 (provide 'init-defaults)
 ;;; init-defaults.el ends here

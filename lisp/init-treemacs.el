@@ -4,7 +4,7 @@
 ;;; Code:
 
 (use-package treemacs
-  :ensure t
+
   :bind (("C-c e" . treemacs)
          ("C-c E" . treemacs-select-window))
   :config
@@ -32,15 +32,15 @@
   (treemacs-project-follow-mode t))
 
 (use-package treemacs-projectile
-  :ensure t
+
   :after (treemacs projectile))
 
 (use-package treemacs-nerd-icons
-  :ensure t
+
   :demand t)
 
 (use-package treemacs-magit
-  :ensure t
+
   :after (treemacs-nerd-icons treemacs-projectile))
 
 (provide 'init-treemacs)
