@@ -4,6 +4,11 @@
 ;;; Code:
 
 (require 'package)
+
+;; Include nix-managed emacs packages
+(add-to-list 'package-directory-list
+             (expand-file-name "~/.nix-profile/share/emacs/site-lisp/elpa"))
+
 (setq package-archives
   '(("gnu" . "https://elpa.gnu.org/packages/")
     ("melpa-stable" . "https://stable.melpa.org/packages/")
