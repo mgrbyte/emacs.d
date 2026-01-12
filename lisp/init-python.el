@@ -44,6 +44,9 @@
   :config
   (setq python-pytest-executable "uv run pytest"))
 
+(use-package yasnippet
+  :hook (python-mode . yas-minor-mode))
+
 (use-package lsp-mode
 
   :commands lsp

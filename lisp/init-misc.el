@@ -63,8 +63,9 @@
 
 ;; Terminal
 (use-package vterm
-
+  :defer t
   :config
+  (setq vterm-always-compile-module t)
   (setq vterm-max-scrollback 10000))
 
 (use-package vterm-toggle
