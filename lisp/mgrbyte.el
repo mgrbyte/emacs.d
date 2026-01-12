@@ -194,16 +194,18 @@ Nicked from http://emacsredux.com/blog/2013/04/21/edit-files-as-root/"
   (memq window-system '(mac ns x)))
 
 (defvar mgrbyte-projectile-open-first-match-list '("pyproject.toml"
-						   "compose.yml"
-						   "docker-compose.yml"
-     						   "flake.nix"
+						   "flake.nix"
 						   "package.json"
 						   "Cargo.toml"
 						   "go.mod"
 						   "tsconfig.json"
 						   "viteconfig.json"
-  						   "init.el"
-     						   "deps.edn")
+						   "init.el"
+						   "deps.edn"
+						   "compose.yaml"
+						   "compose.yml"
+						   "docker-compose.yaml"
+						   "docker-compose.yml")
   "List of filenames to search for to open first when visiting a project, order matters.")
 
 (defun mgrbyte-project-layout ()
@@ -219,12 +221,13 @@ Nicked from http://emacsredux.com/blog/2013/04/21/edit-files-as-root/"
       (if found
           (find-file (file-name-concat project-root found))
         (switch-to-buffer "*scratch*")))
-    ;; Show treemacs on right (defer to after projectile finishes)
-    (let ((editor-win (selected-window)))
+    ;; Show treemacs for this project (defer to after projectile finishes)
+    (let ((editor-win (selected-window))
+          (root project-root))
       (run-with-idle-timer
-       0 nil
+       0.1 nil
        (lambda ()
-         (call-interactively #'treemacs)
+         (treemacs-add-and-display-current-project-exclusively)
          (when (window-live-p editor-win)
            (select-window editor-win)))))))
 
