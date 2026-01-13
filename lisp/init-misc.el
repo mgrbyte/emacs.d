@@ -66,7 +66,26 @@
   :defer t
   :config
   (setq vterm-always-compile-module t)
-  (setq vterm-max-scrollback 10000))
+  (setq vterm-max-scrollback 10000)
+  ;; Tokyo Night Terminal Dark palette (matches Alacritty)
+  (setq vterm-color-palette
+        ["#16161E"   ; black (base00)
+         "#F7768E"   ; red (base08)
+         "#41A6B5"   ; green (base0B)
+         "#E0AF68"   ; yellow (base0A)
+         "#7AA2F7"   ; blue (base0D)
+         "#BB9AF7"   ; magenta (base0E)
+         "#7DCFFF"   ; cyan (base0C)
+         "#787C99"   ; white (base05)
+         "#444B6A"   ; bright black (base03)
+         "#F7768E"   ; bright red
+         "#41A6B5"   ; bright green
+         "#E0AF68"   ; bright yellow
+         "#7AA2F7"   ; bright blue
+         "#BB9AF7"   ; bright magenta
+         "#7DCFFF"   ; bright cyan
+         "#D5D6DB"]) ; bright white (base07)
+  )
 
 (use-package vterm-toggle
 
