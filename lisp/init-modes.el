@@ -44,8 +44,9 @@
 
 ;; Markdown
 (use-package markdown-mode
-
-  :mode (("\\.md$" . markdown-mode)))
+  :mode (("\\.md$" . markdown-mode))
+  :config
+  (setq markdown-command "pandoc"))
 
 ;; Nix
 (use-package nix-mode)
