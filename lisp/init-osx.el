@@ -3,10 +3,11 @@
 ;; macOS-specific settings
 ;;; Code:
 
-;; macOS: swap Command/Option - Command is Meta, Option passes through
+;; macOS: Command is Meta, Option passes through, right-Command is Super
 (when (eq system-type 'darwin)
   (setq mac-command-modifier 'meta)
-  (setq mac-option-modifier nil))
+  (setq mac-option-modifier nil)
+  (setq ns-right-command-modifier 'super))
 
 (provide 'init-osx)
 ;;; init-osx.el ends here
