@@ -312,20 +312,31 @@ The environment variable should point to a file with one tip per line."
 
 (defun mgrbyte-hunspell-dict-for-git-remote ()
   "Return the dictionary name for the current magit-git-remote."
-  (message ">>> commit-spelling hook fired, mode: %s" major-mode)
-  (when-let ((remote (magit-get "remote" (magit-get-current-remote) "url")))
-    (if (or (string-match-p "techiaith" remote)
-            (string-match-p "cymru" remote))
-	"cy_GB"
+  (let* ((remote-name (or (magit-get-current-remote)
+                          (magit-get-some-remote)
+                          "origin"))
+         (remote-url (magit-get "remote" remote-name "url")))
+    (message ">>> commit-spelling: remote=%s url=%s" remote-name remote-url)
+    (if (and remote-url
+             (or (string-match-p "techiaith" remote-url)
+                 (string-match-p "storfa" remote-url)
+                 (string-match-p "cymru" remote-url)))
+        "cy_GB"
       "en_GB")))
 
 (defun mgrbyte-setup-commit-spelling ()
   "Set Welsh dictionary for commits to techiaith/cymru remotes."
-  (setq-local ispell-local-dictionary (mgrbyte-hunspell-dict-for-git-remote))
-  ;; Skip lines starting with # (git comments)
-  (setq-local ispell-skip-region-alist
-              (append ispell-skip-region-alist
-                      '(("^#" . "\n")))))
+  (let ((dict (mgrbyte-hunspell-dict-for-git-remote)))
+    (message ">>> Setting commit dictionary to: %s" dict)
+    (setq-local ispell-local-dictionary dict)
+    ;; Skip lines starting with # (git comments)
+    (setq-local ispell-skip-region-alist
+                (append ispell-skip-region-alist
+                        '(("^#" . "\n"))))
+    ;; Re-run flyspell with new dictionary
+    (when (bound-and-true-p flyspell-mode)
+      (flyspell-mode -1)
+      (flyspell-mode 1))))
 
 (message "mgrbyte.el loaded")
 (provide 'mgrbyte)

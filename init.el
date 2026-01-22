@@ -53,7 +53,9 @@
   :load-path "lisp"
   :demand t
   :bind (("C-x t w" . delete-trailing-whitespace)
-         ("C-c f g" . find-grep-dired))
+         ("C-c f g" . find-grep-dired)
+         ("C-c y f" . mgrbyte-filename-to-clipboard)
+         ("C-c y b" . mgrbyte-buffer-name-to-clipboard))
   :hook ((git-commit-setup . mgrbyte-setup-commit-spelling)
 	 (python-mode . mgrbyte-setup-pylsp-for-project)))
 
