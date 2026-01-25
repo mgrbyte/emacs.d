@@ -116,7 +116,15 @@
   :load-path "lisp")
 
 (use-package envrc
-  :hook (after-init . envrc-global-mode))
+  :hook (after-init . envrc-global-mode)
+  :config
+  ;; Fix envrc faces for abyss theme (mode-line contrast on skyblue background)
+  (set-face-attribute 'envrc-mode-line-on-face nil
+                      :inherit nil :foreground "#009e73" :weight 'bold)
+  (set-face-attribute 'envrc-mode-line-error-face nil
+                      :inherit nil :foreground "#FF1A00" :weight 'bold)
+  (set-face-attribute 'envrc-mode-line-none-face nil
+                      :inherit nil :foreground "#050000" :weight 'bold))
 
 (provide 'init-misc)
 ;;; init-misc.el ends here
