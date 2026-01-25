@@ -28,6 +28,9 @@
 (require 'init-treemacs)
 (require 'init-dashboard)
 
+;; LSP (before language modes)
+(require 'init-lsp)
+
 ;; Major modes
 (require 'init-org)
 (require 'init-python)

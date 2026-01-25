@@ -44,7 +44,10 @@
 (use-package server
   :config
   (unless (server-running-p)
-    (server-start)))
+    (server-start))
+  ;; Focus new frames when created via emacsclient
+  (add-hook 'server-after-make-frame-hook
+            (lambda () (select-frame-set-input-focus (selected-frame)))))
 
 ;; ERC
 (use-package erc

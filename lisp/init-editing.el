@@ -49,5 +49,9 @@
 
 (use-package zygospore)
 
+;; Rebind query-replace since M-% conflicts with macOS screenshot
+(global-set-key (kbd "C-c r") 'query-replace)
+(global-set-key (kbd "C-c R") 'query-replace-regexp)
+
 (provide 'init-editing)
 ;;; init-editing.el ends here

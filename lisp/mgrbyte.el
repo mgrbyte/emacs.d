@@ -1,6 +1,6 @@
 ;;; mgrbyte.el --- Custom modes -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2014  Matthew Russell
+;; Copyright (C) 2014-2026  Matthew Russell
 
 ;; Author: Matthew Russell <matthew.russell@horizon5.org>
 ;; Keywords: convenience
@@ -18,13 +18,10 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-;;; Commentary:
+;; Commentary:
+;; Tested working with Emacs 30.2
 
-;;
-;;; Code:
-
-;;; TODO: All lof of this needs updating to work with Emacs 27, or
-;;; removed an alternative found.
+;; Code:
 
 (defgroup mgrbyte nil
   "Mgrbyte Development environment"
@@ -39,6 +36,9 @@
   "Mgrbyte keybindings."
   :group 'mgrbyte-modes
   :prefix "mgrbyte:key-")
+
+;; Set font for all frames
+(defvar mgrbyte-default-font "Hack Nerd Font 16")
 
 (defvar mgrbyte-keymap
   (let ((map (make-sparse-keymap)))
@@ -87,11 +87,12 @@ Quick-Insert python debug mode."
     (newline-and-indent)
     (insert pdb-text)))
 
-;; Confirm switch to non-existent buffer
+;; Confirm switch to non-existent buffer (skip internal/hidden buffers)
 (defadvice switch-to-buffer (around confirm-non-existing-buffers activate)
   "Switch to non-existing buffers only upon confirmation."
   (interactive "BSwitch to buffer: ")
   (if (or (get-buffer (ad-get-arg 0))
+          (string-match-p "^[ *]" (ad-get-arg 0))
           (y-or-n-p (format "´%s' does not exist, create? "(ad-get-arg 0))))
       ad-do-it))
 
@@ -125,7 +126,7 @@ See documentation of `format-time-string' for possible replacements")
 
 
 (defvar current-time-format "%a %H:%M:%S"
-  "Format of date to insert with `insert-current-time' func.
+  "Format of date to insert with `insert-current-time' function.
 Note the weekly scope of the command's precision.")
 
 
@@ -144,7 +145,7 @@ Uses `current-date-time-format' for the formatting the date/time."
   "Sort dired listings with directories first."
   (save-excursion
     (let (buffer-read-only)
-      (forward-line 2) ;; beyond dir. header
+      (forward-line 2) ;; beyond directory header
       (sort-regexp-fields t "^.*$" "[ ]*." (point) (point-max)))
     (set-buffer-modified-p nil)))
 
@@ -287,7 +288,6 @@ to be a project root."
   (set-selection-coding-system encoding)
   (prefer-coding-system encoding))
 
-
 (defun mgrbyte-dashboard-motd-messages ()
   "Return list of tips for dashboard footer from CLAUDE_TIPS_FILE.
 The environment variable should point to a file with one tip per line."
@@ -338,6 +338,35 @@ The environment variable should point to a file with one tip per line."
       (flyspell-mode -1)
       (flyspell-mode 1))))
 
-(message "mgrbyte.el loaded")
+;; Multi-monitor support: prefer external monitor over built-in
+(defun mgrbyte-get-external-monitor-workarea ()
+  "Get the work area of external monitor (non-primary or largest)."
+  (let* ((monitors (display-monitor-attributes-list))
+         ;; External monitor is usually not at origin (0,0) or is larger
+         (external (cl-find-if
+                    (lambda (m)
+                      (let ((geom (cdr (assq 'geometry m))))
+                        (> (nth 0 geom) 0)))  ; x position > 0 means not primary
+                    monitors))
+         ;; Fallback: pick largest by pixel area if all at origin
+         (largest (car (cl-sort (copy-sequence monitors)
+                                (lambda (a b)
+                                  (let ((ga (cdr (assq 'geometry a)))
+                                        (gb (cdr (assq 'geometry b))))
+                                    (> (* (nth 2 ga) (nth 3 ga))
+                                       (* (nth 2 gb) (nth 3 gb)))))))))
+    (cdr (assq 'workarea (or external largest)))))
+
+(defun mgrbyte-frame-to-external-maximized ()
+  "Move frame to external monitor and maximize it."
+  (interactive)
+  (when-let ((workarea (mgrbyte-get-external-monitor-workarea)))
+    ;; Clear any existing fullscreen state first
+    (set-frame-parameter nil 'fullscreen nil)
+    ;; Move to external monitor
+    (set-frame-position (selected-frame) (nth 0 workarea) (nth 1 workarea))
+    ;; Small delay for macOS to process the move, then maximize
+    (run-at-time 0.1 nil (lambda () (set-frame-parameter nil 'fullscreen 'maximized)))))
+
 (provide 'mgrbyte)
 ;;; mgrbyte.el ends here
