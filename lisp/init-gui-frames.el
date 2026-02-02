@@ -26,7 +26,7 @@
 
 ;; Text scaling
 (use-package text-scale-mode
-  :bind (("C-c +" . text-scale-increase)
+  :bind (("C-c =" . text-scale-increase)
          ("C-c -" . text-scale-decrease)))
 
 ;; Powerline
