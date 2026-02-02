@@ -26,10 +26,10 @@
                           (recents  . 10)
                           (bookmarks . 10)))
 
-  ;; Agenda settings - show today and this week
+  ;; Agenda settings - show all scheduled items
   (setq dashboard-agenda-release-buffers nil)
   (setq dashboard-filter-agenda-entry 'dashboard-no-filter-agenda)
-  (setq dashboard-week-agenda t)
+  (setq dashboard-week-agenda nil)
 
   ;; Icons
   (setq dashboard-heading-icon-height 1.5)
