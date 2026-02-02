@@ -42,18 +42,17 @@
                  "TODO(t)"
                  "NEXT(n)"
                  "STARTED(s)"
+                 "HOLD(h)"
                  "|"
-                 "DONE(d)")
-                (sequence
-                 "WAITING(w@/!)"
-                 "HOLD(h@/!)"
-                 "|"
-                 "CANCELLED(c@/!)"
-                 "PHONE"
-                 "MEETING"))))
-  (setq org-default-notes-file "~/org/notes.org")
-  (setq org-agenda-files (f-entries "~/org" (apply-partially #'s-ends-with? ".org") t))
-  (setq org-directory "~/org")
+                 "DONE(d)"))))
+  (setq org-default-notes-file "~/gitlab/mtr21pqh/org/notes.org")
+  (setq org-agenda-files
+        (append
+         (when (file-directory-p "~/gitlab/mtr21pqh/org")
+           (f-entries "~/gitlab/mtr21pqh/org" (apply-partially #'s-ends-with? ".org") t))
+         (when (file-directory-p "~/github/mgrbyte/org-files")
+           (f-entries "~/github/mgrbyte/org-files" (apply-partially #'s-ends-with? ".org") t))))
+  (setq org-directory "~/gitlab/mtr21pqh/org")
   (setq org-use-effective-time t)
   (setq org-startup-folded t)
   (setq org-cycle-include-plain-lists 'integrate)
