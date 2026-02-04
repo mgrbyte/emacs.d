@@ -58,11 +58,22 @@
 
   :defer t)
 
+;; Mail sending (SMTP settings configured dynamically per-account in Gnus)
+(use-package message
+  :defer t
+  :custom
+  (message-send-mail-function 'smtpmail-send-it))
+
+(use-package smtpmail
+  :defer t)
+
 ;; Gnus
 (use-package gnus
   :defer t
   :bind (("C-x g" . gnus-other-frame)
-         ("C-c C-x m" . gnus)))
+         ("C-c C-x m" . gnus))
+  :custom
+  (gnus-select-method '(nnnil "")))
 
 ;; Terminal
 (use-package vterm

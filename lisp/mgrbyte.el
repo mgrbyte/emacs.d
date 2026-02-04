@@ -37,8 +37,20 @@
   :group 'mgrbyte-modes
   :prefix "mgrbyte:key-")
 
+;; User identity
+(setq user-full-name "Matt Russell")
+
+(defun mgrbyte-get-email-for-server (server)
+  "Get login (email address) for SERVER from auth-source."
+  (let ((found (auth-source-search :host server :max 1)))
+    (when found
+      (plist-get (car found) :user))))
+
+;; Set default user-mail-address from Gmail netrc entry
+(setq user-mail-address (mgrbyte-get-email-for-server "smtp.gmail.com"))
+
 ;; Set font for all frames
-(defvar mgrbyte-default-font "Hack Nerd Font 16")
+(defvar mgrbyte-default-font "Hack Nerd Font 12")
 
 (defvar mgrbyte-keymap
   (let ((map (make-sparse-keymap)))

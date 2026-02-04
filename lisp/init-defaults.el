@@ -59,12 +59,11 @@
 ;; File associations
 (add-to-list 'auto-mode-alist '("Makfile.*" . makefile-gmake-mode))
 
-;; Auth sources
+;; Auth sources (work netrc first, then personal)
 (use-package auth-source
-  :after dash
   :config
   (setq auth-source-debug t)
-  (setq auth-sources (-filter #'file-exists-p '("~/.authinfo.gpg" "~/.authinfo" "~/.netrc"))))
+  (setq auth-sources '("~/.netrc" "~/.secrets/netrc-personal")))
 
 ;; Abyss theme
 (use-package abyss-theme)
