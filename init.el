@@ -43,6 +43,7 @@
 (require 'init-editing)
 (require 'init-spell)
 (require 'init-misc)
+(require 'init-mail)
 
 ;; Platform/GUI
 (require 'init-osx)
