@@ -46,6 +46,7 @@
 
 ;; Platform/GUI
 (require 'init-osx)
+(require 'init-welsh)
 (require 'init-gui-frames)
 
 ;; Custom functions

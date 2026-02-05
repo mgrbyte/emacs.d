@@ -46,8 +46,8 @@
     (when found
       (plist-get (car found) :user))))
 
-;; Set default user-mail-address from Gmail netrc entry
-(setq user-mail-address (mgrbyte-get-email-for-server "smtp.gmail.com"))
+;; Set default user-mail-address from encrypted netrc
+(setq user-mail-address (mgrbyte-get-email-for-server "default-identity"))
 
 ;; Set font for all frames
 (defvar mgrbyte-default-font "Hack Nerd Font 12")
