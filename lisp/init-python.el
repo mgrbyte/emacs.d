@@ -47,24 +47,22 @@
 (use-package yasnippet
   :hook (python-mode . yas-minor-mode))
 
-;; Python-specific LSP settings (lsp-mode loaded from init-lsp.el)
+;; Load lsp-ruff early so it's registered before any Python buffer opens
+;; Ruff runs as add-on server (`:add-on? t`) for formatting alongside pyright
 (use-package lsp-mode
-  :hook ((python-mode . lsp)
-         (python-mode . (lambda ()
-                          (add-hook 'before-save-hook #'lsp-organize-imports nil t)
-                          (add-hook 'before-save-hook #'lsp-format-buffer nil t))))
   :config
-  ;; Disable ruff LSP server (we use python-lsp-ruff plugin in pylsp instead)
-  (add-to-list 'lsp-disabled-clients 'ruff)
-  (setq lsp-pylsp-plugins-ruff-enabled t)
-  (setq lsp-pylsp-plugins-ruff-format-enabled t)
-  (setq lsp-pylsp-plugins-mypy-enabled t)
-  (setq lsp-pylsp-plugins-mypy-live-mode nil)
-  (setq lsp-pylsp-plugins-mypy-dmypy nil)
-  ;; Disable built-in linters (ruff handles these)
-  (setq lsp-pylsp-plugins-pycodestyle-enabled nil)
-  (setq lsp-pylsp-plugins-pyflakes-enabled nil)
-  (setq lsp-pylsp-plugins-mccabe-enabled nil))
+  (require 'lsp-ruff))
+
+;; Use pyright for Python LSP (type checking and diagnostics)
+(use-package lsp-pyright
+  :hook (python-mode . (lambda ()
+                          (require 'lsp-pyright)
+                          (lsp)
+                          (add-hook 'before-save-hook #'lsp-organize-imports nil t)
+                          (add-hook 'before-save-hook #'lsp-format-buffer nil t)))
+  :config
+  ;; Disable pylsp (replaced by pyright)
+  (add-to-list 'lsp-disabled-clients 'pylsp))
 
 (use-package py-snippets
   :after yasnippet
