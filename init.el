@@ -44,6 +44,7 @@
 (require 'init-spell)
 (require 'init-misc)
 (require 'init-mail)
+(require 'init-ai)
 
 ;; Platform/GUI
 (require 'init-osx)
