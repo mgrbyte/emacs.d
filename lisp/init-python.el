@@ -53,16 +53,25 @@
   :config
   (require 'lsp-ruff))
 
-;; Use pyright for Python LSP (type checking and diagnostics)
+;; Use pyright for Python LSP (completions, navigation, refactoring)
+;; Type checking disabled - flycheck-mypy provides type errors instead
 (use-package lsp-pyright
   :hook (python-mode . (lambda ()
                           (require 'lsp-pyright)
                           (lsp)
                           (add-hook 'before-save-hook #'lsp-organize-imports nil t)
                           (add-hook 'before-save-hook #'lsp-format-buffer nil t)))
+  :init
+  (setq lsp-pyright-typechecking-mode "off")
   :config
-  ;; Disable pylsp (replaced by pyright)
   (add-to-list 'lsp-disabled-clients 'pylsp))
+
+;; Flycheck for Python type checking via mypy
+;; Uses uv-mypy wrapper to run mypy in project context (matches CLI workflow)
+(use-package flycheck
+  :hook (python-mode . flycheck-mode)
+  :config
+  (setq flycheck-python-mypy-executable "uv-mypy"))
 
 (use-package py-snippets
   :after yasnippet
