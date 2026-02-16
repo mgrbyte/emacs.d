@@ -1,11 +1,11 @@
 ;;; init-ai.el --- AI/LLM integration -*- lexical-binding: t -*-
 ;;; Commentary:
 ;; Configuration for AI assistants: gptel (local LLMs), MCP, Claude Code
+;; Packages are installed via Nix (see nix-config/home/packages.nix)
 ;;; Code:
 
 ;; gptel - LLM client (for local models via Ollama, not Claude)
 (use-package gptel
-  :ensure t
   :bind (("C-c g g" . gptel)
          ("C-c g s" . gptel-send)
          ("C-c g m" . gptel-menu)
@@ -22,7 +22,6 @@
 
 ;; mcp.el - Model Context Protocol client
 (use-package mcp
-  :ensure t
   :commands (mcp-hub mcp-hub-start-all-server)
   :config
   (setq mcp-hub-servers
@@ -36,15 +35,12 @@
 
 ;; org-mcp - MCP server for Org-mode
 (use-package org-mcp
-  :ensure t
   :after org
   :config
   (setq org-mcp-allowed-files org-agenda-files))
 
 ;; claude-code.el - Claude Code CLI integration (uses OAuth, not API key)
 (use-package claude-code
-  :ensure t
-  :vc (:url "https://github.com/stevemolitor/claude-code.el" :rev :newest)
   :bind (("C-c c c" . claude-code)
          ("C-c c k" . claude-code-continue)
          ("C-c c r" . claude-code-resume)
@@ -54,8 +50,7 @@
   (setq claude-code-terminal-backend 'eat))
 
 ;; eat - Terminal emulator for claude-code
-(use-package eat
-  :ensure t)
+(use-package eat)
 
 (provide 'init-ai)
 ;;; init-ai.el ends here
