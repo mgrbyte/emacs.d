@@ -15,7 +15,8 @@
   (setq projectile-switch-project-action (lambda () (mgrbyte-project-layout)))
   (setq projectile-project-search-path '(("~/github/mgrbyte" . 1)
                                          ("~/gitlab/mtr21pqh" . 2)
-                                         ("~/gitlab/cyfieithu-ac-llms" . 3))))
+                                         ("~/gitlab/cyfieithu-ac-llms" . 3)
+                                         ("~/huggingface/spaces" . 2))))
 
 (provide 'init-projectile)
 ;;; init-projectile.el ends here

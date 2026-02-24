@@ -218,7 +218,9 @@ Nicked from http://emacsredux.com/blog/2013/04/21/edit-files-as-root/"
 						   "compose.yaml"
 						   "compose.yml"
 						   "docker-compose.yaml"
-						   "docker-compose.yml")
+						   "docker-compose.yml"
+						   "app.py"
+						   "requirements.txt")
   "List of filenames to search for to open first when visiting a project, order matters.")
 
 (defun mgrbyte-project-layout ()
