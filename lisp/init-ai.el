@@ -42,12 +42,13 @@
 ;; claude-code.el - Claude Code CLI integration (uses OAuth, not API key)
 (use-package claude-code
   :bind (("C-c c c" . claude-code)
+         ("C-c c m" . claude-code-transient)
          ("C-c c k" . claude-code-continue)
          ("C-c c r" . claude-code-resume)
          ("C-c c e" . claude-code-fix-error-at-point)
          ("C-c c q" . claude-code-quit))
   :config
-  (setq claude-code-terminal-backend 'eat))
+  (setq claude-code-terminal-backend 'vterm))
 
 ;; eat - Terminal emulator for claude-code
 (use-package eat)
