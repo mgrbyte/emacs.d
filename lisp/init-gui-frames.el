@@ -46,9 +46,12 @@
             (load-theme 'abyss t)))
 
 ;; New client frames - runs for each emacsclient -c
+;; Skip external-monitor move for claude-code buffers (they go to primary)
 (add-hook 'server-after-make-frame-hook
           (lambda ()
-            (when (display-graphic-p)
+            (when (and (display-graphic-p)
+                       (not (string-match-p "\\*claude-code\\["
+                                            (buffer-name (current-buffer)))))
               (run-at-time 0.3 nil #'mgrbyte-frame-to-external-maximized))))
 
 (provide 'init-gui-frames)

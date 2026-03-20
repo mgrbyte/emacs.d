@@ -382,5 +382,23 @@ The environment variable should point to a file with one tip per line."
     ;; Small delay for macOS to process the move, then maximize
     (run-at-time 0.1 nil (lambda () (set-frame-parameter nil 'fullscreen 'maximized)))))
 
+(defun mgrbyte-get-primary-monitor-workarea ()
+  "Get the work area of the primary (laptop) monitor."
+  (let* ((monitors (display-monitor-attributes-list))
+         (primary (cl-find-if
+                   (lambda (m)
+                     (let ((geom (cdr (assq 'geometry m))))
+                       (= (nth 0 geom) 0)))  ; x position = 0 means primary
+                   monitors)))
+    (cdr (assq 'workarea (or primary (car monitors))))))
+
+(defun mgrbyte-frame-to-primary-maximized ()
+  "Move frame to primary (laptop) monitor and maximize it."
+  (interactive)
+  (when-let ((workarea (mgrbyte-get-primary-monitor-workarea)))
+    (set-frame-parameter nil 'fullscreen nil)
+    (set-frame-position (selected-frame) (nth 0 workarea) (nth 1 workarea))
+    (run-at-time 0.1 nil (lambda () (set-frame-parameter nil 'fullscreen 'maximized)))))
+
 (provide 'mgrbyte)
 ;;; mgrbyte.el ends here
