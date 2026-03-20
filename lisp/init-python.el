@@ -58,10 +58,20 @@
   (add-to-list 'lsp-disabled-clients 'pyright))
 
 ;; Python mode LSP hook - start ty + ruff
+;; Format with ruff on save (ty does not support documentFormattingProvider)
+(add-hook 'python-mode-hook #'lsp)
+
 (add-hook 'python-mode-hook
           (lambda ()
-            (lsp)
-            (add-hook 'before-save-hook #'lsp-format-buffer nil t)))
+            (add-hook 'after-save-hook
+                      (lambda ()
+                        (when buffer-file-name
+                          (let ((exit-code
+                                 (call-process "uvx" nil nil nil
+                                               "ruff" "format" buffer-file-name)))
+                            (when (zerop exit-code)
+                              (revert-buffer t t t)))))
+                      nil t)))
 
 (use-package py-snippets
   :after yasnippet
