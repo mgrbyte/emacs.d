@@ -50,7 +50,7 @@
 (setq user-mail-address (mgrbyte-get-email-for-server "default-identity"))
 
 ;; Set font for all frames
-(defvar mgrbyte-default-font "Hack Nerd Font 12")
+(defvar mgrbyte-default-font "Menlo 14")
 
 (defvar mgrbyte-keymap
   (let ((map (make-sparse-keymap)))
