@@ -76,6 +76,12 @@
   (setq claude-code-ide-terminal-backend 'vterm)
   (setq claude-code-ide-use-side-window nil)
   (claude-code-ide-emacs-tools-setup)
+  ;; Rebuild tool lists — workaround for load-order bug where
+  ;; claude-code-ide-mcp-handlers.el builds the tool list at require
+  ;; time (line 64) before defcustom sets use-ide-diff to t (line 191)
+  (setq claude-code-ide-mcp-tools (claude-code-ide-mcp--build-tool-list))
+  (setq claude-code-ide-mcp-tool-schemas (claude-code-ide-mcp--build-tool-schemas))
+  (setq claude-code-ide-mcp-tool-descriptions (claude-code-ide-mcp--build-tool-descriptions))
   ;; Add Alt-Enter for newline insertion in claude-code buffers
   (add-hook 'vterm-mode-hook
             (lambda ()
