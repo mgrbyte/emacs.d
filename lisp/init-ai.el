@@ -46,16 +46,17 @@
   :config
   (setq org-mcp-allowed-files org-agenda-files))
 
-;; claude-code.el - DISABLED, evaluating claude-code-ide.el as replacement
-;; (use-package claude-code
-;;   :bind (("C-c c c" . claude-code)
-;;          ("C-c c m" . claude-code-transient)
-;;          ("C-c c k" . claude-code-continue)
-;;          ("C-c c r" . claude-code-resume)
-;;          ("C-c c e" . claude-code-fix-error-at-point)
-;;          ("C-c c q" . claude-code-quit))
-;;   :config
-;;   (setq claude-code-terminal-backend 'vterm))
+;; claude-code.el - Alternative Claude Code integration (simpler terminal wrapper)
+;; Uses C-c C (shift-c) prefix to coexist with claude-code-ide.el on C-c c
+(use-package claude-code
+  :bind (("C-c C c" . claude-code)
+         ("C-c C m" . claude-code-transient)
+         ("C-c C k" . claude-code-continue)
+         ("C-c C r" . claude-code-resume)
+         ("C-c C e" . claude-code-fix-error-at-point)
+         ("C-c C q" . claude-code-quit))
+  :config
+  (setq claude-code-terminal-backend 'vterm))
 
 ;; eat - Terminal emulator
 (use-package eat)
@@ -72,7 +73,6 @@
          ("C-c c R" . claude-code-ide-resume-in-directory))
   :config
   (setq claude-code-ide-terminal-backend 'vterm)
-  (setq claude-code-ide-vterm-render-delay 0.032)
   (setq claude-code-ide-use-side-window nil)
   ;; Add Alt-Enter for newline insertion in claude-code buffers
   (add-hook 'vterm-mode-hook
@@ -118,6 +118,7 @@
   "Resume claude-code-ide after prompting for directory, on primary display."
   (interactive)
   (claude-code-ide--open-on-primary #'claude-code-ide-resume))
+
 
 (provide 'init-ai)
 ;;; init-ai.el ends here
