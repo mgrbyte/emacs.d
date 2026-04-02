@@ -61,7 +61,7 @@
 ;; eat - Terminal emulator
 (use-package eat)
 
-;; claude-code-ide.el - Claude Code IDE integration (anti-flicker rendering)
+;; claude-code-ide.el - Claude Code IDE integration
 (use-package claude-code-ide
   :bind (("C-c c c" . claude-code-ide)
          ("C-c c m" . claude-code-ide-menu)
@@ -74,6 +74,7 @@
   :config
   (setq claude-code-ide-terminal-backend 'vterm)
   (setq claude-code-ide-use-side-window nil)
+  (claude-code-ide-emacs-tools-setup)
   ;; Add Alt-Enter for newline insertion in claude-code buffers
   (add-hook 'vterm-mode-hook
             (lambda ()
@@ -119,6 +120,15 @@
   (interactive)
   (claude-code-ide--open-on-primary #'claude-code-ide-resume))
 
+
+;; emacs-mcp-server - MCP server exposing Emacs to Claude Code
+;; Provides eval-elisp and get-diagnostics tools
+;; Setup: git clone https://github.com/rhblind/emacs-mcp-server ~/github/rhblind/emacs-mcp-server
+(let ((mcp-dir (expand-file-name "~/github/rhblind/emacs-mcp-server")))
+  (when (file-directory-p mcp-dir)
+    (add-to-list 'load-path mcp-dir)
+    (require 'mcp-server)
+    (mcp-server-start-unix)))
 
 (provide 'init-ai)
 ;;; init-ai.el ends here
