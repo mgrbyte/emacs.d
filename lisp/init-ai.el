@@ -63,6 +63,7 @@
 
 ;; claude-code-ide.el - Claude Code IDE integration
 (use-package claude-code-ide
+  :demand t
   :bind (("C-c c c" . claude-code-ide)
          ("C-c c m" . claude-code-ide-menu)
          ("C-c c k" . claude-code-ide-continue)
