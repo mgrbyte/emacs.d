@@ -202,7 +202,10 @@ Selecting a session switches to its tmux window."
    ("d" "Start in directory" mgrbyte-claude-ide-external-in-directory)
    ("R" "Resume in directory" mgrbyte-claude-ide-external-resume-in-directory)])
 
-;;;; Auto-dependency discovery (requires toml and projectile)
+;;;; Auto-dependency discovery
+
+(require 'toml)
+(require 'projectile)
 
 (defvar mgrbyte-claude-dep-name-prefixes '("techiaith")
   "Dependency name prefixes that indicate locally-maintained libraries.")
