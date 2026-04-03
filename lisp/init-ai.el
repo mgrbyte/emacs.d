@@ -4,19 +4,16 @@
 ;; Packages are installed via Nix (see nix-config/home/packages.nix)
 ;;; Code:
 
-;; Fix Unicode character width for Claude Code spinner/bullet rendering
+;; Unicode width overrides for Claude Code — commented out for baseline testing
 ;; See: https://github.com/manzaltu/claude-code-ide.el/issues/131
-(dolist (range '((#x23FA . #x23FA)  ; ⏺ bullet
-                 (#x2500 . #x257F)  ; Box drawing characters
-                 (#x2580 . #x259F)  ; Block elements
-                 (#x25A0 . #x25FF)  ; Geometric shapes
-                 (#x2700 . #x27BF)  ; Dingbats (spinner chars)
-                 (#x2200 . #x22FF)  ; Math operators
-                 (#x2800 . #x28FF))) ; Braille patterns (progress indicators)
-  (set-char-table-range char-width-table range 1))
-
-;; Increase Emacs process read buffer for smoother terminal output
-(setq read-process-output-max (* 64 1024))
+;; (dolist (range '((#x23FA . #x23FA)  ; ⏺ bullet
+;;                  (#x2500 . #x257F)  ; Box drawing characters
+;;                  (#x2580 . #x259F)  ; Block elements
+;;                  (#x25A0 . #x25FF)  ; Geometric shapes
+;;                  (#x2700 . #x27BF)  ; Dingbats (spinner chars)
+;;                  (#x2200 . #x22FF)  ; Math operators
+;;                  (#x2800 . #x28FF))) ; Braille patterns (progress indicators)
+;;   (set-char-table-range char-width-table range 1))
 
 ;; gptel - LLM client (for local models via Ollama, not Claude)
 (use-package gptel
@@ -82,8 +79,6 @@
   :config
   (setq claude-code-ide-terminal-backend 'vterm)
   (setq claude-code-ide-use-side-window nil)
-  (setq claude-code-ide-no-flicker t)
-  (setq claude-code-ide-vterm-render-delay 0.01)
   (claude-code-ide-emacs-tools-setup)
   ;; Rebuild tool lists — workaround for load-order bug where
   ;; claude-code-ide-mcp-handlers.el builds the tool list at require
@@ -98,15 +93,10 @@
                 (local-set-key (kbd "M-<return>") #'claude-code-ide-insert-newline)))))
 
 ;; vterm-anti-flicker-filter - reduces vterm flickering during rapid redraws
-;; Exclude claude-code buffers — claude-code-ide has its own smart renderer
-;; that conflicts with this package (both advise vterm--filter).
 (use-package vterm-anti-flicker-filter
   :after vterm
   :config
-  (add-hook 'vterm-mode-hook
-            (lambda ()
-              (unless (string-match-p "\\*claude-code" (buffer-name))
-                (vterm-anti-flicker-filter-enable)))))
+  (add-hook 'vterm-mode-hook #'vterm-anti-flicker-filter-enable))
 
 
 (defun claude-code-ide--open-on-primary (start-fn)
