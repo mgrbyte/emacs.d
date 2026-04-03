@@ -1,1 +1,13 @@
+.lsp-session*/
 .claude/
+/.lsp-session-v1
+/.cache/
+/elpa/
+/recentf
+/transient/
+*.backup
+/bookmarks
+*.old
+/projectile-bookmarks.eld
+/tramp
+/projects

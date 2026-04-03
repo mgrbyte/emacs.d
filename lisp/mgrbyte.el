@@ -400,5 +400,22 @@ The environment variable should point to a file with one tip per line."
     (set-frame-position (selected-frame) (nth 0 workarea) (nth 1 workarea))
     (run-at-time 0.1 nil (lambda () (set-frame-parameter nil 'fullscreen 'maximized)))))
 
+(defun mgrbyte-say-baa ()
+  "Insert an ASCII sheep jumping over a five-bar gate into the current buffer.
+
+  "
+  (interactive)
+  (insert "                   <^__^>\n")
+  (insert "         ~~BAAA!~~  (oo)\\_______\n")
+  (insert "           \\\\     (__)\\       )\\/\\\n")
+  (insert "            \\\\     u  ||-----+\n")
+  (insert "             \\\\       ||     ||\n")
+  (insert "        |    |========================|    |\n")
+  (insert "        |    |========================|    |\n")
+  (insert "        |    |========================|    |\n")
+  (insert "        |    |========================|    |\n")
+  (insert "        |    |========================|    |\n")
+  (insert "        |____|________________________|____|\n"))
+
 (provide 'mgrbyte)
 ;;; mgrbyte.el ends here
