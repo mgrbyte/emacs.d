@@ -1,25 +1,14 @@
-# Another Opinionated Emacs Development Environment
+# mgrbyte's Emacs Development Environment
 
-A collection of [emacs-lisp] code tailored for [Python], [Clojure] and
-[lisp] web development.
+A collection of [emacs-lisp] code tailored for [Python], [Clojure] and [lisp] development.
 
-One of the primary motivations for this package is to provide a consistent,
-useful development environment.
+This is my personal development environment, now managed via [nix].
 
-It is also opinionated, providing mode hooks for a host of extensions.
-
-Each of these can of course be overridden/configured as you prefer.
+One of the primary motivations for this package is to provide a consistent, useful development environment.
 
 [use-package] is used to configure the default set of packages that will be installed.
 
-See the [use-package] statements in ``.emacs.d/init.el``.
-
 This [Emacs] setup assumes Emacs 24 or higher.
-
-[Cask]  is used for package management and installation (via [pallet-mode]).
-
-Please see the documentation in [docs] for installation, custom
-configuration and more.
 
 Read the [hacking guide] for a guide on developing [emacs.d].
    
@@ -40,20 +29,15 @@ Always run:
   `M-x chekdoc`
 
 on any `.el` files before commiting them.
-
-
-[Cask]: https://github.com/cask/cask
+[nix]: https://github.com/mgrbyte/nix-config.git
 [Clojure]: https://www.clojure.org
-[Contribution guidelines]: blobs/master/CONTRIBUTING.rst
 [Emacs]: https://www.gnu.org/software/emacs/
 [Python]: https://www.python.org
 [docs]: docs
 [emacs-lisp]: https://en.wikipedia.org/wiki/Emacs_Lisp
-[emacs.d]: https://github.com/mgrbyte/emacs.d
+[emacs.d]: https://github.com/mgrbyte/emacs.d.git
 [raise an issue]: https://github.com/mgrbyte/emacs.d/issues/new
 [hacking guide]: HACKING.md
-[jedi]: https://github.com/tkf/emacs-jedi
 [lisp]: https://en.wikipedia.org/wiki/Lisp_%28programming_language%29
-[pallet-mode]: https://github.com/rdallasgray/pallet
 [python-mode]: https://github.com/fgallina/python.el
 [use-package]: https://github.com/jwiegley/use-package

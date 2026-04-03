@@ -33,7 +33,7 @@ to buffer-local variables.
 Use hooks judiciously, especially those involved with saving.
 
 ## Releases
-Please use semantic versioning with ```git tag -a```.
+Use semantic versioning with ```git tag -a```.
 
 
 
