@@ -60,8 +60,8 @@
     (define-key map (kbd "C-c n c") 'mgrbyte-filename-to-clipboard)
 
     ;; Overrides for builtin commands
-    (define-key map (kbd "C-x r b" 'revert-buffer))
-    (define-key map (kbd "C-x j b" 'bookmark-jump))
+    (define-key map (kbd "C-x r b") 'revert-buffer)
+    (define-key map (kbd "C-x j b") 'bookmark-jump)
     (define-key map (kbd "M-c") 'capitalize-word)
     (define-key map (kbd "M-g f") 'list-faces-display)
     (define-key map (kbd "M-s x") 'replace-regexp)
