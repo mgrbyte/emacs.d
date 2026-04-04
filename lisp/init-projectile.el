@@ -16,8 +16,7 @@
   (setq projectile-project-search-path '(("~/github/mgrbyte" . 1)
                                          ("~/gitlab/mtr21pqh" . 2)
                                          ("~/gitlab/cyfieithu-ac-llms" . 3)
-                                         ("~/huggingface/spaces" . 2)))
-  (add-hook 'projectile-after-switch-project-hook #'mgrbyte-claude-configure-add-dirs))
+                                         ("~/huggingface/spaces" . 2))))
 
 (provide 'init-projectile)
 ;;; init-projectile.el ends here
