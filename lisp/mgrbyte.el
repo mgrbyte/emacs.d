@@ -67,7 +67,6 @@
     (define-key map (kbd "C-c n c") 'mgrbyte-filename-to-clipboard)
 
     ;; Overrides for builtin commands
-    (define-key map (kbd "C-x r b") 'mgrbyte-revert-buffer)
     (define-key map (kbd "M-c") 'capitalize-word)
     (define-key map (kbd "M-g f") 'list-faces-display)
     (define-key map (kbd "M-s x") 'replace-regexp)
@@ -245,14 +244,16 @@ Nicked from http://emacsredux.com/blog/2013/04/21/edit-files-as-root/"
           (find-file (file-name-concat project-root found))
         (switch-to-buffer "*scratch*")))
     ;; Show treemacs for this project (defer to after projectile finishes)
-    (let ((editor-win (selected-window))
-          (root project-root))
+    (let ((editor-win (selected-window)))
       (run-with-idle-timer
-       0.1 nil
+       0.5 nil
        (lambda ()
-         (treemacs-add-and-display-current-project-exclusively)
-         (when (window-live-p editor-win)
-           (select-window editor-win)))))))
+         (condition-case err
+             (progn
+               (treemacs-add-and-display-current-project-exclusively)
+               (when (window-live-p editor-win)
+                 (select-window editor-win)))
+           (error (message "mgrbyte-project-layout: treemacs error: %s" err))))))))
 
 (defun mgrbyte-show-dashboard ()
   "Return to dashboard, full frame."

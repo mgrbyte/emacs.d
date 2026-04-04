@@ -19,6 +19,7 @@
 ;; Bookmarks
 (use-package bookmark
   :config
+  (define-key ctl-x-r-map (kbd "b") 'mgrbyte-revert-buffer)
   (define-key global-map [menu-bar bookmarks]
     (cons "Bookmarks" (make-sparse-keymap "Bookmarks")))
   (define-key global-map
