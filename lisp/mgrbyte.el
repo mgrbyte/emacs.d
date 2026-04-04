@@ -1,3 +1,4 @@
+
 ;;; mgrbyte.el --- Custom modes -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2014-2026  Matthew Russell
@@ -40,15 +41,14 @@
 ;; User identity
 (setq user-full-name "Matt Russell")
 
-;; Set default user-mail-address from encrypted netrc
-(setq user-mail-address (mgrbyte-get-email-for-server "default-identity"))
-
 (defun mgrbyte-get-email-for-server (server)
   "Get login (email address) for SERVER from auth-source."
   (let ((found (auth-source-search :host server :max 1)))
     (when found
       (plist-get (car found) :user))))
 
+;; Set default user-mail-address from encrypted netrc
+(setq user-mail-address (mgrbyte-get-email-for-server "default-identity"))
 
 (defun mgrbyte-revert-buffer ()
   "Revert buffer without prompting."
