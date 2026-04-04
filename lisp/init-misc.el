@@ -38,7 +38,8 @@
     '("Add bookmark" . bookmark-set))
   (define-key global-map
     [menu-bar bookmarks bookmark-jump]
-    '("Goto bookmark" . bookmark-jump)))
+    '("Goto bookmark" . bookmark-jump))
+  (define-key map (kbd ("C-x j b") 'bookmark-jump)))
 
 ;; Emacs server
 (use-package server
@@ -55,7 +56,6 @@
 
 ;; Google search
 (use-package google-this
-
   :defer t)
 
 ;; Terminal

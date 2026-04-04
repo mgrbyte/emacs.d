@@ -40,14 +40,21 @@
 ;; User identity
 (setq user-full-name "Matt Russell")
 
+;; Set default user-mail-address from encrypted netrc
+(setq user-mail-address (mgrbyte-get-email-for-server "default-identity"))
+
 (defun mgrbyte-get-email-for-server (server)
   "Get login (email address) for SERVER from auth-source."
   (let ((found (auth-source-search :host server :max 1)))
     (when found
       (plist-get (car found) :user))))
 
-;; Set default user-mail-address from encrypted netrc
-(setq user-mail-address (mgrbyte-get-email-for-server "default-identity"))
+
+(defun mgrbyte-revert-buffer ()
+  "Revert buffer without prompting."
+  (interactive)
+  (revert-buffer nil t t)
+  (message (concat "Reverted buffer " (buffer-name))))
 
 ;; Set font for all frames
 (defvar mgrbyte-default-font "Menlo 14")
@@ -60,8 +67,7 @@
     (define-key map (kbd "C-c n c") 'mgrbyte-filename-to-clipboard)
 
     ;; Overrides for builtin commands
-    (define-key map (kbd "C-x r b") 'revert-buffer)
-    (define-key map (kbd "C-x j b") 'bookmark-jump)
+    (define-key map (kbd "C-x r b") 'mgrbyte-revert-buffer)
     (define-key map (kbd "M-c") 'capitalize-word)
     (define-key map (kbd "M-g f") 'list-faces-display)
     (define-key map (kbd "M-s x") 'replace-regexp)
