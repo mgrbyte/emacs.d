@@ -122,9 +122,9 @@ RESUME and CONTINUE control -r and -c flags respectively."
       (when continue (setq script-args (append script-args (list "--continue"))))
       (when allowed-tools
         (setq script-args (append script-args (list "--allowed-tools" allowed-tools))))
-      (when (and claude-code-ide-cli-extra-flags
-                 (not (string-empty-p claude-code-ide-cli-extra-flags)))
-        (setq script-args (append script-args (list "--extra-flags" claude-code-ide-cli-extra-flags))))
+      (let ((add-dir-flags (mgrbyte-claude--resolve-add-dir-flags working-dir)))
+        (when add-dir-flags
+          (setq script-args (append script-args (list "--extra-flags" add-dir-flags)))))
       ;; Kill any stale tmux window
       (ignore-errors
         (call-process "tmux" nil nil nil "kill-window" "-t" window-name))
@@ -236,8 +236,8 @@ for projects where the manifest is not at root (e.g. \"backend/pyproject.toml\")
 Returns a list of dependency names matching `mgrbyte-claude-dep-name-prefixes'."
   (when (file-exists-p pyproject-path)
     (let* ((data (toml:read-from-file pyproject-path))
-           (project (gethash "project" data))
-           (deps (when project (gethash "dependencies" project))))
+           (project (cdr (assoc "project" data)))
+           (deps (when project (cdr (assoc "dependencies" project)))))
       (when deps
         (cl-remove-if-not
          #'mgrbyte-claude--matches-prefix-p
@@ -274,60 +274,130 @@ Returns a list of unique directory paths."
   (mapconcat (lambda (dir) (concat "--add-dir " (shell-quote-argument dir)))
              dirs " "))
 
-(defun mgrbyte-claude-configure-add-dirs ()
-  "Configure `claude-code-ide-cli-extra-flags' with --add-dir for local deps.
-Intended for use on `projectile-after-switch-project-hook'.
-Reads `mgrbyte-claude-library-locations' and `mgrbyte-claude-pyproject-path'
-from dir-local variables."
-  (when mgrbyte-claude-library-locations
-    (let* ((project-root (projectile-project-root))
-           (pyproject-rel (or mgrbyte-claude-pyproject-path "pyproject.toml"))
-           (pyproject-abs (expand-file-name pyproject-rel project-root))
-           (dep-dirs (mgrbyte-claude-resolve-deps-recursive
-                      pyproject-abs
-                      mgrbyte-claude-library-locations
-                      mgrbyte-claude-max-dep-depth)))
-      (when dep-dirs
-        (setq claude-code-ide-cli-extra-flags
-              (mgrbyte-claude--build-add-dir-flags dep-dirs))
-        (message "mgrbyte-claude: configured --add-dir for %d dependencies"
-                 (length dep-dirs))))))
+(defun mgrbyte-claude--resolve-add-dir-flags (working-dir)
+  "Resolve --add-dir flags for WORKING-DIR from its .dir-locals.el.
+Returns a flags string, or nil if no deps found."
+  (let* ((dir-locals-file (expand-file-name ".dir-locals.el" working-dir))
+         (dir-locals (mgrbyte-claude--read-dir-locals dir-locals-file))
+         (nil-alist (cdr (assq nil dir-locals)))
+         (locations (cdr (assq 'mgrbyte-claude-library-locations nil-alist)))
+         (pyproject-rel (or (cdr (assq 'mgrbyte-claude-pyproject-path nil-alist))
+                            "pyproject.toml")))
+    (when locations
+      (let* ((pyproject-abs (expand-file-name pyproject-rel working-dir))
+             (dep-dirs (mgrbyte-claude-resolve-deps-recursive
+                        pyproject-abs locations
+                        mgrbyte-claude-max-dep-depth)))
+        (when dep-dirs
+          (message "mgrbyte-claude: resolved --add-dir for %d dependencies"
+                   (length dep-dirs))
+          (mgrbyte-claude--build-add-dir-flags dep-dirs))))))
 
-(defun mgrbyte-claude-setup-dir-locals ()
-  "Configure .dir-locals.el for Claude dependency resolution.
-Prompts for library parent directories from `projectile-known-projects'
-and optionally a custom pyproject.toml path.  Writes or updates
-.dir-locals.el in the current project root."
+(defvar mgrbyte-claude--project-markers '(".git" "pyproject.toml" "flake.nix"
+                                          "package.json" "Cargo.toml" "go.mod")
+  "Files that indicate a directory is a project root (stop recursing).")
+
+(defun mgrbyte-claude--project-root-p (dir)
+  "Return non-nil if DIR contains a project marker file."
+  (cl-some (lambda (marker) (file-exists-p (expand-file-name marker dir)))
+           mgrbyte-claude--project-markers))
+
+(defun mgrbyte-claude--subdirs (dir depth)
+  "Return non-project subdirectories of DIR up to DEPTH levels.
+Stops recursing into directories that are project roots."
+  (when (and (> depth 0) (file-directory-p dir))
+    (let ((subdirs (cl-remove-if-not
+                    #'file-directory-p
+                    (directory-files dir t "^[^.]"))))
+      (cl-loop for sub in subdirs
+               unless (mgrbyte-claude--project-root-p sub)
+               collect sub
+               and append (mgrbyte-claude--subdirs sub (1- depth))))))
+
+(defun mgrbyte-claude--read-dir-locals (dir-locals-file)
+  "Read existing .dir-locals.el from DIR-LOCALS-FILE, or nil."
+  (when (file-exists-p dir-locals-file)
+    (with-temp-buffer
+      (insert-file-contents dir-locals-file)
+      (read (current-buffer)))))
+
+(defun mgrbyte-claude--write-dir-locals (dir-locals-file nil-alist)
+  "Write NIL-ALIST as the nil mode entry in DIR-LOCALS-FILE.
+Preserves other mode entries if present."
+  (let* ((existing (mgrbyte-claude--read-dir-locals dir-locals-file))
+         (new-locals (cons (cons nil nil-alist)
+                           (assq-delete-all nil existing))))
+    (with-temp-file dir-locals-file
+      (pp new-locals (current-buffer)))))
+
+(defun mgrbyte-claude-setup-library-locations ()
+  "Select library parent directories for Claude --add-dir resolution.
+Presents projectile known projects in a helm multi-select buffer.
+Writes `mgrbyte-claude-library-locations' to .dir-locals.el."
   (interactive)
   (let ((project-root (projectile-project-root)))
     (unless project-root
       (user-error "Not in a project"))
-    (let* ((known-projects (projectile-relevant-known-projects))
-           (selected (completing-read-multiple
-                      "Library parent directories: "
-                      known-projects))
-           (locations (mapcar #'directory-file-name selected))
-           (pyproject-at-root (file-exists-p
-                               (expand-file-name "pyproject.toml" project-root)))
-           (pyproject-path (unless pyproject-at-root
-                             (read-string "Relative path to pyproject.toml (e.g. backend/pyproject.toml): ")))
+    (let* ((candidates
+            (delete-dups
+             (cl-loop
+              for entry in projectile-project-search-path
+              for root = (expand-file-name (if (consp entry) (car entry) entry))
+              for depth = (if (consp entry) (cdr entry) 1)
+              collect root
+              append (mgrbyte-claude--subdirs root depth))))
+           (selected (helm-comp-read
+                      "Library parent directories (mark with C-SPC): "
+                      (sort candidates #'string<)
+                      :marked-candidates t))
+           (locations (mapcar #'directory-file-name
+                              (if (listp selected) selected (list selected))))
            (dir-locals-file (expand-file-name ".dir-locals.el" project-root))
-           (existing (when (file-exists-p dir-locals-file)
-                       (with-temp-buffer
-                         (insert-file-contents dir-locals-file)
-                         (read (current-buffer)))))
+           (existing (mgrbyte-claude--read-dir-locals dir-locals-file))
            (nil-alist (or (cdr (assq nil existing)) '()))
            (nil-alist (cons (cons 'mgrbyte-claude-library-locations locations)
                             (assq-delete-all 'mgrbyte-claude-library-locations nil-alist))))
-      (when (and pyproject-path (not (string-empty-p pyproject-path)))
-        (setq nil-alist (cons (cons 'mgrbyte-claude-pyproject-path pyproject-path)
-                              (assq-delete-all 'mgrbyte-claude-pyproject-path nil-alist))))
-      (let ((new-locals (cons (cons nil nil-alist)
-                              (assq-delete-all nil existing))))
-        (with-temp-file dir-locals-file
-          (pp new-locals (current-buffer))))
+      (mgrbyte-claude--write-dir-locals dir-locals-file nil-alist)
       (hack-dir-local-variables-non-file-buffer)
-      (message "mgrbyte-claude: wrote %s" dir-locals-file))))
+      (message "mgrbyte-claude: wrote library locations to %s" dir-locals-file))))
+
+(defun mgrbyte-claude-setup-pyproject-path ()
+  "Set the relative path to pyproject.toml for the current project.
+Only needed when pyproject.toml is not at the project root.
+Writes `mgrbyte-claude-pyproject-path' to .dir-locals.el."
+  (interactive)
+  (let ((project-root (projectile-project-root)))
+    (unless project-root
+      (user-error "Not in a project"))
+    (let* ((pyproject-at-root (file-exists-p
+                               (expand-file-name "pyproject.toml" project-root)))
+           (pyproject-files
+            (unless pyproject-at-root
+              (let ((results '()))
+                (dolist (f (directory-files project-root t "^[^.]" t))
+                  (when (file-directory-p f)
+                    (let ((candidate (expand-file-name "pyproject.toml" f)))
+                      (when (file-exists-p candidate)
+                        (push (file-relative-name candidate project-root) results)))))
+                (nreverse results))))
+           (pyproject-path
+            (cond
+             (pyproject-at-root
+              (message "pyproject.toml found at project root, no override needed") nil)
+             ((null pyproject-files)
+              (message "No pyproject.toml found in project") nil)
+             ((= (length pyproject-files) 1)
+              (car pyproject-files))
+             (t (helm-comp-read "Select pyproject.toml: " pyproject-files)))))
+      (when pyproject-path
+        (let* ((dir-locals-file (expand-file-name ".dir-locals.el" project-root))
+               (existing (mgrbyte-claude--read-dir-locals dir-locals-file))
+               (nil-alist (or (cdr (assq nil existing)) '()))
+               (nil-alist (cons (cons 'mgrbyte-claude-pyproject-path pyproject-path)
+                                (assq-delete-all 'mgrbyte-claude-pyproject-path nil-alist))))
+          (mgrbyte-claude--write-dir-locals dir-locals-file nil-alist)
+          (hack-dir-local-variables-non-file-buffer)
+          (message "mgrbyte-claude: wrote pyproject path '%s' to %s" pyproject-path dir-locals-file))))))
 
 (provide 'mgrbyte-claude)
 ;;; mgrbyte-claude.el ends here
