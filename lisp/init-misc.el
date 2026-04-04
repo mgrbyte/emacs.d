@@ -39,7 +39,7 @@
   (define-key global-map
     [menu-bar bookmarks bookmark-jump]
     '("Goto bookmark" . bookmark-jump))
-  (define-key map (kbd ("C-x j b") 'bookmark-jump)))
+  (define-key map (kbd ("C-x j b")) 'bookmark-jump))
 
 ;; Emacs server
 (use-package server
