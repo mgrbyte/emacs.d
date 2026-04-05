@@ -1,4 +1,3 @@
-
 ;;; mgrbyte.el --- Custom modes -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2014-2026  Matthew Russell
