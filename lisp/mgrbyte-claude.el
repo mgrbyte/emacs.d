@@ -131,6 +131,11 @@ RESUME and CONTINUE control -r and -c flags respectively."
       ;; Launch in tmux — pass script and args directly (no shell quoting)
       (apply #'call-process "tmux" nil nil nil
              "new-window" "-n" window-name script-args)
+      ;; Select the new tmux window and focus Alacritty
+      (call-process "tmux" nil nil nil "select-window" "-t" window-name)
+      (when (eq system-type 'darwin)
+        (call-process "osascript" nil nil nil "-e"
+                      "tell application \"Alacritty\" to activate"))
       ;; Notify MCP tools server about the session
       (claude-code-ide-mcp-server-session-started session-id working-dir nil)
       ;; Track the session
