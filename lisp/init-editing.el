@@ -14,7 +14,7 @@
 
 (use-package paren
   :config
-  (setq show-paren-style 'expression)
+  (setq show-paren-style 'parenthesis)
   :init
   (show-paren-mode 1))
 
