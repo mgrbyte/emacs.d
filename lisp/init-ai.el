@@ -53,11 +53,33 @@
   (setq claude-code-ide-mcp-tool-schemas (claude-code-ide-mcp--build-tool-schemas))
   (setq claude-code-ide-mcp-tool-descriptions (claude-code-ide-mcp--build-tool-descriptions)))
 
+;; Fix: revert file buffer after accepting ediff changes from claude-code-ide.
+;; Ediff leaves buffer A dirty after comparison. Without this, subsequent edits
+;; to the same file cause A/B buffer swap and "changed on disk" prompts.
+(defun mgrbyte-revert-buffer-after-ediff-accept (tab-name &optional session)
+  "Revert file buffer after accepting ediff changes from claude-code-ide."
+  (let* ((active-diffs (claude-code-ide-mcp--get-active-diffs session))
+         (diff-info (gethash tab-name active-diffs)))
+    (when diff-info
+      (let ((file-buf (alist-get 'buffer-A diff-info)))
+        (run-with-idle-timer 1.0 nil
+                             (lambda ()
+                               (when (and file-buf
+                                          (buffer-live-p file-buf)
+                                          (buffer-file-name file-buf))
+                                 (with-current-buffer file-buf
+                                   (revert-buffer t t t)))))))))
+
+(advice-add 'claude-code-ide-mcp--handle-ediff-quit
+            :after #'mgrbyte-revert-buffer-after-ediff-accept)
+
 ;; emacs-mcp-server — exposes Emacs to Claude Code via MCP unix socket
 (use-package mcp-server
   :demand t
   :config
-  (mcp-server-start-unix))
+  (mcp-server-start-unix)
+  :custom
+  (mcp-server-security-dangerous-functions '(find-file with-current-buffer insert-file-contents)))
 
 ;; mgrbyte-claude — external terminal integration and auto-dependency discovery
 (require 'mgrbyte-claude)
