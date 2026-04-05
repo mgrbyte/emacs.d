@@ -35,10 +35,6 @@
   :config
   (setq-default powerline-default-separator 'wave))
 
-;; Maximize frames by default (works better than hooks for multi-monitor)
-(add-to-list 'initial-frame-alist '(fullscreen . maximized))
-(add-to-list 'default-frame-alist '(fullscreen . maximized))
-
 ;; Late initialization - runs after init.el fully loaded (daemon startup)
 (add-hook 'emacs-startup-hook
           (lambda ()
