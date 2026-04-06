@@ -39,7 +39,14 @@
 (add-hook 'emacs-startup-hook
           (lambda ()
             (add-to-list 'default-frame-alist (cons 'font mgrbyte-default-font))
-            (load-theme 'abyss t)))
+            (when-let ((tokyo-lib (locate-library "tokyo-night-theme")))
+              (add-to-list 'custom-theme-load-path (file-name-directory tokyo-lib)))
+            (load-theme 'tokyo-night t)
+            ;; Overrides for colour-blind accessibility
+            (set-face-foreground 'font-lock-function-name-face "#b4f9f8")
+            (set-face-foreground 'font-lock-doc-face "#41a6b5")
+            (set-face-foreground 'font-lock-builtin-face "#ff9e64")
+            (set-face-foreground 'font-lock-constant-face "#7ddfff")))
 
 (provide 'init-gui-frames)
 ;;; init-gui-frames.el ends here
