@@ -56,7 +56,7 @@
   (message (concat "Reverted buffer " (buffer-name))))
 
 ;; Set font for all frames
-(defvar mgrbyte-default-font "Menlo 14")
+(defvar mgrbyte-default-font "Hack Nerd Font 14")
 
 (defvar mgrbyte-keymap
   (let ((map (make-sparse-keymap)))
