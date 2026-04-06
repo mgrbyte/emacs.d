@@ -8,14 +8,15 @@
 (when (eq system-type 'gnu/linux)
   (setq x-meta-keysym 'super)
 
-  ;; Emacs 30 daemon mode: make-frame no longer reliably inherits the display
-  ;; from the current frame, falling back to the daemon's TTY and crashing.
-  ;; Explicitly pass the current frame's display to ediff's control frame.
+  ;; Emacs 30 daemon mode: make-frame no longer reliably inherits the terminal
+  ;; from the current frame. Passing 'display causes GTK to open a new display
+  ;; connection which crashes fatally on Wayland. Pass the terminal object
+  ;; directly so make-frame reuses the existing connection.
   (with-eval-after-load 'ediff-wind
     (advice-add 'ediff-setup-control-frame :around
                 (lambda (orig-fun &rest args)
                   (let ((ediff-control-frame-parameters
-                         (cons (cons 'display (frame-parameter (selected-frame) 'display))
+                         (cons (cons 'terminal (frame-terminal (selected-frame)))
                                ediff-control-frame-parameters)))
                     (apply orig-fun args))))))
 
