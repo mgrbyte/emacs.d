@@ -26,11 +26,16 @@
 (use-package ediff
   :config
   (setq ediff-shell (getenv "$SHELL"))
+  ;; In daemon mode cannot create new top-level frames programmatically
+  ;; when using GUI on MacOS (Quartz) nor NixOS (GTK3), causing a crash,
+  ;; thus fallback to using plain (single-frame) layout for ediff's control panel.
+  (with-eval-after-load 'ediff-wind
+    (when (daemonp)
+      (setq ediff-window-setup-function 'ediff-setup-windows-plain)))
   (setq-default ediff-split-window-function
                 (quote split-window-vertically)))
 
-(use-package gist
-)
+(use-package gist)
 
 (provide 'init-git)
 ;;; init-git.el ends here
