@@ -79,7 +79,8 @@
   :config
   (mcp-server-start-unix)
   :custom
-  (mcp-server-security-dangerous-functions '(find-file with-current-buffer insert-file-contents)))
+  (mcp-server-security-dangerous-functions '(find-file with-current-buffer insert-file-contents))
+  (mcp-server-security-allowed-dangerous-functions '(find-file with-current-buffer)))
 
 ;; mgrbyte-claude — external terminal integration and auto-dependency discovery
 (require 'mgrbyte-claude)
