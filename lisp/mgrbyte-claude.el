@@ -133,9 +133,18 @@ RESUME and CONTINUE control -r and -c flags respectively."
              "new-window" "-n" window-name script-args)
       ;; Select the new tmux window and focus Alacritty
       (call-process "tmux" nil nil nil "select-window" "-t" window-name)
-      (when (eq system-type 'darwin)
+      (cond
+       ((eq system-type 'darwin)
         (call-process "osascript" nil nil nil "-e"
                       "tell application \"Alacritty\" to activate"))
+       ((eq system-type 'gnu/linux)
+        ;; focus-window@mgrbyte GNOME Shell extension provides this interface
+        (call-process "gdbus" nil nil nil
+                      "call" "--session"
+                      "--dest" "org.gnome.Shell"
+                      "--object-path" "/org/mgrbyte/FocusWindow"
+                      "--method" "org.mgrbyte.FocusWindow.FocusWindowByClass"
+                      "Alacritty")))
       ;; Notify MCP tools server about the session
       (claude-code-ide-mcp-server-session-started session-id working-dir nil)
       ;; Track the session
