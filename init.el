@@ -48,7 +48,6 @@
 
 ;; Platform/GUI
 (require 'init-osx)
-(require 'init-linux)
 (require 'init-welsh)
 (require 'init-gui-frames)
 

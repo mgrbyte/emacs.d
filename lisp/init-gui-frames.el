@@ -3,6 +3,10 @@
 ;; Setup fonts, theme, and frame position
 ;;; Code:
 
+;; Allow pixel-level frame resizing so tiling fills the full work area
+;; without gaps from character-row boundary snapping (safe on all platforms).
+(setq frame-resize-pixelwise t)
+
 ;; Disable UI elements
 (use-package menu-bar
   :config (menu-bar-mode 0))
