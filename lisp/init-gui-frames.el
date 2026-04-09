@@ -9,6 +9,7 @@
 
 (use-package tool-bar
   :config
+  (scroll-bar-mode 0)
   (tool-bar-mode 0)
   :bind (("C-c t" . tool-bar-mode)))
 
