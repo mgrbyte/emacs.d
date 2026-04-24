@@ -241,7 +241,7 @@ Nicked from http://emacsredux.com/blog/2013/04/21/edit-files-as-root/"
                   mgrbyte-projectile-open-first-match-list)))
       (if found
           (find-file (file-name-concat project-root found))
-        (switch-to-buffer "*scratch*")))
+        (dired project-root)))
     ;; Show treemacs for this project (defer to after projectile finishes)
     (let ((editor-win (selected-window)))
       (run-with-idle-timer
