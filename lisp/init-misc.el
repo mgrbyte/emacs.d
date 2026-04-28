@@ -10,7 +10,12 @@
   (setq tramp-default-remote-shell "/bin/zsh")
   (setq tramp-encoding-shell "/bin/zsh")
   (setq tramp-shell-prompt-pattern
-        "^[^$>\n]*[#$%>] *\\(\[[0-9;]*[a-zA-Z] *\\)*"))
+        "^[^$>\n]*[#$%>] *\\(\[[0-9;]*[a-zA-Z] *\\)*")
+  (setq tramp-verbose 1)
+  (setq tramp-direct-async-process t)
+  (setq tramp-use-ssh-controlmaster-options nil)
+  (setq remote-file-name-inhibit-locks t)
+  (setq remote-file-name-inhibit-auto-save-visited t))
 
 ;; Shell
 (use-package shell
