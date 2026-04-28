@@ -55,7 +55,26 @@
     :priority 1
     :add-on? nil))
   (add-to-list 'lsp-disabled-clients 'pylsp)
-  (add-to-list 'lsp-disabled-clients 'pyright))
+  (add-to-list 'lsp-disabled-clients 'pyright)
+  (add-to-list 'lsp-disabled-clients 'semgrep-ls-tramp)
+  (add-to-list 'lsp-disabled-clients 'pyls-tramp)
+  (add-to-list 'lsp-disabled-clients 'pylsp-tramp)
+  ;; Register ty for TRAMP (works once ty is installed on remote host)
+  (lsp-register-client
+   (make-lsp-client
+    :new-connection (lsp-tramp-connection '("ty" "server"))
+    :major-modes '(python-mode)
+    :remote? t
+    :server-id 'ty-tramp
+    :priority 1
+    :add-on? nil)))
+
+;; Disable python indent guessing over TRAMP (hangs trying to run python remotely)
+(defun mgrbyte-disable-indent-guess-for-tramp ()
+  "Disable Python indent guessing for remote files."
+  (when (file-remote-p (or buffer-file-name default-directory ""))
+    (setq-local python-indent-guess-indent-offset nil)))
+(add-hook 'python-mode-hook #'mgrbyte-disable-indent-guess-for-tramp)
 
 ;; Python mode LSP hook - start ty + ruff
 ;; Format with ruff on save (ty does not support documentFormattingProvider)

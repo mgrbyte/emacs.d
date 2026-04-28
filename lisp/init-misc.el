@@ -15,7 +15,29 @@
   (setq tramp-direct-async-process t)
   (setq tramp-use-ssh-controlmaster-options nil)
   (setq remote-file-name-inhibit-locks t)
-  (setq remote-file-name-inhibit-auto-save-visited t))
+  (setq remote-file-name-inhibit-auto-save-visited t)
+
+  ;; Skip treemacs project-follow over TRAMP (timer causes SSH round-trips)
+  (defun mgrbyte-treemacs-follow-project-no-tramp (orig-fun &rest args)
+    "Skip treemacs project following for remote buffers."
+    (unless (file-remote-p default-directory)
+      (apply orig-fun args)))
+  (with-eval-after-load 'treemacs
+    (advice-add 'treemacs--do-follow-project :around #'mgrbyte-treemacs-follow-project-no-tramp))
+
+  ;; Skip project-try-vc over TRAMP (walks directory tree, each dir is a round-trip)
+  (defun mgrbyte-project-try-vc-no-tramp (orig-fun dir)
+    "Skip project-try-vc for TRAMP paths."
+    (unless (file-remote-p dir)
+      (funcall orig-fun dir)))
+  (advice-add 'project-try-vc :around #'mgrbyte-project-try-vc-no-tramp)
+
+  ;; Skip vc-refresh-state over TRAMP (runs git on every file open)
+  (defun mgrbyte-vc-refresh-state-no-tramp (orig-fun &rest args)
+    "Disable VC state refresh for TRAMP files."
+    (unless (file-remote-p default-directory)
+      (apply orig-fun args)))
+  (advice-add 'vc-refresh-state :around #'mgrbyte-vc-refresh-state-no-tramp))
 
 ;; Shell
 (use-package shell
