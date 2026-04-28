@@ -80,7 +80,11 @@
     :remote? t
     :server-id 'ty-tramp
     :priority 1
-    :add-on? nil)))
+    :add-on? nil
+    :initialization-options
+    (lambda ()
+      (list :logFile "/tmp/ty-server.log"
+            :logLevel "debug")))))
 
 ;; Disable python indent guessing over TRAMP (hangs trying to run python remotely)
 (defun mgrbyte-disable-indent-guess-for-tramp ()
