@@ -242,17 +242,18 @@ Nicked from http://emacsredux.com/blog/2013/04/21/edit-files-as-root/"
       (if found
           (find-file (file-name-concat project-root found))
         (dired project-root)))
-    ;; Show treemacs for this project (defer to after projectile finishes)
-    (let ((editor-win (selected-window)))
-      (run-with-idle-timer
-       0.5 nil
-       (lambda ()
-         (condition-case err
-             (progn
-               (treemacs-add-and-display-current-project-exclusively)
-               (when (window-live-p editor-win)
-                 (select-window editor-win)))
-           (error (message "mgrbyte-project-layout: treemacs error: %s" err))))))))
+    ;; Show treemacs for local projects only (TRAMP round-trips make it too slow)
+    (unless (file-remote-p project-root)
+      (let ((editor-win (selected-window)))
+        (run-with-idle-timer
+         0.5 nil
+         (lambda ()
+           (condition-case err
+               (progn
+                 (treemacs-add-and-display-current-project-exclusively)
+                 (when (window-live-p editor-win)
+                   (select-window editor-win)))
+             (error (message "mgrbyte-project-layout: treemacs error: %s" err)))))))))
 
 (defun mgrbyte-show-dashboard ()
   "Return to dashboard, full frame."
