@@ -58,9 +58,20 @@
     :add-on? nil))
   (add-to-list 'lsp-disabled-clients 'pylsp)
   (add-to-list 'lsp-disabled-clients 'pyright)
+  (add-to-list 'lsp-disabled-clients 'ty-ls)
+  (add-to-list 'lsp-disabled-clients 'ty-ls-tramp)
   (add-to-list 'lsp-disabled-clients 'semgrep-ls-tramp)
   (add-to-list 'lsp-disabled-clients 'pyls-tramp)
   (add-to-list 'lsp-disabled-clients 'pylsp-tramp)
+  ;; Re-register ruff to exclude remote files (lsp-ruff doesn't set :remote?)
+  (lsp-register-client
+   (make-lsp-client
+    :new-connection (lsp-stdio-connection '("ruff" "server"))
+    :activation-fn (lambda (file-name mode)
+                     (and (not (file-remote-p file-name))
+                          (funcall (lsp-activate-on "python") file-name mode)))
+    :server-id 'ruff
+    :add-on? t))
   ;; Register ty for TRAMP (works once ty is installed on remote host)
   (lsp-register-client
    (make-lsp-client
@@ -78,12 +89,10 @@
     (setq-local python-indent-guess-indent-offset nil)))
 (add-hook 'python-mode-hook #'mgrbyte-disable-indent-guess-for-tramp)
 
-;; Python mode LSP hook - start ty + ruff (local only for now)
+;; Python mode LSP hook - start ty + ruff
+;; Local clients exclude remote files; TRAMP clients handle remote.
 ;; Format with ruff on save (ty does not support documentFormattingProvider)
-(add-hook 'python-mode-hook
-          (lambda ()
-            (unless (file-remote-p (or buffer-file-name default-directory ""))
-              (lsp))))
+(add-hook 'python-mode-hook #'lsp)
 
 (add-hook 'python-mode-hook
           (lambda ()
