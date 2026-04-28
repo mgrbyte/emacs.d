@@ -102,7 +102,8 @@
           (lambda ()
             (add-hook 'after-save-hook
                       (lambda ()
-                        (when buffer-file-name
+                        (when (and buffer-file-name
+                                   (not (file-remote-p buffer-file-name)))
                           (let ((exit-code
                                  (call-process "uvx" nil nil nil
                                                "ruff" "format" buffer-file-name)))
