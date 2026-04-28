@@ -50,7 +50,9 @@
   (lsp-register-client
    (make-lsp-client
     :new-connection (lsp-stdio-connection '("ty" "server"))
-    :activation-fn (lsp-activate-on "python")
+    :activation-fn (lambda (file-name mode)
+                     (and (not (file-remote-p file-name))
+                          (funcall (lsp-activate-on "python") file-name mode)))
     :server-id 'ty
     :priority 1
     :add-on? nil))
@@ -76,9 +78,12 @@
     (setq-local python-indent-guess-indent-offset nil)))
 (add-hook 'python-mode-hook #'mgrbyte-disable-indent-guess-for-tramp)
 
-;; Python mode LSP hook - start ty + ruff
+;; Python mode LSP hook - start ty + ruff (local only for now)
 ;; Format with ruff on save (ty does not support documentFormattingProvider)
-(add-hook 'python-mode-hook #'lsp)
+(add-hook 'python-mode-hook
+          (lambda ()
+            (unless (file-remote-p (or buffer-file-name default-directory ""))
+              (lsp))))
 
 (add-hook 'python-mode-hook
           (lambda ()

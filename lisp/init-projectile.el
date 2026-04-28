@@ -18,13 +18,20 @@
                                          ("~/gitlab/cyfieithu-ac-llms" . 3)
                                          ("~/huggingface/spaces" . 2)))
 
-  ;; Recognise known projects immediately without filesystem access.
-  ;; Prevents TRAMP round-trips when opening remote projects from the dashboard.
-  (defun mgrbyte-projectile-root-known (dir &optional _list)
+  ;; For remote paths, projectile-project-root bails out before calling
+  ;; root functions if the TRAMP connection isn't active. Advise it to
+  ;; check known projects first, avoiding the connection requirement.
+  (defun mgrbyte-projectile-root-known (dir)
     "Return known project root matching DIR without filesystem access."
     (cl-find-if (lambda (known) (string-prefix-p known dir))
                 projectile-known-projects))
-  (add-to-list 'projectile-project-root-functions #'mgrbyte-projectile-root-known))
+
+  (defun mgrbyte-projectile-root-no-tramp-check (orig-fun &optional dir)
+    "Check known projects before TRAMP connection check in projectile-project-root."
+    (let* ((d (or dir default-directory))
+           (known (and (file-remote-p d) (mgrbyte-projectile-root-known d))))
+      (or known (funcall orig-fun dir))))
+  (advice-add 'projectile-project-root :around #'mgrbyte-projectile-root-no-tramp-check))
 
 (provide 'init-projectile)
 ;;; init-projectile.el ends here

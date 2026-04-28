@@ -16,6 +16,7 @@
   (setq tramp-use-ssh-controlmaster-options nil)
   (setq remote-file-name-inhibit-locks t)
   (setq remote-file-name-inhibit-auto-save-visited t)
+  (add-to-list 'tramp-remote-path "~/.local/bin")
 
   ;; Skip treemacs project-follow over TRAMP (timer causes SSH round-trips)
   (defun mgrbyte-treemacs-follow-project-no-tramp (orig-fun &rest args)

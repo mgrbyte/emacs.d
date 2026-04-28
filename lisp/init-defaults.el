@@ -50,7 +50,6 @@
 
 ;; Avoid audio beeping
 (setq visible-bell nil)
-(setq debug-on-error t)
 
 ;; Themes
 (setq custom-theme-directory (locate-user-emacs-file "themes"))
