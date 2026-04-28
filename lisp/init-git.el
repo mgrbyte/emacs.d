@@ -7,21 +7,26 @@
 
   :bind (("C-c m" . magit-status))
   :config
-  (defun my-magit-side-by-side (orig-fun &rest args)
+  (defun mgrbyte-magit-side-by-side (orig-fun &rest args)
     "Run magit-status with side-by-side split."
     (let ((split-height-threshold nil)
           (split-width-threshold 0))
       (apply orig-fun args)))
-  (advice-add 'magit-status :around #'my-magit-side-by-side))
+  (advice-add 'magit-status :around #'mgrbyte-magit-side-by-side)
+  ;; TRAMP performance: reduce magit round-trips on remote repos
+  (setq magit-tramp-pipe-stty-settings 'pty)
+  (setq magit-commit-show-diff nil)
+  (setq magit-branch-direct-configure nil)
+  (setq magit-refresh-status-buffer nil))
 
 (use-package vc
   :config
-  (defun my-vc-diff-side-by-side (orig-fun &rest args)
+  (defun mgrbyte-vc-diff-side-by-side (orig-fun &rest args)
     "Run vc-diff with side-by-side split."
     (let ((split-height-threshold nil)
           (split-width-threshold 0))
       (apply orig-fun args)))
-  (advice-add 'vc-diff :around #'my-vc-diff-side-by-side))
+  (advice-add 'vc-diff :around #'mgrbyte-vc-diff-side-by-side))
 
 (use-package ediff
   :config

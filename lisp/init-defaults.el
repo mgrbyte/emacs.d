@@ -31,8 +31,9 @@
 (setq search-highlight t)
 (setq query-replace-highlight t)
 
-;; Desktop mode - remember working files
+;; Desktop mode - remember working files (exclude TRAMP paths from restore)
 (setq desktop-save-mode t)
+(setq desktop-files-not-to-save "\\`/ssh:\\|\\`/scp:")
 
 ;; Misc settings
 (setq mail-interactive t)

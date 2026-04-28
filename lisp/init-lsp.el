@@ -16,6 +16,11 @@
          ("C-c l d" . lsp-find-definition))
   :config
   (setq lsp-auto-guess-root t)
+  ;; Disable file watchers over TRAMP (spawns gio monitor on remote)
+  (connection-local-set-profile-variables
+   'remote-without-file-watchers '((lsp-enable-file-watchers . nil)))
+  (connection-local-set-profiles
+   '(:protocol "ssh") 'remote-without-file-watchers)
   ;; Headerline breadcrumbs - more visible colours (abyss theme friendly)
   (setq lsp-headerline-breadcrumb-enable t)
   (with-eval-after-load 'lsp-headerline

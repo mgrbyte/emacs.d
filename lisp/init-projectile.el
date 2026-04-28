@@ -12,6 +12,7 @@
   (projectile-mode +1)
   (setq projectile-completion-system 'helm)
   (setq projectile-sort-order 'recentf)
+  (setq projectile-enable-caching t)
   (setq projectile-switch-project-action (lambda () (mgrbyte-project-layout)))
   (setq projectile-project-search-path '(("~/github/mgrbyte" . 1)
                                          ("~/gitlab/mtr21pqh" . 2)

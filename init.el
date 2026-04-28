@@ -43,6 +43,7 @@
 (require 'init-dired)
 (require 'init-editing)
 (require 'init-spell)
+(require 'init-tramp)
 (require 'init-misc)
 (require 'init-mail)
 (require 'init-ai)
