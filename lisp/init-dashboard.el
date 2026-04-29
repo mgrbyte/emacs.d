@@ -39,6 +39,10 @@
   (setq dashboard-icon-type 'nerd-icons)
   (setq dashboard-set-file-icons t)
   (setq dashboard-set-heading-icons t)
+  (setq dashboard-remote-path-icon
+        (nerd-icons-mdicon "nf-md-ssh"
+                           :height dashboard-icon-file-height
+                           :v-adjust dashboard-icon-file-v-adjust))
 
   ;; Footer messages from CLAUDE_TIPS_FILE
   (setq dashboard-footer-messages (mgrbyte-dashboard-motd-messages))
