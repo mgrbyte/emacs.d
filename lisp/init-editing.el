@@ -40,7 +40,14 @@
 (use-package editorconfig
 
   :config
-  (editorconfig-mode 1))
+  (editorconfig-mode 1)
+  ;; Skip editorconfig for remote files (walks directory tree over TRAMP)
+  (defun mgrbyte-editorconfig-skip-remote (orig-fun &rest args)
+    "Return empty properties for remote files instead of walking the tree."
+    (if (file-remote-p (or buffer-file-name default-directory ""))
+        (make-hash-table :test 'equal)
+      (apply orig-fun args)))
+  (advice-add 'editorconfig-core-get-properties-hash :around #'mgrbyte-editorconfig-skip-remote))
 
 (use-package keyfreq
 
