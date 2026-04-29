@@ -52,7 +52,17 @@
 
   ;; Show dashboard in new frames (works with emacsclient)
   (setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
-  (dashboard-setup-startup-hook))
+  (dashboard-setup-startup-hook)
+
+  ;; In daemon mode, the dashboard renders before nerd fonts are available.
+  ;; Refresh once after the first graphical frame is created.
+  (when (daemonp)
+    (defun mgrbyte-dashboard-refresh-after-frame ()
+      "Refresh dashboard to pick up nerd-icons after frame creation."
+      (when (get-buffer "*dashboard*")
+        (dashboard-refresh-buffer))
+      (remove-hook 'server-after-make-frame-hook #'mgrbyte-dashboard-refresh-after-frame))
+    (add-hook 'server-after-make-frame-hook #'mgrbyte-dashboard-refresh-after-frame)))
 
 ;; Prevent dashboard from interfering with magit
 (with-eval-after-load 'magit
