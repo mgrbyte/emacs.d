@@ -54,5 +54,10 @@
       (apply orig-fun args)))
   (advice-add 'vc-refresh-state :around #'mgrbyte-vc-refresh-state-no-tramp))
 
+;; tramp-rpc: Rust-based TRAMP method with batch operations
+;; Uses /rpc:host:/path instead of /ssh:host:/path
+(use-package tramp-rpc
+  :after tramp)
+
 (provide 'init-tramp)
 ;;; init-tramp.el ends here
