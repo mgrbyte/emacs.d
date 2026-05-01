@@ -5,7 +5,7 @@
 
 ;; Backups
 (setq backup-by-copying t
-      backup-directory-alist '(("." . "~/.emacs.d/backup"))
+      backup-directory-alist '(("." . "/tmp/emacs-backups"))
       delete-old-versions t
       kept-new-versions 2
       kept-old-versions 5)
