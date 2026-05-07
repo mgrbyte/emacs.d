@@ -61,7 +61,10 @@
 \\{mgrbyte-claude-keymap}
 Provides Claude Code IDE integration using an external terminal
 for rendering with Emacs handling IDE features via MCP."
-  :lighter " Claude"
+  :lighter (:eval (if (and (eq mgrbyte-project-location 'remote)
+                         mgrbyte-project-remote-host)
+                    (format " Claude[%s]" mgrbyte-project-remote-host)
+                  " Claude"))
   :global t
   :keymap mgrbyte-claude-keymap
   :group 'mgrbyte)
