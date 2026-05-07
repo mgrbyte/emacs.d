@@ -90,6 +90,10 @@ for rendering with Emacs handling IDE features via MCP."
                     (file-name-directory (or load-file-name buffer-file-name)))
   "Path to the remote MCP prompt template.")
 
+(defun mgrbyte-remote-mcp--translate-path (local-path)
+  "Translate LOCAL-PATH from macOS to the remote home directory equivalent."
+  (replace-regexp-in-string "^/Users/" "/home/" local-path))
+
 (defun mgrbyte-remote-mcp--build-system-prompt (host working-dir)
   "Build a system prompt for remote MCP tools from template.
 HOST is the remote hostname, WORKING-DIR is the project path on the remote."
@@ -157,7 +161,8 @@ RESUME and CONTINUE control -r and -c flags respectively."
       ;; Remote mode: inject system prompt for remote MCP tools
       (when (eq mgrbyte-project-location 'remote)
         (let ((remote-prompt (mgrbyte-remote-mcp--build-system-prompt
-                              mgrbyte-project-remote-host working-dir)))
+                              mgrbyte-project-remote-host
+                              (mgrbyte-remote-mcp--translate-path working-dir))))
           (setq script-args (append script-args
                                     (list "--remote-prompt" remote-prompt)))))
       ;; Kill any stale tmux window

@@ -38,7 +38,7 @@
 (require 'init-clojure)
 (require 'init-modes)
 
-;; Tools
+;; Toolsq22
 (require 'init-git)
 (require 'init-dired)
 (require 'init-editing)
