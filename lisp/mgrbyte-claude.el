@@ -49,6 +49,8 @@
     (define-key map (kbd "C-c c l") #'mgrbyte-claude-ide-external-list)
     (define-key map (kbd "C-c c d") #'mgrbyte-claude-ide-external-in-directory)
     (define-key map (kbd "C-c c R") #'mgrbyte-claude-ide-external-resume-in-directory)
+    (define-key map (kbd "C-c c w") #'mgrbyte-workon)
+    (define-key map (kbd "C-c c p") #'mgrbyte-project-location)
     map)
   "Keymap for `mgrbyte-claude-mode'.")
 
@@ -68,6 +70,30 @@ for rendering with Emacs handling IDE features via MCP."
 
 (defvar mgrbyte-claude-ide-external-script "claude-ide-external"
   "Name of the external launcher script (must be on PATH).")
+
+;;;; Project location (local/remote)
+
+(defvar-local mgrbyte-project-location nil
+  "Project location: nil or `local' for local, `remote' for remote server.")
+(put 'mgrbyte-project-location 'safe-local-variable
+     (lambda (v) (memq v '(nil local remote))))
+
+(defvar-local mgrbyte-project-remote-host nil
+  "Remote hostname when `mgrbyte-project-location' is `remote'.")
+(put 'mgrbyte-project-remote-host 'safe-local-variable #'stringp)
+
+(defconst mgrbyte-remote-mcp-prompt-file
+  (expand-file-name "remote-mcp-prompt.md"
+                    (file-name-directory (or load-file-name buffer-file-name)))
+  "Path to the remote MCP prompt template.")
+
+(defun mgrbyte-remote-mcp--build-system-prompt (host working-dir)
+  "Build a system prompt for remote MCP tools from template.
+HOST is the remote hostname, WORKING-DIR is the project path on the remote."
+  (with-temp-buffer
+    (insert-file-contents mgrbyte-remote-mcp-prompt-file)
+    (format (buffer-string) host working-dir
+            host host host host host host working-dir host)))
 
 (defvar mgrbyte-claude-ide-external--sessions (make-hash-table :test 'equal)
   "Hash table mapping working directories to external session plists.
@@ -125,6 +151,12 @@ RESUME and CONTINUE control -r and -c flags respectively."
       (let ((add-dir-flags (mgrbyte-claude--resolve-add-dir-flags working-dir)))
         (when add-dir-flags
           (setq script-args (append script-args (list "--extra-flags" add-dir-flags)))))
+      ;; Remote mode: inject system prompt for remote MCP tools
+      (when (eq mgrbyte-project-location 'remote)
+        (let ((remote-prompt (mgrbyte-remote-mcp--build-system-prompt
+                              mgrbyte-project-remote-host working-dir)))
+          (setq script-args (append script-args
+                                    (list "--remote-prompt" remote-prompt)))))
       ;; Kill any stale tmux window
       (ignore-errors
         (call-process "tmux" nil nil nil "kill-window" "-t" window-name))
@@ -203,6 +235,47 @@ Selecting a session switches to its tmux window."
   (let ((default-directory (read-directory-name "Project directory: ")))
     (mgrbyte-claude-ide-external-resume)))
 
+;;;; Project location management
+
+(defun mgrbyte-project-location ()
+  "Set the project location (local or remote) for the current project.
+Writes to .dir-locals.el and applies immediately."
+  (interactive)
+  (let ((project-root (projectile-project-root)))
+    (unless project-root
+      (user-error "Not in a project"))
+    (let* ((location (intern (helm-comp-read "Project location: " '("local" "remote"))))
+           (dir-locals-file (expand-file-name ".dir-locals.el" project-root))
+           (existing (mgrbyte-claude--read-dir-locals dir-locals-file))
+           (nil-alist (or (cdr (assq nil existing)) '()))
+           (nil-alist (cons (cons 'mgrbyte-project-location location)
+                            (assq-delete-all 'mgrbyte-project-location nil-alist))))
+      (when (eq location 'remote)
+        (let ((host (read-string "Remote hostname: "
+                                 (cdr (assq 'mgrbyte-project-remote-host nil-alist)))))
+          (setq nil-alist (cons (cons 'mgrbyte-project-remote-host host)
+                                (assq-delete-all 'mgrbyte-project-remote-host nil-alist)))))
+      (when (eq location 'local)
+        (setq nil-alist (assq-delete-all 'mgrbyte-project-remote-host nil-alist)))
+      (mgrbyte-claude--write-dir-locals dir-locals-file nil-alist)
+      (hack-dir-local-variables-non-file-buffer)
+      (message "Project location set to %s%s"
+               location
+               (if (eq location 'remote)
+                   (format " (%s)" (cdr (assq 'mgrbyte-project-remote-host nil-alist)))
+                 "")))))
+
+(defun mgrbyte-workon ()
+  "Open a project and ensure its location (local/remote) is configured.
+If not in a project, prompts to select one.  If the project has no
+`mgrbyte-project-location' set, prompts to configure it."
+  (interactive)
+  (unless (projectile-project-root)
+    (call-interactively #'helm-projectile-switch-project))
+  (hack-dir-local-variables-non-file-buffer)
+  (unless mgrbyte-project-location
+    (call-interactively #'mgrbyte-project-location)))
+
 ;;;###autoload (autoload 'mgrbyte-claude-ide-external-menu "mgrbyte-claude" nil t)
 (transient-define-prefix mgrbyte-claude-ide-external-menu ()
   "Claude Code IDE commands."
@@ -214,7 +287,10 @@ Selecting a session switches to its tmux window."
    ("l" "List sessions" mgrbyte-claude-ide-external-list)]
   ["Directory"
    ("d" "Start in directory" mgrbyte-claude-ide-external-in-directory)
-   ("R" "Resume in directory" mgrbyte-claude-ide-external-resume-in-directory)])
+   ("R" "Resume in directory" mgrbyte-claude-ide-external-resume-in-directory)]
+  ["Project"
+   ("w" "Work on project" mgrbyte-workon)
+   ("p" "Set location (local/remote)" mgrbyte-project-location)])
 
 ;;;; Auto-dependency discovery
 
