@@ -7,7 +7,6 @@
 
 ;;; Code:
 
-(require 'mcp-server-tools)
 (require 'tramp)
 
 ;;; Helpers
@@ -91,7 +90,9 @@ Returns the command output as a string."
     (cadr (mgrbyte-remote-mcp--remote-shell args cmd))))
 
 (defun mgrbyte-remote-mcp--exec (args)
-  "Execute a command on a remote server inside nix-user-chroot. ARGS contains host, command, and optional working_dir."
+  "Execute a command on a remote server inside nix-user-chroot.
+ARGS contains host, command, and optional working_dir.
+Uses `call-process' with argument list to avoid local shell quoting issues."
   (let* ((host (alist-get 'host args))
          (command (alist-get 'command args))
          (working-dir (alist-get 'working_dir args))
@@ -100,94 +101,12 @@ Returns the command output as a string."
                                 (shell-quote-argument working-dir)
                                 command)
                       command))
-         (ssh-cmd (format "ssh %s '~/.local/bin/nix-user-chroot ~/.nix zsh -lc %s'"
-                          (shell-quote-argument host)
-                          (shell-quote-argument chroot-cmd))))
+         (remote-cmd (format "~/.local/bin/nix-user-chroot ~/.nix zsh -lc %s"
+                             (shell-quote-argument chroot-cmd))))
     (with-temp-buffer
-      (let ((exit-code (call-process-shell-command ssh-cmd nil t)))
+      (let ((exit-code (call-process "ssh" nil t nil host remote-cmd)))
         (format "Exit code: %d\n%s" exit-code (buffer-string))))))
 
-;;; Tool registration
-
-(mcp-server-register-tool
- (make-mcp-server-tool
-  :name "remote-read-file"
-  :title "Remote Read File"
-  :description "Read a file from a remote server via TRAMP. Returns the file content."
-  :input-schema (mgrbyte-remote-mcp--schema
-                 `(,mgrbyte-remote-mcp--host-schema ,mgrbyte-remote-mcp--path-schema)
-                 ["host" "path"])
-  :function #'mgrbyte-remote-mcp--read-file))
-
-(mcp-server-register-tool
- (make-mcp-server-tool
-  :name "remote-write-file"
-  :title "Remote Write File"
-  :description "Write content to a file on a remote server via TRAMP."
-  :input-schema (mgrbyte-remote-mcp--schema
-                 `(,mgrbyte-remote-mcp--host-schema
-                   ,mgrbyte-remote-mcp--path-schema
-                   (content . ((type . "string")
-                               (description . "File content to write"))))
-                 ["host" "path" "content"])
-  :function #'mgrbyte-remote-mcp--write-file))
-
-(mcp-server-register-tool
- (make-mcp-server-tool
-  :name "remote-edit-file"
-  :title "Remote Edit File"
-  :description "Edit a file on a remote server by replacing a string. The old_string must match exactly."
-  :input-schema (mgrbyte-remote-mcp--schema
-                 `(,mgrbyte-remote-mcp--host-schema
-                   ,mgrbyte-remote-mcp--path-schema
-                   (old_string . ((type . "string")
-                                  (description . "Exact string to find and replace")))
-                   (new_string . ((type . "string")
-                                  (description . "Replacement string"))))
-                 ["host" "path" "old_string" "new_string"])
-  :function #'mgrbyte-remote-mcp--edit-file))
-
-(mcp-server-register-tool
- (make-mcp-server-tool
-  :name "remote-grep"
-  :title "Remote Grep"
-  :description "Search for a pattern in files on a remote server. Returns matching lines with file paths and line numbers."
-  :input-schema (mgrbyte-remote-mcp--schema
-                 `(,mgrbyte-remote-mcp--host-schema
-                   (pattern . ((type . "string")
-                               (description . "Grep pattern (regex)")))
-                   ,mgrbyte-remote-mcp--path-schema
-                   (glob . ((type . "string")
-                            (description . "File glob pattern (e.g., *.py). Optional."))))
-                 ["host" "pattern" "path"])
-  :function #'mgrbyte-remote-mcp--grep))
-
-(mcp-server-register-tool
- (make-mcp-server-tool
-  :name "remote-list-files"
-  :title "Remote List Files"
-  :description "List files on a remote server matching a glob pattern."
-  :input-schema (mgrbyte-remote-mcp--schema
-                 `(,mgrbyte-remote-mcp--host-schema
-                   ,mgrbyte-remote-mcp--path-schema
-                   (pattern . ((type . "string")
-                               (description . "File name pattern (e.g., *.py). Optional."))))
-                 ["host" "path"])
-  :function #'mgrbyte-remote-mcp--list-files))
-
-(mcp-server-register-tool
- (make-mcp-server-tool
-  :name "remote-exec"
-  :title "Remote Execute Command"
-  :description "Execute a command on a remote server inside the nix-user-chroot environment. Use for tests, docker, linting."
-  :input-schema (mgrbyte-remote-mcp--schema
-                 `(,mgrbyte-remote-mcp--host-schema
-                   (command . ((type . "string")
-                               (description . "Shell command to execute")))
-                   (working_dir . ((type . "string")
-                                   (description . "Working directory on the remote server. Optional."))))
-                 ["host" "command"])
-  :function #'mgrbyte-remote-mcp--exec))
 
 (provide 'init-remote-mcp)
 ;;; init-remote-mcp.el ends here

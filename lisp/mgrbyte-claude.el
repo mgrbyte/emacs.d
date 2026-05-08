@@ -100,7 +100,7 @@ HOST is the remote hostname, WORKING-DIR is the project path on the remote."
   (with-temp-buffer
     (insert-file-contents mgrbyte-remote-mcp-prompt-file)
     (format (buffer-string) host working-dir
-            host host host host host host working-dir host)))
+            host working-dir host)))
 
 (defvar mgrbyte-claude-ide-external--sessions (make-hash-table :test 'equal)
   "Hash table mapping working directories to external session plists.
