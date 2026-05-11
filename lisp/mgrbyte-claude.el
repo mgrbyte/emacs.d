@@ -49,6 +49,7 @@
     (define-key map (kbd "C-c c l") #'mgrbyte-claude-ide-external-list)
     (define-key map (kbd "C-c c d") #'mgrbyte-claude-ide-external-in-directory)
     (define-key map (kbd "C-c c R") #'mgrbyte-claude-ide-external-resume-in-directory)
+    (define-key map (kbd "C-c c a") #'mgrbyte-claude-ide-add-dir)
     (define-key map (kbd "C-c c w") #'mgrbyte-workon)
     (define-key map (kbd "C-c c p") #'mgrbyte-project-location)
     map)
@@ -110,6 +111,8 @@ Each plist contains :port :session-id :window-name :working-dir.")
   "Clean up session state for WORKING-DIR."
   (let ((session (gethash working-dir mgrbyte-claude-ide-external--sessions)))
     (when session
+      (dolist (dir (plist-get session :add-dirs))
+        (remhash dir claude-code-ide-mcp--sessions))
       (claude-code-ide-mcp-stop-session working-dir)
       (remhash working-dir mgrbyte-claude-ide-external--sessions)
       (message "Claude IDE external session ended for %s"
@@ -146,6 +149,7 @@ RESUME and CONTINUE control -r and -c flags respectively."
            (window-name (format "claude:%s"
                                 (file-name-nondirectory
                                  (directory-file-name working-dir))))
+           (add-dir-dirs (mgrbyte-claude--resolve-add-dir-dirs working-dir))
            (script-args (list mgrbyte-claude-ide-external-script
                               "--port" (number-to-string port)
                               "--session-id" session-id
@@ -155,9 +159,11 @@ RESUME and CONTINUE control -r and -c flags respectively."
       (when continue (setq script-args (append script-args (list "--continue"))))
       (when allowed-tools
         (setq script-args (append script-args (list "--allowed-tools" allowed-tools))))
-      (let ((add-dir-flags (mgrbyte-claude--resolve-add-dir-flags working-dir)))
-        (when add-dir-flags
-          (setq script-args (append script-args (list "--extra-flags" add-dir-flags)))))
+      (when add-dir-dirs
+        (setq script-args
+              (append script-args
+                      (list "--extra-flags"
+                            (mgrbyte-claude--build-add-dir-flags add-dir-dirs)))))
       ;; Remote mode: inject system prompt for remote MCP tools
       (when (eq mgrbyte-project-location 'remote)
         (let ((remote-prompt (mgrbyte-remote-mcp--build-system-prompt
@@ -187,11 +193,14 @@ RESUME and CONTINUE control -r and -c flags respectively."
                       "Alacritty")))
       ;; Notify MCP tools server about the session
       (claude-code-ide-mcp-server-session-started session-id working-dir nil)
-      ;; Track the session
-      (puthash working-dir
-               (list :port port :session-id session-id
-                     :window-name window-name :working-dir working-dir)
-               mgrbyte-claude-ide-external--sessions)
+      ;; Track the session (including resolved add-dirs)
+      (let ((session-plist (list :port port :session-id session-id
+                                 :window-name window-name :working-dir working-dir
+                                 :add-dirs add-dir-dirs)))
+        (puthash working-dir session-plist mgrbyte-claude-ide-external--sessions)
+        ;; Register add-dirs with MCP so ediff works for files in those paths
+        (when add-dir-dirs
+          (mgrbyte-claude-ide-register-add-dirs working-dir add-dir-dirs)))
       (message "Claude IDE started in tmux window '%s' (port %d)" window-name port))))
 
 (defun mgrbyte-claude-ide-external-resume ()
@@ -295,10 +304,66 @@ If not in a project, prompts to select one.  If the project has no
    ("l" "List sessions" mgrbyte-claude-ide-external-list)]
   ["Directory"
    ("d" "Start in directory" mgrbyte-claude-ide-external-in-directory)
-   ("R" "Resume in directory" mgrbyte-claude-ide-external-resume-in-directory)]
+   ("R" "Resume in directory" mgrbyte-claude-ide-external-resume-in-directory)
+   ("a" "Add directory" mgrbyte-claude-ide-add-dir)]
   ["Project"
    ("w" "Work on project" mgrbyte-workon)
    ("p" "Set location (local/remote)" mgrbyte-project-location)])
+
+;;;; Add-dir MCP session registration
+
+(defun mgrbyte-claude-ide-register-add-dirs (primary-dir dirs)
+  "Register DIRS as additional paths for PRIMARY-DIR's MCP session.
+Each directory in DIRS gets an entry in `claude-code-ide-mcp--sessions'
+pointing to the same session object as PRIMARY-DIR.
+Also invalidates buffer caches for buffers under the new directories."
+  (when-let ((session (gethash primary-dir claude-code-ide-mcp--sessions)))
+    (let ((registered '()))
+      (dolist (dir dirs)
+        (let ((expanded (expand-file-name dir)))
+          (unless (gethash expanded claude-code-ide-mcp--sessions)
+            (puthash expanded session claude-code-ide-mcp--sessions)
+            (push expanded registered))))
+      (when registered
+        (mgrbyte-claude-ide--invalidate-caches-for-dirs registered)
+        (message "mgrbyte-claude: registered %d add-dir paths with MCP session"
+                 (length registered))))))
+
+(defun mgrbyte-claude-ide--invalidate-caches-for-dirs (dirs)
+  "Invalidate buffer-local MCP caches for buffers under DIRS."
+  (dolist (buffer (buffer-list))
+    (when-let ((file (buffer-file-name buffer)))
+      (let ((expanded-file (expand-file-name file)))
+        (when (cl-some (lambda (dir)
+                         (string-prefix-p (expand-file-name dir) expanded-file))
+                       dirs)
+          (with-current-buffer buffer
+            (setq claude-code-ide-mcp--buffer-cache-valid nil)))))))
+
+(defun mgrbyte-claude-ide-add-dir (dir)
+  "Register DIR with the current project's MCP session and CLI.
+Registers the directory in the Emacs MCP sessions hash so ediff
+works for files in DIR, and sends /add-dir to the Claude Code CLI
+so it knows to use openDiff for files there.
+Run this when the CLI is idle at the prompt."
+  (interactive "DAdd directory: ")
+  (let* ((working-dir (claude-code-ide--get-working-directory))
+         (session-plist (gethash working-dir mgrbyte-claude-ide-external--sessions)))
+    (unless session-plist
+      (user-error "No active session for %s" working-dir))
+    (let ((expanded (expand-file-name dir))
+          (window-name (plist-get session-plist :window-name)))
+      ;; Register in Emacs MCP sessions hash
+      (mgrbyte-claude-ide-register-add-dirs working-dir (list expanded))
+      ;; Track in external session plist for cleanup
+      (puthash working-dir
+               (plist-put session-plist :add-dirs
+                          (cons expanded (plist-get session-plist :add-dirs)))
+               mgrbyte-claude-ide-external--sessions)
+      ;; Send /add-dir to the Claude Code CLI via tmux
+      (call-process "tmux" nil nil nil
+                    "send-keys" "-t" window-name
+                    (format "/add-dir %s" expanded) "Enter"))))
 
 ;;;; Auto-dependency discovery
 
@@ -372,9 +437,9 @@ Returns a list of unique directory paths."
   (mapconcat (lambda (dir) (concat "--add-dir " (shell-quote-argument dir)))
              dirs " "))
 
-(defun mgrbyte-claude--resolve-add-dir-flags (working-dir)
-  "Resolve --add-dir flags for WORKING-DIR from its .dir-locals.el.
-Returns a flags string, or nil if no deps found."
+(defun mgrbyte-claude--resolve-add-dir-dirs (working-dir)
+  "Resolve add-dir directories for WORKING-DIR from its .dir-locals.el.
+Returns a list of directory paths, or nil if no deps found."
   (let* ((dir-locals-file (expand-file-name ".dir-locals.el" working-dir))
          (dir-locals (mgrbyte-claude--read-dir-locals dir-locals-file))
          (nil-alist (cdr (assq nil dir-locals)))
@@ -387,9 +452,9 @@ Returns a flags string, or nil if no deps found."
                         pyproject-abs locations
                         mgrbyte-claude-max-dep-depth)))
         (when dep-dirs
-          (message "mgrbyte-claude: resolved --add-dir for %d dependencies"
+          (message "mgrbyte-claude: resolved %d add-dir dependencies"
                    (length dep-dirs))
-          (mgrbyte-claude--build-add-dir-flags dep-dirs))))))
+          dep-dirs)))))
 
 (defvar mgrbyte-claude--project-markers '(".git" "pyproject.toml" "flake.nix"
                                           "package.json" "Cargo.toml" "go.mod")
