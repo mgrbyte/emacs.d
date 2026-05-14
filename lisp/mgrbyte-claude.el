@@ -254,6 +254,22 @@ Selecting a session switches to its tmux window."
 
 ;;;; Project location management
 
+(defun mgrbyte-claude--set-project-location (project-root location &optional host)
+  "Write PROJECT-ROOT's location metadata to its .dir-locals.el.
+LOCATION is a symbol (`local' or `remote').
+HOST is the remote hostname (required when LOCATION is `remote')."
+  (let* ((dir-locals-file (expand-file-name ".dir-locals.el" project-root))
+         (existing (mgrbyte-claude--read-dir-locals dir-locals-file))
+         (nil-alist (or (cdr (assq nil existing)) '()))
+         (nil-alist (cons (cons 'mgrbyte-project-location location)
+                          (assq-delete-all 'mgrbyte-project-location nil-alist))))
+    (when (eq location 'remote)
+      (setq nil-alist (cons (cons 'mgrbyte-project-remote-host host)
+                            (assq-delete-all 'mgrbyte-project-remote-host nil-alist))))
+    (when (eq location 'local)
+      (setq nil-alist (assq-delete-all 'mgrbyte-project-remote-host nil-alist)))
+    (mgrbyte-claude--write-dir-locals dir-locals-file nil-alist)))
+
 (defun mgrbyte-project-location ()
   "Set the project location (local or remote) for the current project.
 Writes to .dir-locals.el and applies immediately."
@@ -262,36 +278,61 @@ Writes to .dir-locals.el and applies immediately."
     (unless project-root
       (user-error "Not in a project"))
     (let* ((location (intern (helm-comp-read "Project location: " '("local" "remote"))))
-           (dir-locals-file (expand-file-name ".dir-locals.el" project-root))
-           (existing (mgrbyte-claude--read-dir-locals dir-locals-file))
-           (nil-alist (or (cdr (assq nil existing)) '()))
-           (nil-alist (cons (cons 'mgrbyte-project-location location)
-                            (assq-delete-all 'mgrbyte-project-location nil-alist))))
-      (when (eq location 'remote)
-        (let ((host (read-string "Remote hostname: "
-                                 (cdr (assq 'mgrbyte-project-remote-host nil-alist)))))
-          (setq nil-alist (cons (cons 'mgrbyte-project-remote-host host)
-                                (assq-delete-all 'mgrbyte-project-remote-host nil-alist)))))
-      (when (eq location 'local)
-        (setq nil-alist (assq-delete-all 'mgrbyte-project-remote-host nil-alist)))
-      (mgrbyte-claude--write-dir-locals dir-locals-file nil-alist)
+           (host (when (eq location 'remote)
+                   (let* ((dir-locals-file (expand-file-name ".dir-locals.el" project-root))
+                          (existing (mgrbyte-claude--read-dir-locals dir-locals-file))
+                          (nil-alist (cdr (assq nil existing))))
+                     (read-string "Remote hostname: "
+                                  (cdr (assq 'mgrbyte-project-remote-host nil-alist)))))))
+      (mgrbyte-claude--set-project-location project-root location host)
       (hack-dir-local-variables-non-file-buffer)
       (message "Project location set to %s%s"
                location
-               (if (eq location 'remote)
-                   (format " (%s)" (cdr (assq 'mgrbyte-project-remote-host nil-alist)))
-                 "")))))
+               (if host (format " (%s)" host) "")))))
+
+(defun mgrbyte-claude--project-child-dirs (dir)
+  "Return immediate child directories of DIR that are git repositories."
+  (cl-remove-if-not
+   (lambda (child)
+     (and (file-directory-p child)
+          (file-directory-p (expand-file-name ".git" child))))
+   (directory-files dir t "^[^.]")))
 
 (defun mgrbyte-workon ()
-  "Open a project and ensure its location (local/remote) is configured.
-If not in a project, prompts to select one.  If the project has no
-`mgrbyte-project-location' set, prompts to configure it."
+  "Select a directory and configure its project location (local/remote).
+Prompts for a directory with helm.  If the directory is a project,
+sets its location directly.  If not, applies the chosen location to
+each immediate child directory that is a git repository."
   (interactive)
-  (unless (projectile-project-root)
-    (call-interactively #'helm-projectile-switch-project))
-  (hack-dir-local-variables-non-file-buffer)
-  (unless mgrbyte-project-location
-    (call-interactively #'mgrbyte-project-location)))
+  (let* ((dir (file-name-as-directory
+               (expand-file-name
+                (helm-read-file-name "Work on directory: "
+                                     :initial-input default-directory))))
+         (is-project (file-directory-p (expand-file-name ".git" dir)))
+         (targets (if is-project
+                      (list dir)
+                    (mgrbyte-claude--project-child-dirs dir))))
+    (unless targets
+      (user-error "No project directories found in %s" (abbreviate-file-name dir)))
+    (let* ((location (intern (helm-comp-read
+                              (if is-project
+                                  "Project location: "
+                                (format "Location for %d projects: "
+                                        (length targets)))
+                              '("local" "remote"))))
+           (host (when (eq location 'remote)
+                   (read-string "Remote hostname: "))))
+      (dolist (target targets)
+        (mgrbyte-claude--set-project-location target location host))
+      (hack-dir-local-variables-non-file-buffer)
+      (message "%s set to %s%s"
+               (if is-project
+                   (abbreviate-file-name dir)
+                 (format "%d projects in %s"
+                         (length targets)
+                         (abbreviate-file-name dir)))
+               location
+               (if host (format " (%s)" host) "")))))
 
 ;;;###autoload (autoload 'mgrbyte-claude-ide-external-menu "mgrbyte-claude" nil t)
 (transient-define-prefix mgrbyte-claude-ide-external-menu ()
