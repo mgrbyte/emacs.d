@@ -64,6 +64,28 @@
       (remove-hook 'server-after-make-frame-hook #'mgrbyte-dashboard-refresh-after-frame))
     (add-hook 'server-after-make-frame-hook #'mgrbyte-dashboard-refresh-after-frame)))
 
+;; Prune stale recentf entries, rescan org-agenda-files, and re-sync
+;; GitLab before each dashboard refresh so new/removed org files,
+;; deleted recent files, and GitLab changes are reflected immediately.
+(defvar mgrbyte-dashboard--refreshing nil
+  "Non-nil while dashboard is being refreshed, prevents re-entrancy.")
+
+(define-advice dashboard-refresh-buffer (:before (&rest _) mgrbyte-refresh-sources)
+  "Rescan org-agenda-files, prune recentf, and sync GitLab before refresh."
+  (when (fboundp 'mgrbyte-org-agenda-files)
+    (setq org-agenda-files (mgrbyte-org-agenda-files)))
+  (when (bound-and-true-p recentf-mode)
+    (recentf-cleanup))
+  (when (and (not mgrbyte-dashboard--refreshing)
+             (fboundp 'mgrbyte-gitlab-sync))
+    (run-with-idle-timer
+     1 nil
+     (lambda ()
+       (mgrbyte-gitlab-sync)
+       (when (get-buffer "*dashboard*")
+         (let ((mgrbyte-dashboard--refreshing t))
+           (dashboard-refresh-buffer)))))))
+
 ;; Prevent dashboard from interfering with magit
 (with-eval-after-load 'magit
   (add-hook 'magit-status-mode-hook
