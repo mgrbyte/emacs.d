@@ -75,7 +75,9 @@
   ;; Register ty for TRAMP (works once ty is installed on remote host)
   (lsp-register-client
    (make-lsp-client
-    :new-connection (lsp-tramp-connection '("ty" "server"))
+    :new-connection (lsp-tramp-connection '("zsh" "-l" "-c"
+                                            "exec nix-user-chroot ~/.nix ~/.local/bin/ty server")
+                                          (lambda () t))
     :major-modes '(python-mode)
     :remote? t
     :server-id 'ty-tramp
@@ -84,7 +86,24 @@
     :initialization-options
     (lambda ()
       (list :logFile "/tmp/ty-server.log"
-            :logLevel "debug")))))
+            :logLevel "debug"))))
+  ;; Fix ~ not being expanded in rootUri for TRAMP paths.
+  ;; lsp--path-to-uri-1 uses expand-file-name which doesn't resolve ~ for
+  ;; TRAMP, so the server receives file://~/... and can't find project config.
+  (defun mgrbyte-lsp-expand-remote-tilde (orig-fn path)
+    "Resolve ~ in remote TRAMP paths before converting to URI."
+    (if (and (file-remote-p path)
+             (string-match-p "~" (or (file-remote-p path 'localname) "")))
+        (funcall orig-fn (file-truename path))
+      (funcall orig-fn path)))
+  (advice-add 'lsp--path-to-uri-1 :around #'mgrbyte-lsp-expand-remote-tilde))
+
+;; Increase lsp-response-timeout for remote buffers — ty needs longer to
+;; respond over TRAMP, especially for the first completion (project indexing).
+(defun mgrbyte-increase-lsp-timeout-for-remote ()
+  "Use a longer LSP response timeout for remote files."
+  (when (file-remote-p (or buffer-file-name default-directory ""))
+    (setq-local lsp-response-timeout 30)))
 
 ;; Disable python indent guessing over TRAMP (hangs trying to run python remotely)
 (defun mgrbyte-disable-indent-guess-for-tramp ()
@@ -92,6 +111,7 @@
   (when (file-remote-p (or buffer-file-name default-directory ""))
     (setq-local python-indent-guess-indent-offset nil)))
 (add-hook 'python-mode-hook #'mgrbyte-disable-indent-guess-for-tramp)
+(add-hook 'python-mode-hook #'mgrbyte-increase-lsp-timeout-for-remote)
 
 ;; Python mode LSP hook - start ty + ruff
 ;; Local clients exclude remote files; TRAMP clients handle remote.
