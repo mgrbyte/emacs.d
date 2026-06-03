@@ -76,5 +76,25 @@ namespace.  Without wrapping, all home-manager symlinks are broken."
 (advice-add 'tramp-rpc--start-server-process
             :around #'mgrbyte-tramp-rpc-nix-user-chroot)
 
+;; Direct SSH PTY processes (used by magit-commit, vterm, etc.) open a
+;; separate SSH connection that bypasses the RPC server.  Wrap the
+;; command in nix-user-chroot so the PTY process also sees /nix/store/.
+(defun mgrbyte-tramp-rpc-direct-ssh-nix-user-chroot (orig-fun vec name buffer command
+                                                       coding noquery filter sentinel
+                                                       localname &optional direnv-env)
+  "Wrap direct SSH PTY in nix-user-chroot for rootless nix hosts."
+  (let ((host (tramp-file-name-host vec)))
+    (if (member host mgrbyte-tramp-rpc-nix-chroot-hosts)
+        (let ((program (car command))
+              (program-args (cdr command)))
+          (funcall orig-fun vec name buffer
+                   (cons "~/.local/bin/nix-user-chroot"
+                         (append (list "~/.nix" program) program-args))
+                   coding noquery filter sentinel localname direnv-env))
+      (funcall orig-fun vec name buffer command coding noquery filter sentinel
+               localname direnv-env))))
+(advice-add 'tramp-rpc--make-direct-ssh-pty-process
+            :around #'mgrbyte-tramp-rpc-direct-ssh-nix-user-chroot)
+
 (provide 'init-tramp)
 ;;; init-tramp.el ends here
