@@ -59,5 +59,22 @@
 (use-package tramp-rpc
   :after tramp)
 
+(defcustom mgrbyte-tramp-rpc-nix-chroot-hosts nil
+  "Hosts where tramp-rpc server should run inside nix-user-chroot.
+On rootless nix hosts, /nix/store/ is only visible within the chroot
+namespace.  Without wrapping, all home-manager symlinks are broken."
+  :type '(repeat string)
+  :group 'tramp)
+
+(defun mgrbyte-tramp-rpc-nix-user-chroot (orig-fun vec binary-path)
+  "Wrap tramp-rpc server in nix-user-chroot for rootless nix hosts."
+  (let ((host (tramp-file-name-host vec)))
+    (if (member host mgrbyte-tramp-rpc-nix-chroot-hosts)
+        (funcall orig-fun vec
+                 (format "~/.local/bin/nix-user-chroot ~/.nix %s" binary-path))
+      (funcall orig-fun vec binary-path))))
+(advice-add 'tramp-rpc--start-server-process
+            :around #'mgrbyte-tramp-rpc-nix-user-chroot)
+
 (provide 'init-tramp)
 ;;; init-tramp.el ends here
