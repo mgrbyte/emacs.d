@@ -67,6 +67,40 @@
 (advice-add 'claude-code-ide-mcp--handle-ediff-quit
             :after #'mgrbyte-revert-buffer-after-ediff-accept)
 
+;; Cleanup: run --cleanup-diff after ediff quit so buffer-B and diff metadata
+;; are freed immediately rather than waiting for a close_tab call.
+(defun mgrbyte-cleanup-diff-after-ediff-quit (tab-name &optional session)
+  "Clean up diff buffers for TAB-NAME after ediff quit."
+  (run-with-idle-timer
+   2.0 nil
+   (lambda ()
+     (when (fboundp 'claude-code-ide-mcp--cleanup-diff)
+       (condition-case nil
+           (claude-code-ide-mcp--cleanup-diff tab-name session)
+         (error nil))))))
+
+(advice-add 'claude-code-ide-mcp--handle-ediff-quit
+            :after #'mgrbyte-cleanup-diff-after-ediff-quit)
+
+;; Manual cleanup for orphaned ediff buffers
+(defun mgrbyte-ediff-cleanup-stale-buffers ()
+  "Kill all orphaned ediff buffers (control panels, diff output, etc.)."
+  (interactive)
+  (let ((killed 0))
+    (dolist (buf (buffer-list))
+      (let ((name (buffer-name buf)))
+        (when (and name
+                   (or (string-match-p "\\*[Ee]diff" name)
+                       (string-match-p "\\*ediff-diff" name)
+                       (string-match-p "\\*ediff-fine-diff" name)
+                       (string-match-p "\\*ediff-errors" name)
+                       (string-match-p "\\*ediff-custom-diff" name)
+                       (string-match-p "\\*remote-old:" name)
+                       (string-match-p "\\*remote-new:" name)))
+          (kill-buffer buf)
+          (setq killed (1+ killed)))))
+    (message "Killed %d stale ediff buffer(s)" killed)))
+
 ;; emacs-mcp-server — exposes Emacs to Claude Code via MCP unix socket
 (use-package mcp-server
   :demand t
@@ -119,7 +153,8 @@ Returns non-nil if user accepted the edit."
       (let ((mode (assoc-default tramp-path auto-mode-alist 'string-match)))
         (when mode (ignore-errors (funcall mode)))))
     (let ((ediff-quit-hook
-           (list (lambda ()
+           (list #'ediff-cleanup-mess
+                 (lambda ()
                    (setq result (y-or-n-p "Accept remote edit? "))
                    (exit-recursive-edit)))))
       (switch-to-buffer buf-a)
