@@ -108,6 +108,10 @@
   (mcp-server-security-dangerous-functions '(find-file with-current-buffer insert-file-contents))
   (mcp-server-security-allowed-dangerous-functions '(find-file with-current-buffer)))
 
+;; Remote read/write/exec MCP tools via TRAMP (no ediff, no approval)
+(require 'init-remote-mcp)
+(mgrbyte-remote-mcp-ide--register-tools)
+
 ;; mgrbyte-claude — external terminal integration and auto-dependency discovery
 (require 'mgrbyte-claude)
 (mgrbyte-claude-mode 1)
