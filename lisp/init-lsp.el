@@ -16,6 +16,10 @@
          ("C-c l d" . lsp-find-definition))
   :config
   (setq lsp-auto-guess-root t)
+  ;; Redirect verbose LSP info messages to *lsp-log* instead of minibuffer
+  (advice-add 'lsp--info :override
+              (lambda (format &rest args)
+                (lsp-log (apply #'format-message format args))))
   ;; Disable file watchers over TRAMP (spawns gio monitor on remote)
   (connection-local-set-profile-variables
    'remote-without-file-watchers '((lsp-enable-file-watchers . nil)))
