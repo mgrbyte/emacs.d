@@ -40,6 +40,26 @@
   :config
   (setq-default powerline-default-separator 'wave))
 
+;; Subtle dim-on-blur: a frame fades slightly when it loses focus, so it's
+;; obvious at a glance which window is active without needing system-wide
+;; window borders. NS-frame focus (after-focus-change-function) is unrelated to
+;; the tmux focus-events that leak over ssh, so there is no conflict there.
+(defcustom mgrbyte-frame-unfocused-alpha 90
+  "Opacity (0-100) applied to a graphical frame when it loses focus."
+  :type 'integer
+  :group 'frames)
+
+(defun mgrbyte-dim-frame-on-focus-change ()
+  "Restore opacity to focused frames and dim the rest."
+  (dolist (frame (frame-list))
+    (when (display-graphic-p frame)
+      (pcase (frame-focus-state frame)
+        ('t (set-frame-parameter frame 'alpha 100))
+        ('nil (set-frame-parameter frame 'alpha mgrbyte-frame-unfocused-alpha))))))
+
+(add-function :after after-focus-change-function
+              #'mgrbyte-dim-frame-on-focus-change)
+
 ;; Late initialization - runs after init.el fully loaded (daemon startup)
 (add-hook 'emacs-startup-hook
           (lambda ()
