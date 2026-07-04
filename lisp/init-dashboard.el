@@ -26,9 +26,10 @@
                           (recents  . 10)
                           (bookmarks . 10)))
 
-  ;; Agenda settings - show all scheduled items
+  ;; Agenda settings - actionable TODOs only, nearest scheduled first
   (setq dashboard-agenda-release-buffers nil)
-  (setq dashboard-filter-agenda-entry 'dashboard-no-filter-agenda)
+  (setq dashboard-filter-agenda-entry 'dashboard-filter-agenda-by-todo)
+  (setq dashboard-agenda-sort-strategy '(time-up))
   (setq dashboard-week-agenda t)
 
   ;; Icons
