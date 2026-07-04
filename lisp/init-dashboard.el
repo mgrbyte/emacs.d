@@ -82,9 +82,14 @@
      1 nil
      (lambda ()
        (mgrbyte-gitlab-sync)
-       (when (get-buffer "*dashboard*")
-         (let ((mgrbyte-dashboard--refreshing t))
-           (dashboard-refresh-buffer)))))))
+       ;; Only re-render when the dashboard is visible, and inside its
+       ;; own window: dashboard-refresh-buffer switches the selected
+       ;; window to *dashboard*, which would steal focus from whatever
+       ;; the user has since opened (e.g. a project layout).
+       (when-let ((win (get-buffer-window "*dashboard*" t)))
+         (with-selected-window win
+           (let ((mgrbyte-dashboard--refreshing t))
+             (dashboard-refresh-buffer))))))))
 
 ;; Prevent dashboard from interfering with magit
 (with-eval-after-load 'magit
