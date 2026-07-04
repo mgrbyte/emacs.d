@@ -274,11 +274,10 @@ EPIC-MAP maps epic IID to epic data for tag generation."
   "Sync GitLab epics and issues to org-agenda file.
 Requires init-gitlab-sync-config to provide instance-specific settings."
   (interactive)
-  (unless (mgrbyte-gitlab-sync--configured-p)
-    (message "GitLab sync skipped: init-gitlab-sync-config not available")
-    (cl-return-from mgrbyte-gitlab-sync))
-  (message "Syncing GitLab epics and issues...")
-  (condition-case err
+  (if (not (mgrbyte-gitlab-sync--configured-p))
+      (message "GitLab sync skipped: init-gitlab-sync-config not available")
+    (message "Syncing GitLab epics and issues...")
+    (condition-case err
       (let* ((all-epics (mgrbyte-gitlab-sync--fetch-epics))
              (filtered-epics (mgrbyte-gitlab-sync--filter-epics all-epics))
              (epic-map (mgrbyte-gitlab-sync--build-epic-map all-epics))
@@ -291,7 +290,7 @@ Requires init-gitlab-sync-config to provide instance-specific settings."
                  (length filtered-epics)
                  (length all-issues)
                  (length grouped-issues)))
-    (error (message "GitLab sync failed: %s" (error-message-string err)))))
+      (error (message "GitLab sync failed: %s" (error-message-string err))))))
 
 (defun mgrbyte-gitlab-sync-async ()
   "Run `mgrbyte-gitlab-sync' without blocking."
