@@ -308,7 +308,8 @@ EPIC-MAP maps epic IID to epic data for tag generation."
                               (format ":%s:" epic-tag)))
             (insert (format "* %s\n" project-name)))
           (dolist (issue (seq-sort-by
-                          (lambda (i) (or (alist-get 'due_date i) "9999"))
+                          (lambda (i)
+                            (or (mgrbyte-gitlab-sync--field 'due_date i) "9999"))
                           #'string< issues))
             (let* ((title (alist-get 'title issue))
                    (state (alist-get 'state issue))
@@ -317,7 +318,6 @@ EPIC-MAP maps epic IID to epic data for tag generation."
                                  ("closed" "DONE")
                                  (_ "TODO")))
                    (due-date (alist-get 'due_date issue))
-                   (created-at (alist-get 'created_at issue))
                    (web-url (alist-get 'web_url issue))
                    (iid (alist-get 'iid issue))
                    (epic (mgrbyte-gitlab-sync--issue-epic-info issue epic-map))
@@ -351,7 +351,9 @@ EPIC-MAP maps epic IID to epic data for tag generation."
     (insert (mgrbyte-gitlab-sync--generate-epic-overview filtered-epics))
     (insert "\n")
     (insert (mgrbyte-gitlab-sync--generate-issues-section grouped-issues epic-map))
-    (insert "\n# Local Variables:\n")
+    ;; Split so the marker text is not contiguous in this source file,
+    ;; which Emacs would otherwise misparse as its local-variables list.
+    (insert "\n# Local " "Variables:\n")
     (insert "# buffer-read-only: t\n")
     (insert "# End:\n")
     (buffer-string)))
