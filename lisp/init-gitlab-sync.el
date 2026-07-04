@@ -10,11 +10,22 @@
 ;; Generated file has two sections:
 ;; 1. Epic overview (reference, no TODO states, doesn't appear in agenda)
 ;; 2. Issues grouped by project (actionable TODOs for the agenda)
+;;
+;; Issue selection (no milestones — reporting periods are dated sub-epics
+;; of a cycle epic):
+;; - "periods" are the dated children of the cycle epic
+;; - an epic is in play when its ancestor chain reaches a period whose
+;;   span contains today and the chain carries the configured label
+;; - open issues under in-play epics are kept when assigned to the
+;;   configured assignee or carrying the configured label
+;; - epic-less open issues are kept when assigned to the configured
+;;   assignee
+;; - issues labelled blocked/postponed are dropped
 ;;; Code:
 
 (require 'json)
 (require 'org)
-(require 'url-util)
+(require 'seq)
 
 (defvar mgrbyte-gitlab-sync-hostname nil
   "GitLab hostname for glab API calls.")
@@ -26,10 +37,16 @@
   "GitLab group ID for the issue source group.")
 
 (defvar mgrbyte-gitlab-sync-label nil
-  "Label to filter epics by.")
+  "Label a chain must carry for its epics and issues to be in play.")
 
-(defvar mgrbyte-gitlab-sync-milestone nil
-  "Milestone to filter issues by.")
+(defvar mgrbyte-gitlab-sync-cycle-epic-id nil
+  "Epic ID of the cycle epic whose dated children are reporting periods.")
+
+(defvar mgrbyte-gitlab-sync-assignee nil
+  "GitLab username whose assigned issues are always kept.")
+
+(defvar mgrbyte-gitlab-sync-drop-labels '("Wedi'i rwystro" "Wedi'i ohirio")
+  "Issues carrying any of these labels are dropped (blocked/postponed).")
 
 (defvar mgrbyte-gitlab-sync-output-file nil
   "Path to the generated org file.")
@@ -37,23 +54,11 @@
 (defvar mgrbyte-gitlab-sync-org-title nil
   "Title for the generated org file.")
 
-(defvar mgrbyte-gitlab-sync--container-epics nil
-  "Alist mapping container epic IDs to display names.")
-
-(defvar mgrbyte-gitlab-sync--container-epic-ids nil
-  "List of container epic IDs to exclude from output.
-Derived from `mgrbyte-gitlab-sync--container-epics'.")
-
 (defvar mgrbyte-gitlab-sync--excluded-labels nil
   "Labels excluded from org tags (time periods and status indicators).")
 
 ;; Load private configuration (deployed via nix-secrets)
 (require 'init-gitlab-sync-config nil t)
-
-;; Derive container epic IDs after config is loaded
-(when mgrbyte-gitlab-sync--container-epics
-  (setq mgrbyte-gitlab-sync--container-epic-ids
-        (mapcar #'car mgrbyte-gitlab-sync--container-epics)))
 
 (defun mgrbyte-gitlab-sync--configured-p ()
   "Return non-nil if all required sync settings are present."
@@ -61,8 +66,14 @@ Derived from `mgrbyte-gitlab-sync--container-epics'.")
        mgrbyte-gitlab-sync-group-id
        mgrbyte-gitlab-sync-issues-group-id
        mgrbyte-gitlab-sync-label
-       mgrbyte-gitlab-sync-milestone
+       mgrbyte-gitlab-sync-cycle-epic-id
+       mgrbyte-gitlab-sync-assignee
        mgrbyte-gitlab-sync-output-file))
+
+(defun mgrbyte-gitlab-sync--field (key alist)
+  "Return KEY's value in ALIST, nil when absent or JSON null."
+  (let ((val (alist-get key alist)))
+    (unless (eq val :null) val)))
 
 ;;; --- API calls ---
 
@@ -79,37 +90,93 @@ Derived from `mgrbyte-gitlab-sync--container-epics'.")
       (goto-char (point-min))
       (json-parse-buffer :object-type 'alist :array-type 'list))))
 
+(defun mgrbyte-gitlab-sync--glab-api-paged (endpoint)
+  "Fetch every page of ENDPOINT (which must already contain a query string)."
+  (let ((page 1)
+        (results nil)
+        (done nil))
+    (while (not done)
+      (let ((batch (mgrbyte-gitlab-sync--glab-api
+                    (format "%s&per_page=100&page=%d" endpoint page))))
+        (setq results (nconc results batch))
+        (if (< (length batch) 100)
+            (setq done t)
+          (setq page (1+ page)))))
+    results))
+
 (defun mgrbyte-gitlab-sync--fetch-epics ()
-  "Fetch all epics from the parent group."
-  (mgrbyte-gitlab-sync--glab-api
-   (format "groups/%d/epics?per_page=100&state=all"
+  "Fetch all open epics from the parent group."
+  (mgrbyte-gitlab-sync--glab-api-paged
+   (format "groups/%d/epics?state=opened"
            mgrbyte-gitlab-sync-group-id)))
 
 (defun mgrbyte-gitlab-sync--fetch-issues ()
-  "Fetch open issues from the configured group, filtered by milestone."
-  (mgrbyte-gitlab-sync--glab-api
-   (format "groups/%d/issues?per_page=100&state=opened&include_subgroups=true&milestone=%s"
-           mgrbyte-gitlab-sync-issues-group-id
-           (url-hexify-string mgrbyte-gitlab-sync-milestone))))
+  "Fetch all open issues from the configured group.
+`issue_type=issue' excludes task work items, which share the project
+iid space and would otherwise appear in the list."
+  (mgrbyte-gitlab-sync--glab-api-paged
+   (format "groups/%d/issues?state=opened&include_subgroups=true&issue_type=issue"
+           mgrbyte-gitlab-sync-issues-group-id)))
 
 ;;; --- Filtering and grouping ---
 
-(defun mgrbyte-gitlab-sync--filter-epics (epics)
-  "Filter EPICS to those with the configured label, excluding containers."
+(defun mgrbyte-gitlab-sync--build-epic-map (epics)
+  "Build alist mapping epic ID to epic data from EPICS.
+Used to walk parent chains and look up epic info for issues."
+  (mapcar (lambda (epic)
+            (cons (alist-get 'id epic) epic))
+          epics))
+
+(defun mgrbyte-gitlab-sync--period-epic-p (epic)
+  "Return non-nil when EPIC is a dated child of the cycle epic."
+  (and (equal (mgrbyte-gitlab-sync--field 'parent_id epic)
+              mgrbyte-gitlab-sync-cycle-epic-id)
+       (mgrbyte-gitlab-sync--field 'start_date epic)
+       (mgrbyte-gitlab-sync--field 'due_date epic)
+       t))
+
+(defun mgrbyte-gitlab-sync--active-period-p (epic)
+  "Return non-nil when EPIC is a period whose span contains today."
+  (and (mgrbyte-gitlab-sync--period-epic-p epic)
+       (let ((today (format-time-string "%Y-%m-%d")))
+         ;; ISO dates compare lexicographically; string<= does not exist.
+         (and (not (string> (mgrbyte-gitlab-sync--field 'start_date epic) today))
+              (not (string> today (mgrbyte-gitlab-sync--field 'due_date epic)))))))
+
+(defun mgrbyte-gitlab-sync--epic-chain (epic epic-map)
+  "Return EPIC followed by its ancestors, walking parent links in EPIC-MAP."
+  (let ((chain nil)
+        (seen nil)
+        (current epic))
+    (while (and current (not (memql (alist-get 'id current) seen)))
+      (push (alist-get 'id current) seen)
+      (push current chain)
+      (setq current
+            (when-let ((parent-id (mgrbyte-gitlab-sync--field 'parent_id current)))
+              (alist-get parent-id epic-map))))
+    (nreverse chain)))
+
+(defun mgrbyte-gitlab-sync--epic-in-play-p (epic epic-map)
+  "Return non-nil when EPIC belongs to the current reporting period.
+The ancestor chain must reach a period whose span contains today, and
+the chain (EPIC itself or an ancestor) must carry the configured label."
+  (let ((chain (mgrbyte-gitlab-sync--epic-chain epic epic-map)))
+    (and (seq-some #'mgrbyte-gitlab-sync--active-period-p chain)
+         (seq-some (lambda (e)
+                     (seq-contains-p (alist-get 'labels e)
+                                     mgrbyte-gitlab-sync-label #'string=))
+                   chain))))
+
+(defun mgrbyte-gitlab-sync--filter-epics (epics epic-map)
+  "Filter EPICS to in-play deliverables using EPIC-MAP.
+The cycle epic and the period epics themselves are structural and
+excluded from the output."
   (seq-filter
    (lambda (epic)
-     (let ((labels (alist-get 'labels epic))
-           (id (alist-get 'id epic)))
-       (and (seq-contains-p labels mgrbyte-gitlab-sync-label #'string=)
-            (not (memq id mgrbyte-gitlab-sync--container-epic-ids)))))
+     (and (not (equal (alist-get 'id epic) mgrbyte-gitlab-sync-cycle-epic-id))
+          (not (mgrbyte-gitlab-sync--period-epic-p epic))
+          (mgrbyte-gitlab-sync--epic-in-play-p epic epic-map)))
    epics))
-
-(defun mgrbyte-gitlab-sync--build-epic-map (epics)
-  "Build alist mapping epic IID to epic data from EPICS.
-Used to look up epic info for issues."
-  (mapcar (lambda (epic)
-            (cons (alist-get 'iid epic) epic))
-          epics))
 
 (defun mgrbyte-gitlab-sync--issue-project-name (issue)
   "Extract short project name from ISSUE references."
@@ -122,10 +189,46 @@ Used to look up epic info for issues."
 (defun mgrbyte-gitlab-sync--issue-epic-info (issue epic-map)
   "Get epic info for ISSUE using EPIC-MAP.
 Returns the epic alist or nil."
-  (when-let ((epic-data (alist-get 'epic issue)))
+  (when-let ((epic-data (mgrbyte-gitlab-sync--field 'epic issue)))
     (when (listp epic-data)
-      (let ((epic-iid (alist-get 'iid epic-data)))
-        (alist-get epic-iid epic-map)))))
+      (alist-get (alist-get 'id epic-data) epic-map))))
+
+(defun mgrbyte-gitlab-sync--issue-assigned-p (issue)
+  "Return non-nil when ISSUE is assigned to the configured assignee."
+  (seq-some (lambda (assignee)
+              (string= (alist-get 'username assignee)
+                       mgrbyte-gitlab-sync-assignee))
+            (mgrbyte-gitlab-sync--field 'assignees issue)))
+
+(defun mgrbyte-gitlab-sync--issue-labelled-p (issue)
+  "Return non-nil when ISSUE carries the configured label."
+  (seq-contains-p (mgrbyte-gitlab-sync--field 'labels issue)
+                  mgrbyte-gitlab-sync-label #'string=))
+
+(defun mgrbyte-gitlab-sync--issue-dropped-p (issue)
+  "Return non-nil when ISSUE carries a label in `mgrbyte-gitlab-sync-drop-labels'."
+  (let ((labels (mgrbyte-gitlab-sync--field 'labels issue)))
+    (seq-some (lambda (drop) (seq-contains-p labels drop #'string=))
+              mgrbyte-gitlab-sync-drop-labels)))
+
+(defun mgrbyte-gitlab-sync--issue-keep-p (issue in-play-ids)
+  "Return non-nil when ISSUE belongs on the dashboard.
+Epic-attached issues must sit under an epic in IN-PLAY-IDS and be
+assigned to the configured assignee or carry the configured label.
+Epic-less issues must be assigned to the configured assignee."
+  (and (not (mgrbyte-gitlab-sync--issue-dropped-p issue))
+       (let ((epic-data (mgrbyte-gitlab-sync--field 'epic issue)))
+         (if (and epic-data (listp epic-data))
+             (and (memql (alist-get 'id epic-data) in-play-ids)
+                  (or (mgrbyte-gitlab-sync--issue-assigned-p issue)
+                      (mgrbyte-gitlab-sync--issue-labelled-p issue)))
+           (mgrbyte-gitlab-sync--issue-assigned-p issue)))))
+
+(defun mgrbyte-gitlab-sync--filter-issues (issues in-play-ids)
+  "Filter ISSUES to those kept for the dashboard given IN-PLAY-IDS."
+  (seq-filter (lambda (issue)
+                (mgrbyte-gitlab-sync--issue-keep-p issue in-play-ids))
+              issues))
 
 (defun mgrbyte-gitlab-sync--group-issues-by-project (issues)
   "Group ISSUES by project name.
@@ -279,16 +382,18 @@ Requires init-gitlab-sync-config to provide instance-specific settings."
     (message "Syncing GitLab epics and issues...")
     (condition-case err
       (let* ((all-epics (mgrbyte-gitlab-sync--fetch-epics))
-             (filtered-epics (mgrbyte-gitlab-sync--filter-epics all-epics))
              (epic-map (mgrbyte-gitlab-sync--build-epic-map all-epics))
+             (in-play-epics (mgrbyte-gitlab-sync--filter-epics all-epics epic-map))
+             (in-play-ids (mapcar (lambda (e) (alist-get 'id e)) in-play-epics))
              (all-issues (mgrbyte-gitlab-sync--fetch-issues))
-             (grouped-issues (mgrbyte-gitlab-sync--group-issues-by-project all-issues))
+             (kept-issues (mgrbyte-gitlab-sync--filter-issues all-issues in-play-ids))
+             (grouped-issues (mgrbyte-gitlab-sync--group-issues-by-project kept-issues))
              (content (mgrbyte-gitlab-sync--generate-org
-                       filtered-epics grouped-issues epic-map)))
+                       in-play-epics grouped-issues epic-map)))
         (mgrbyte-gitlab-sync--write-org-file content)
         (message "GitLab sync complete: %d epics, %d issues across %d projects"
-                 (length filtered-epics)
-                 (length all-issues)
+                 (length in-play-epics)
+                 (length kept-issues)
                  (length grouped-issues)))
       (error (message "GitLab sync failed: %s" (error-message-string err))))))
 
