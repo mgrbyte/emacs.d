@@ -1,6 +1,6 @@
 ;;; init-epicworkmgr.el --- Render techiaith-epicworkmgr agenda -*- lexical-binding: t -*-
 ;;; Commentary:
-;; A magit-section buffer, *techiaith-gitlab*, rendering the nested JSON emitted
+;; A magit-section buffer, *epicworkmgr*, rendering the nested JSON emitted
 ;; by the `techiaith-epicworkmgr agenda' CLI: epic groups -> issues -> blockers,
 ;; plus an "Ungrouped" peer section.  This module wraps an external CLI (analogous
 ;; to claude-code.el wrapping the claude-code CLI), hence the bare `epicworkmgr-'
@@ -313,7 +313,7 @@ Guards against concurrent fetches; renders an error on non-zero exit."
 (defun epicworkmgr ()
   "Open the techiaith epicworkmgr agenda buffer and fetch it."
   (interactive)
-  (let ((buffer (get-buffer-create "*techiaith-gitlab*")))
+  (let ((buffer (get-buffer-create "*epicworkmgr*")))
     (with-current-buffer buffer
       (unless (derived-mode-p 'epicworkmgr-mode) (epicworkmgr-mode))
       (epicworkmgr--load 'fetching))
