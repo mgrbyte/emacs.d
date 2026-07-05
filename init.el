@@ -34,6 +34,7 @@
 ;; Major modes
 (require 'init-org)
 (require 'init-gitlab-sync)
+(require 'init-epicworkmgr)
 (require 'init-python)
 (require 'init-clojure)
 (require 'init-modes)

@@ -319,5 +319,7 @@ Guards against concurrent fetches; renders an error on non-zero exit."
       (epicworkmgr--load 'fetching))
     (pop-to-buffer buffer)))
 
+(global-set-key (kbd "C-c g a") #'epicworkmgr)
+
 (provide 'init-epicworkmgr)
 ;;; init-epicworkmgr.el ends here
