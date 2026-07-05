@@ -1,0 +1,69 @@
+{
+  "generated_at": "2026-07-05T19:37:15.832137+00:00",
+  "epics": [
+    {
+      "epic": {
+        "epic_id": 89,
+        "iid": 19,
+        "title": "42 Example Programme",
+        "web_url": "https://gitlab.example.com/groups/acme/team/-/epics/19",
+        "due_date": "2027-03-31",
+        "active": true
+      },
+      "issues": [
+        {
+          "id": 16013,
+          "iid": 1,
+          "ref": "acme/team/widget-api#1",
+          "project": "widget-api",
+          "title": "Add health-check endpoint",
+          "web_url": "https://gitlab.example.com/acme/team/widget-api/-/work_items/1",
+          "state": "opened",
+          "active": true,
+          "due_date": null,
+          "blocked_by": [],
+          "rank": 0,
+          "priority": "A"
+        },
+        {
+          "id": 15900,
+          "iid": 1,
+          "ref": "acme/team/data-loader#1",
+          "project": "data-loader",
+          "title": "Backfill nightly export",
+          "web_url": "https://gitlab.example.com/acme/team/data-loader/-/work_items/1",
+          "state": "opened",
+          "active": false,
+          "due_date": null,
+          "blocked_by": [
+            {
+              "id": 16023,
+              "iid": 1,
+              "ref": "acme/team/report-ui#1",
+              "title": "Adapt the results page",
+              "project": "report-ui"
+            }
+          ],
+          "rank": 1,
+          "priority": "B"
+        }
+      ]
+    }
+  ],
+  "ungrouped": [
+    {
+      "id": 15681,
+      "iid": 1,
+      "ref": "acme/team/auth-service#1",
+      "project": "auth-service",
+      "title": "Token refresh fails on upgrade",
+      "web_url": "https://gitlab.example.com/acme/team/auth-service/-/work_items/1",
+      "state": "opened",
+      "active": false,
+      "due_date": null,
+      "blocked_by": [],
+      "rank": 0,
+      "priority": "C"
+    }
+  ]
+}
