@@ -40,12 +40,16 @@
   "Face for an active (in-progress) issue."
   :group 'epicworkmgr)
 
-(defface epicworkmgr-blocked '((t :inherit error))
+(defface epicworkmgr-blocked '((t :foreground "red"))
   "Face for the blocked icon and blocker count."
   :group 'epicworkmgr)
 
 (defface epicworkmgr-epic '((t :inherit magit-section-heading))
   "Face for epic-group and Ungrouped section headers."
+  :group 'epicworkmgr)
+
+(defface epicworkmgr-project '((t :foreground "yellow"))
+  "Face for the project name in an issue line."
   :group 'epicworkmgr)
 
 ;;; --- Parsing & pure helpers ---
@@ -120,7 +124,8 @@ trailing blocked marker when the issue has blockers."
                       title)))
     (concat (when active (concat (epicworkmgr--active-marker) " "))
             (epicworkmgr--priority-icon (alist-get 'priority issue)) " "
-            (format "%s#%s" (alist-get 'project issue) (alist-get 'iid issue))
+            (propertize (alist-get 'project issue) 'face 'epicworkmgr-project)
+            (format "#%s" (alist-get 'iid issue))
             "  " title-str
             (unless (string-empty-p marker) (concat "  " marker)))))
 
@@ -159,7 +164,7 @@ STATE is `fetching', `refreshing', or `idle'."
 (defun epicworkmgr--insert-blockers (blockers host)
   "Insert a foldable child section listing BLOCKERS.
 Each blocker's section value is its work-items URL rebuilt under HOST."
-  (magit-insert-section (epicworkmgr-blockers)
+  (magit-insert-section (epicworkmgr-blockers nil t)
     (magit-insert-heading "blocked by:")
     (dolist (blocker blockers)
       (magit-insert-section

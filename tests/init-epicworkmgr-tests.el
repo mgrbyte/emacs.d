@@ -98,7 +98,8 @@
     (should (equal plain
                    (concat (char-to-string #xeb79) " " (char-to-string #xf2c7)
                            " widget-api#1  Add health-check endpoint")))
-    (should (text-property-any 0 (length line) 'face 'epicworkmgr-active line))))
+    (should (text-property-any 0 (length line) 'face 'epicworkmgr-active line))
+    (should (text-property-any 0 (length line) 'face 'epicworkmgr-project line))))
 
 (ert-deftest epicworkmgr-test-issue-line-blocked ()
   "A blocked, non-active issue carries the blocked marker and no active face."
@@ -156,7 +157,9 @@
           (should (null (oref ready children)))
           (should (= (length (oref blocked children)) 1))
           (should (eq (oref (car (oref blocked children)) type)
-                      'epicworkmgr-blockers)))
+                      'epicworkmgr-blockers))
+          ;; the "blocked by" section starts collapsed
+          (should (oref (car (oref blocked children)) hidden)))
         (should (eq (oref ungrouped type) 'epicworkmgr-ungrouped))))))
 
 ;;; --- Cycle 6: header-line state (loading indicator) ---
