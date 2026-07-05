@@ -1,6 +1,6 @@
 ;;; init-epicworkmgr.el --- Render techiaith-epicworkmgr agenda -*- lexical-binding: t -*-
 ;;; Commentary:
-;; A magit-section buffer, *techiaith-gitlab*, rendering the nested JSON emitted
+;; A magit-section buffer, *epicworkmgr*, rendering the nested JSON emitted
 ;; by the `techiaith-epicworkmgr agenda' CLI: epic groups -> issues -> blockers,
 ;; plus an "Ungrouped" peer section.  This module wraps an external CLI (analogous
 ;; to claude-code.el wrapping the claude-code CLI), hence the bare `epicworkmgr-'
@@ -40,12 +40,16 @@
   "Face for an active (in-progress) issue."
   :group 'epicworkmgr)
 
-(defface epicworkmgr-blocked '((t :inherit error))
+(defface epicworkmgr-blocked '((t :foreground "red"))
   "Face for the blocked icon and blocker count."
   :group 'epicworkmgr)
 
 (defface epicworkmgr-epic '((t :inherit magit-section-heading))
   "Face for epic-group and Ungrouped section headers."
+  :group 'epicworkmgr)
+
+(defface epicworkmgr-project '((t :foreground "yellow"))
+  "Face for the project name in an issue line."
   :group 'epicworkmgr)
 
 ;;; --- Parsing & pure helpers ---
@@ -120,7 +124,8 @@ trailing blocked marker when the issue has blockers."
                       title)))
     (concat (when active (concat (epicworkmgr--active-marker) " "))
             (epicworkmgr--priority-icon (alist-get 'priority issue)) " "
-            (format "%s#%s" (alist-get 'project issue) (alist-get 'iid issue))
+            (propertize (alist-get 'project issue) 'face 'epicworkmgr-project)
+            (format "#%s" (alist-get 'iid issue))
             "  " title-str
             (unless (string-empty-p marker) (concat "  " marker)))))
 
@@ -159,7 +164,7 @@ STATE is `fetching', `refreshing', or `idle'."
 (defun epicworkmgr--insert-blockers (blockers host)
   "Insert a foldable child section listing BLOCKERS.
 Each blocker's section value is its work-items URL rebuilt under HOST."
-  (magit-insert-section (epicworkmgr-blockers)
+  (magit-insert-section (epicworkmgr-blockers nil t)
     (magit-insert-heading "blocked by:")
     (dolist (blocker blockers)
       (magit-insert-section
@@ -313,7 +318,7 @@ Guards against concurrent fetches; renders an error on non-zero exit."
 (defun epicworkmgr ()
   "Open the techiaith epicworkmgr agenda buffer and fetch it."
   (interactive)
-  (let ((buffer (get-buffer-create "*techiaith-gitlab*")))
+  (let ((buffer (get-buffer-create "*epicworkmgr*")))
     (with-current-buffer buffer
       (unless (derived-mode-p 'epicworkmgr-mode) (epicworkmgr-mode))
       (epicworkmgr--load 'fetching))

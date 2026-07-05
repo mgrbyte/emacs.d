@@ -6,7 +6,7 @@
 ;;
 ;; The stock `clean-buffer-list-kill-regexps' only matches *Man* buffers, so
 ;; magit's per-repo buffers (magit:, magit-process:, magit-diff: …) and the
-;; common transient popups are added.  The agenda buffer *techiaith-gitlab* is
+;; common transient popups are added.  The agenda buffer *epicworkmgr* is
 ;; protected, as are *scratch* and *Messages* (already protected by default).
 ;;
 ;; Nightly only — no in-session timer.  Run `M-x clean-buffer-list' for an
@@ -22,7 +22,7 @@
                 "\\`\\*helm"
                 "\\`\\*\\(Help\\|Compile-Log\\|Warnings\\|Backtrace\\|Completions\\|vc-\\)"))
     (add-to-list 'clean-buffer-list-kill-regexps re))
-  (add-to-list 'clean-buffer-list-kill-never-buffer-names "*techiaith-gitlab*")
+  (add-to-list 'clean-buffer-list-kill-never-buffer-names "*epicworkmgr*")
   (midnight-mode 1))
 
 (provide 'init-midnight)
