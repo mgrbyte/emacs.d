@@ -45,6 +45,7 @@
 (require 'init-spell)
 (require 'init-tramp)
 (require 'init-misc)
+(require 'init-midnight)
 (require 'init-mail)
 (require 'init-ai)
 
