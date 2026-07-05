@@ -3,6 +3,12 @@
 ;; Setup emacs-dashboard as startup screen
 ;;; Code:
 
+(defun mgrbyte-dashboard-agenda-enabled-p (&optional user)
+  "Return non-nil unless USER (default `user-login-name') is the work account.
+The dashboard agenda section is hidden on the work machine; GitLab work
+items are viewed via `epicworkmgr' (C-c g a) instead."
+  (not (string= (or user (user-login-name)) "mtr21pqh")))
+
 (use-package dashboard
 
   :after (nerd-icons projectile mgrbyte)
@@ -20,11 +26,13 @@
         (lambda (project-dir)
           (projectile-switch-project-by-name project-dir)))
 
-  ;; Items to show
-  (setq dashboard-items '((agenda . 20)
-                          (projects . 15)
-                          (recents  . 10)
-                          (bookmarks . 10)))
+  ;; Items to show.  The agenda section is suppressed on the work machine
+  ;; (GitLab work items are viewed via `epicworkmgr' / C-c g a instead).
+  (setq dashboard-items
+        (append (when (mgrbyte-dashboard-agenda-enabled-p) '((agenda . 20)))
+                '((projects . 15)
+                  (recents  . 10)
+                  (bookmarks . 10))))
 
   ;; Agenda settings - actionable TODOs only, nearest scheduled first
   (setq dashboard-agenda-release-buffers nil)
@@ -65,32 +73,15 @@
       (remove-hook 'server-after-make-frame-hook #'mgrbyte-dashboard-refresh-after-frame))
     (add-hook 'server-after-make-frame-hook #'mgrbyte-dashboard-refresh-after-frame)))
 
-;; Prune stale recentf entries, rescan org-agenda-files, and re-sync
-;; GitLab before each dashboard refresh so new/removed org files,
-;; deleted recent files, and GitLab changes are reflected immediately.
-(defvar mgrbyte-dashboard--refreshing nil
-  "Non-nil while dashboard is being refreshed, prevents re-entrancy.")
-
+;; Prune stale recentf entries and rescan org-agenda-files before each
+;; dashboard refresh so new/removed org files and deleted recent files
+;; are reflected immediately.
 (define-advice dashboard-refresh-buffer (:before (&rest _) mgrbyte-refresh-sources)
-  "Rescan org-agenda-files, prune recentf, and sync GitLab before refresh."
+  "Rescan org-agenda-files and prune recentf before refresh."
   (when (fboundp 'mgrbyte-org-agenda-files)
     (setq org-agenda-files (mgrbyte-org-agenda-files)))
   (when (bound-and-true-p recentf-mode)
-    (recentf-cleanup))
-  (when (and (not mgrbyte-dashboard--refreshing)
-             (fboundp 'mgrbyte-gitlab-sync))
-    (run-with-idle-timer
-     1 nil
-     (lambda ()
-       (mgrbyte-gitlab-sync)
-       ;; Only re-render when the dashboard is visible, and inside its
-       ;; own window: dashboard-refresh-buffer switches the selected
-       ;; window to *dashboard*, which would steal focus from whatever
-       ;; the user has since opened (e.g. a project layout).
-       (when-let ((win (get-buffer-window "*dashboard*" t)))
-         (with-selected-window win
-           (let ((mgrbyte-dashboard--refreshing t))
-             (dashboard-refresh-buffer))))))))
+    (recentf-cleanup)))
 
 ;; Prevent dashboard from interfering with magit
 (with-eval-after-load 'magit
