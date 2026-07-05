@@ -5,12 +5,9 @@
 ;;; Code:
 
 ;; gptel - LLM client (for local models via Ollama, not Claude)
+;; No :bind — the C-c g prefix is reserved for GitLab (init-gitlab-sync,
+;; init-epicworkmgr).  gptel commands remain available via M-x.
 (use-package gptel
-  :bind (("C-c g g" . gptel)
-         ("C-c g s" . gptel-send)
-         ("C-c g m" . gptel-menu)
-         ("C-c g a" . gptel-add)
-         ("C-c g f" . gptel-add-file))
   :config
   ;; Use Ollama for local models (no API key needed)
   (setq gptel-backend (gptel-make-ollama "Ollama"
