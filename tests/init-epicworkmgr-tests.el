@@ -173,6 +173,23 @@
       (should (seq-find (lambda (o) (overlay-get o 'invisible))
                         (overlays-at (match-beginning 0)))))))
 
+(ert-deftest epicworkmgr-test-tree-indentation ()
+  "Levels are indented in the buffer: issue 2, blocked-by heading 4, blocker rows 6.
+Counts literal leading spaces (not `current-indentation', which reads 0 for the
+folded, invisible blocker rows)."
+  (let ((snap (epicworkmgr--parse (epicworkmgr-tests--fixture "agenda-sample.json"))))
+    (with-temp-buffer
+      (magit-section-mode)
+      (epicworkmgr--render-snapshot snap)
+      (cl-flet ((lead-at (pat)
+                  (goto-char (point-min))
+                  (re-search-forward pat)
+                  (goto-char (line-beginning-position))
+                  (skip-chars-forward " ")))
+        (should (= (lead-at "widget-api#1") 2))
+        (should (= (lead-at "blocked by") 4))
+        (should (= (lead-at "report-ui#1") 6))))))
+
 ;;; --- Cycle 6: header-line state (loading indicator) ---
 
 (ert-deftest epicworkmgr-test-header-fetching ()

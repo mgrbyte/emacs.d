@@ -165,12 +165,12 @@ STATE is `fetching', `refreshing', or `idle'."
   "Insert a foldable child section listing BLOCKERS.
 Each blocker's section value is its work-items URL rebuilt under HOST."
   (magit-insert-section (epicworkmgr-blockers nil t)
-    (magit-insert-heading "blocked by:")
+    (magit-insert-heading "    blocked by:")
     (dolist (blocker blockers)
       (magit-insert-section
           (epicworkmgr-blocker
            (epicworkmgr--blocker-url (alist-get 'ref blocker) host))
-        (insert (format "  %s#%s  %s\n"
+        (insert (format "      %s#%s  %s\n"
                         (alist-get 'project blocker)
                         (alist-get 'iid blocker)
                         (alist-get 'title blocker)))))))
@@ -178,7 +178,7 @@ Each blocker's section value is its work-items URL rebuilt under HOST."
 (defun epicworkmgr--insert-issue (issue host)
   "Insert ISSUE as a section; blocked issues get a foldable blockers child (HOST)."
   (magit-insert-section (epicworkmgr-issue issue)
-    (magit-insert-heading (epicworkmgr--issue-line issue))
+    (magit-insert-heading (concat "  " (epicworkmgr--issue-line issue)))
     (when-let ((blockers (alist-get 'blocked_by issue)))
       (epicworkmgr--insert-blockers blockers host))))
 
