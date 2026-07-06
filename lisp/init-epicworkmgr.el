@@ -207,7 +207,11 @@ Order is taken verbatim from SNAPSHOT; this never re-sorts."
       (dolist (group (alist-get 'epics snapshot))
         (epicworkmgr--insert-epic-group group host))
       (when-let ((ungrouped (alist-get 'ungrouped snapshot)))
-        (epicworkmgr--insert-ungrouped ungrouped host)))))
+        (epicworkmgr--insert-ungrouped ungrouped host)))
+    ;; Apply initial visibility: magit paints the fold from each section's
+    ;; `hidden' slot only via this pass, which our manual render must trigger
+    ;; (magit-mode's refresh does it automatically; we don't).
+    (magit-section-show magit-root-section)))
 
 ;;; --- Interaction ---
 

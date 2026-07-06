@@ -162,6 +162,17 @@
           (should (oref (car (oref blocked children)) hidden)))
         (should (eq (oref ungrouped type) 'epicworkmgr-ungrouped))))))
 
+(ert-deftest epicworkmgr-test-blockers-visually-folded ()
+  "After render, a collapsed blockers section's rows carry an invisible overlay."
+  (let ((snap (epicworkmgr--parse (epicworkmgr-tests--fixture "agenda-sample.json"))))
+    (with-temp-buffer
+      (magit-section-mode)
+      (epicworkmgr--render-snapshot snap)
+      (goto-char (point-min))
+      (should (re-search-forward "report-ui" nil t))
+      (should (seq-find (lambda (o) (overlay-get o 'invisible))
+                        (overlays-at (match-beginning 0)))))))
+
 ;;; --- Cycle 6: header-line state (loading indicator) ---
 
 (ert-deftest epicworkmgr-test-header-fetching ()
