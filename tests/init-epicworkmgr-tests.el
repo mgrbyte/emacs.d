@@ -66,7 +66,7 @@
   "`--priority-icon' maps A/B/C to their codepoints with the priority face."
   (let ((icon (epicworkmgr--priority-icon "A")))
     (should (equal (substring-no-properties icon) (char-to-string #xf2c7)))
-    (should (eq (get-text-property 0 'face icon) 'epicworkmgr-priority-a)))
+    (should (eq (get-text-property 0 'font-lock-face icon) 'epicworkmgr-priority-a)))
   (should (equal (substring-no-properties (epicworkmgr--priority-icon "B"))
                  (char-to-string #xf2c9)))
   (should (equal (substring-no-properties (epicworkmgr--priority-icon "C"))
@@ -77,14 +77,14 @@
   (let ((marker (epicworkmgr--blocked-marker 2)))
     (should (equal (substring-no-properties marker)
                    (concat (char-to-string #xf256) "2")))
-    (should (eq (get-text-property 0 'face marker) 'epicworkmgr-blocked)))
+    (should (eq (get-text-property 0 'font-lock-face marker) 'epicworkmgr-blocked)))
   (should (equal (epicworkmgr--blocked-marker 0) "")))
 
 (ert-deftest epicworkmgr-test-active-marker ()
   "`--active-marker' is the active-icon codepoint in the active face."
   (let ((marker (epicworkmgr--active-marker)))
     (should (equal (substring-no-properties marker) (char-to-string #xeb79)))
-    (should (eq (get-text-property 0 'face marker) 'epicworkmgr-active))))
+    (should (eq (get-text-property 0 'font-lock-face marker) 'epicworkmgr-active))))
 
 ;;; --- Cycle 3: issue line ---
 
@@ -98,8 +98,8 @@
     (should (equal plain
                    (concat (char-to-string #xeb79) " " (char-to-string #xf2c7)
                            " widget-api#1  Add health-check endpoint")))
-    (should (text-property-any 0 (length line) 'face 'epicworkmgr-active line))
-    (should (text-property-any 0 (length line) 'face 'epicworkmgr-project line))))
+    (should (text-property-any 0 (length line) 'font-lock-face 'epicworkmgr-active line))
+    (should (text-property-any 0 (length line) 'font-lock-face 'epicworkmgr-project line))))
 
 (ert-deftest epicworkmgr-test-issue-line-blocked ()
   "A blocked, non-active issue carries the blocked marker and no active face."
@@ -112,7 +112,7 @@
                    (concat (char-to-string #xf2c9)
                            " data-loader#1  Backfill nightly export  "
                            (char-to-string #xf256) "1")))
-    (should-not (text-property-any 0 (length line) 'face 'epicworkmgr-active line))))
+    (should-not (text-property-any 0 (length line) 'font-lock-face 'epicworkmgr-active line))))
 
 ;;; --- Cycle 4: project resolution ---
 

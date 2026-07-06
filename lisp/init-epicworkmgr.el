@@ -97,18 +97,18 @@ Blockers carry no web_url, so their URLs are rebuilt against this host."
 (defun epicworkmgr--active-marker ()
   "Return the faced active-marker icon string."
   (propertize (char-to-string epicworkmgr--active-icon)
-              'face 'epicworkmgr-active))
+              'font-lock-face 'epicworkmgr-active))
 
 (defun epicworkmgr--priority-icon (priority)
   "Return a faced nerd-icon string for PRIORITY (\"A\"/\"B\"/\"C\"), or nil."
   (when-let ((spec (assoc priority epicworkmgr--priority-icons)))
-    (propertize (char-to-string (nth 1 spec)) 'face (nth 2 spec))))
+    (propertize (char-to-string (nth 1 spec)) 'font-lock-face (nth 2 spec))))
 
 (defun epicworkmgr--blocked-marker (n)
   "Return a faced blocked-icon + count string for N blockers, \"\" when zero."
   (if (> n 0)
       (propertize (format "%c%d" epicworkmgr--blocked-icon n)
-                  'face 'epicworkmgr-blocked)
+                  'font-lock-face 'epicworkmgr-blocked)
     ""))
 
 (defun epicworkmgr--issue-line (issue)
@@ -120,11 +120,11 @@ trailing blocked marker when the issue has blockers."
          (marker (epicworkmgr--blocked-marker
                   (length (alist-get 'blocked_by issue))))
          (title-str (if active
-                        (propertize title 'face 'epicworkmgr-active)
+                        (propertize title 'font-lock-face 'epicworkmgr-active)
                       title)))
     (concat (when active (concat (epicworkmgr--active-marker) " "))
             (epicworkmgr--priority-icon (alist-get 'priority issue)) " "
-            (propertize (alist-get 'project issue) 'face 'epicworkmgr-project)
+            (propertize (alist-get 'project issue) 'font-lock-face 'epicworkmgr-project)
             (format "#%s" (alist-get 'iid issue))
             "  " title-str
             (unless (string-empty-p marker) (concat "  " marker)))))
@@ -159,7 +159,7 @@ STATE is `fetching', `refreshing', or `idle'."
   "Return the propertized header line for EPIC (active marker + faced title)."
   (concat (when (alist-get 'active epic)
             (concat (epicworkmgr--active-marker) " "))
-          (propertize (alist-get 'title epic) 'face 'epicworkmgr-epic)))
+          (propertize (alist-get 'title epic) 'font-lock-face 'epicworkmgr-epic)))
 
 (defun epicworkmgr--insert-blockers (blockers host)
   "Insert a foldable child section listing BLOCKERS.
@@ -193,7 +193,7 @@ Each blocker's section value is its work-items URL rebuilt under HOST."
 (defun epicworkmgr--insert-ungrouped (issues host)
   "Insert the Ungrouped peer section for epic-less ISSUES (HOST for blockers)."
   (magit-insert-section (epicworkmgr-ungrouped)
-    (magit-insert-heading (propertize "Ungrouped" 'face 'epicworkmgr-epic))
+    (magit-insert-heading (propertize "Ungrouped" 'font-lock-face 'epicworkmgr-epic))
     (dolist (issue issues)
       (epicworkmgr--insert-issue issue host))))
 
