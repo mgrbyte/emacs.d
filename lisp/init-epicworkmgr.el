@@ -48,7 +48,7 @@
   "Face for epic-group and Ungrouped section headers."
   :group 'epicworkmgr)
 
-(defface epicworkmgr-project '((t :foreground "yellow"))
+(defface epicworkmgr-project '((t :foreground "#9ece6a"))
   "Face for the project name in an issue line."
   :group 'epicworkmgr)
 
