@@ -2,7 +2,8 @@
 ;;; Commentary:
 ;; A magit-section buffer, *epicworkmgr*, rendering the nested JSON emitted
 ;; by the `techiaith-epicworkmgr agenda' CLI: epic groups -> issues -> blockers,
-;; plus an "Ungrouped" peer section.  This module wraps an external CLI (analogous
+;; with child epic groups nested beneath their parent to any depth, plus an
+;; "Ungrouped" peer section.  This module wraps an external CLI (analogous
 ;; to claude-code.el wrapping the claude-code CLI), hence the bare `epicworkmgr-'
 ;; package prefix rather than the personal-config `mgrbyte-' prefix.
 ;;
@@ -61,11 +62,17 @@ Objects become alists, arrays lists; JSON null -> nil, false -> nil."
                      :object-type 'alist :array-type 'list
                      :null-object nil :false-object nil))
 
+(defun epicworkmgr--first-issue (groups)
+  "Return the first issue found walking GROUPS depth-first, or nil."
+  (seq-some (lambda (group)
+              (or (car (alist-get 'issues group))
+                  (epicworkmgr--first-issue (alist-get 'children group))))
+            groups))
+
 (defun epicworkmgr--host-from-snapshot (snapshot)
   "Return the scheme+host (e.g. \"https://host\") from any issue in SNAPSHOT.
 Blockers carry no web_url, so their URLs are rebuilt against this host."
-  (let* ((groups (alist-get 'epics snapshot))
-         (issue (or (car (alist-get 'issues (car groups)))
+  (let* ((issue (or (epicworkmgr--first-issue (alist-get 'epics snapshot))
                     (car (alist-get 'ungrouped snapshot))))
          (url (alist-get 'web_url issue)))
     (when (and url (string-match "\\`\\(https?://[^/]+\\)" url))
@@ -161,34 +168,46 @@ STATE is `fetching', `refreshing', or `idle'."
             (concat (epicworkmgr--active-marker) " "))
           (propertize (alist-get 'title epic) 'font-lock-face 'epicworkmgr-epic)))
 
-(defun epicworkmgr--insert-blockers (blockers host)
-  "Insert a foldable child section listing BLOCKERS.
+(defun epicworkmgr--indent (depth)
+  "Return the indentation string for a line nested DEPTH epic levels deep."
+  (make-string (* 2 depth) ?\s))
+
+(defun epicworkmgr--insert-blockers (blockers host indent)
+  "Insert a foldable child section listing BLOCKERS, prefixed by INDENT.
 Each blocker's section value is its work-items URL rebuilt under HOST."
   (magit-insert-section (epicworkmgr-blockers nil t)
-    (magit-insert-heading "    blocked by:")
+    (magit-insert-heading (concat indent "    blocked by:"))
     (dolist (blocker blockers)
       (magit-insert-section
           (epicworkmgr-blocker
            (epicworkmgr--blocker-url (alist-get 'ref blocker) host))
-        (insert (format "      %s#%s  %s\n"
+        (insert (format "%s      %s#%s  %s\n"
+                        indent
                         (alist-get 'project blocker)
                         (alist-get 'iid blocker)
                         (alist-get 'title blocker)))))))
 
-(defun epicworkmgr--insert-issue (issue host)
-  "Insert ISSUE as a section; blocked issues get a foldable blockers child (HOST)."
-  (magit-insert-section (epicworkmgr-issue issue)
-    (magit-insert-heading (concat "  " (epicworkmgr--issue-line issue)))
-    (when-let ((blockers (alist-get 'blocked_by issue)))
-      (epicworkmgr--insert-blockers blockers host))))
+(defun epicworkmgr--insert-issue (issue host &optional depth)
+  "Insert ISSUE as a section nested DEPTH epic levels deep (default 0).
+Blocked issues get a foldable blockers child (HOST for their URLs)."
+  (let ((indent (epicworkmgr--indent (or depth 0))))
+    (magit-insert-section (epicworkmgr-issue issue)
+      (magit-insert-heading (concat indent "  " (epicworkmgr--issue-line issue)))
+      (when-let ((blockers (alist-get 'blocked_by issue)))
+        (epicworkmgr--insert-blockers blockers host indent)))))
 
-(defun epicworkmgr--insert-epic-group (group host)
-  "Insert an epic GROUP section: epic header then its issues (HOST for blockers)."
-  (let ((epic (alist-get 'epic group)))
+(defun epicworkmgr--insert-epic-group (group host &optional depth)
+  "Insert an epic GROUP section at DEPTH (default 0): header, issues, children.
+Child epic groups nest beneath the issues, one level deeper (HOST for blockers)."
+  (let ((epic (alist-get 'epic group))
+        (depth (or depth 0)))
     (magit-insert-section (epicworkmgr-epic epic)
-      (magit-insert-heading (epicworkmgr--epic-header epic))
+      (magit-insert-heading
+        (concat (epicworkmgr--indent depth) (epicworkmgr--epic-header epic)))
       (dolist (issue (alist-get 'issues group))
-        (epicworkmgr--insert-issue issue host)))))
+        (epicworkmgr--insert-issue issue host depth))
+      (dolist (child (alist-get 'children group))
+        (epicworkmgr--insert-epic-group child host (1+ depth))))))
 
 (defun epicworkmgr--insert-ungrouped (issues host)
   "Insert the Ungrouped peer section for epic-less ISSUES (HOST for blockers)."
