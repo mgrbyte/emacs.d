@@ -117,6 +117,7 @@ RESUME and CONTINUE control -r and -c flags respectively."
                                 (file-name-nondirectory
                                  (directory-file-name working-dir))))
            (add-dir-dirs (mgrbyte-claude--resolve-add-dir-dirs working-dir))
+           (session-colour (mgrbyte-claude--resolve-session-colour working-dir))
            (script-args (list mgrbyte-claude-ide-external-script
                               "--port" (number-to-string port)
                               "--session-id" session-id
@@ -131,6 +132,8 @@ RESUME and CONTINUE control -r and -c flags respectively."
               (append script-args
                       (list "--extra-flags"
                             (mgrbyte-claude--build-add-dir-flags add-dir-dirs)))))
+      (when session-colour
+        (setq script-args (append script-args (list "--colour" session-colour))))
       ;; Kill any stale tmux window
       (ignore-errors
         (call-process "tmux" nil nil nil "kill-window" "-t" window-name))
@@ -301,6 +304,12 @@ Set via .dir-locals.el per project.")
 Defaults to \"pyproject.toml\" when nil.  Set via .dir-locals.el
 for projects where the manifest is not at root (e.g. \"backend/pyproject.toml\").")
 
+(defvar-local mgrbyte-claude-session-colour nil
+  "Prompt-bar colour for Claude Code sessions started in this project.
+One of the names accepted by Claude Code's /color command: red, blue,
+green, yellow, purple, orange, pink or cyan.  Set via .dir-locals.el so
+concurrent sessions in different projects are told apart at a glance.")
+
 (defun mgrbyte-claude--strip-version-spec (dep-string)
   "Strip version specifiers from DEP-STRING, returning the package name."
   (car (split-string dep-string "[><=!;\\[\\]  ]" t)))
@@ -371,6 +380,13 @@ Returns a list of directory paths, or nil if no deps found."
           (message "mgrbyte-claude: resolved %d add-dir dependencies"
                    (length dep-dirs))
           dep-dirs)))))
+
+(defun mgrbyte-claude--resolve-session-colour (working-dir)
+  "Return the `mgrbyte-claude-session-colour' set in WORKING-DIR's .dir-locals.el."
+  (let* ((dir-locals-file (expand-file-name ".dir-locals.el" working-dir))
+         (dir-locals (mgrbyte-claude--read-dir-locals dir-locals-file))
+         (nil-alist (cdr (assq nil dir-locals))))
+    (cdr (assq 'mgrbyte-claude-session-colour nil-alist))))
 
 (defvar mgrbyte-claude--project-markers '(".git" "pyproject.toml" "flake.nix"
                                           "package.json" "Cargo.toml" "go.mod")
