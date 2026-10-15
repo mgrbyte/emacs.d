@@ -230,30 +230,18 @@ Nicked from http://emacsredux.com/blog/2013/04/21/edit-files-as-root/"
   "List of filenames to search for to open first when visiting a project, order matters.")
 
 (defun mgrbyte-project-layout ()
-  "Set up project layout: project-file | treemacs."
+  "Set up project layout: open the project's entry file.
+Treemacs is not shown automatically; toggle it with `treemacs' (C-c e)."
   (interactive)
   (let ((project-root (projectile-project-root)))
     (unless project-root
       (user-error "Not in a project"))
-    ;; Open project file first to establish context
     (let ((found (cl-find-if
                   (lambda (f) (file-exists-p (file-name-concat project-root f)))
                   mgrbyte-projectile-open-first-match-list)))
       (if found
           (find-file (file-name-concat project-root found))
-        (dired project-root)))
-    ;; Show treemacs for local projects only (TRAMP round-trips make it too slow)
-    (unless (file-remote-p project-root)
-      (let ((editor-win (selected-window)))
-        (run-with-idle-timer
-         0.5 nil
-         (lambda ()
-           (condition-case err
-               (progn
-                 (treemacs-add-and-display-current-project-exclusively)
-                 (when (window-live-p editor-win)
-                   (select-window editor-win)))
-             (error (message "mgrbyte-project-layout: treemacs error: %s" err)))))))))
+        (dired project-root)))))
 
 (defun mgrbyte-show-dashboard ()
   "Return to dashboard, full frame."
