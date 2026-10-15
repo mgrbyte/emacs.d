@@ -50,6 +50,7 @@
     (define-key map (kbd "C-c c d") #'mgrbyte-claude-ide-external-in-directory)
     (define-key map (kbd "C-c c R") #'mgrbyte-claude-ide-external-resume-in-directory)
     (define-key map (kbd "C-c c a") #'mgrbyte-claude-ide-add-dir)
+    (define-key map (kbd "C-c c C") #'mgrbyte-set-claude-session-colour)
     map)
   "Keymap for `mgrbyte-claude-mode'.")
 
@@ -304,6 +305,10 @@ Set via .dir-locals.el per project.")
 Defaults to \"pyproject.toml\" when nil.  Set via .dir-locals.el
 for projects where the manifest is not at root (e.g. \"backend/pyproject.toml\").")
 
+(defconst mgrbyte-claude-session-colours
+  '("red" "blue" "green" "yellow" "purple" "orange" "pink" "cyan")
+  "Colour names accepted by Claude Code's /color command.")
+
 (defvar-local mgrbyte-claude-session-colour nil
   "Prompt-bar colour for Claude Code sessions started in this project.
 One of the names accepted by Claude Code's /color command: red, blue,
@@ -387,6 +392,25 @@ Returns a list of directory paths, or nil if no deps found."
          (dir-locals (mgrbyte-claude--read-dir-locals dir-locals-file))
          (nil-alist (cdr (assq nil dir-locals))))
     (cdr (assq 'mgrbyte-claude-session-colour nil-alist))))
+
+(defun mgrbyte-set-claude-session-colour (colour)
+  "Set COLOUR as the Claude session colour in the current project's .dir-locals.el.
+The project is the Claude working directory of the current buffer; the
+entry is added or replaced and the file saved.  Takes effect for sessions
+started afterwards."
+  (interactive
+   (list (completing-read "Claude session colour: "
+                          mgrbyte-claude-session-colours nil t)))
+  (let* ((working-dir (claude-code-ide--get-working-directory))
+         (dir-locals-file (expand-file-name ".dir-locals.el" working-dir)))
+    (save-window-excursion
+      (add-dir-local-variable nil 'mgrbyte-claude-session-colour colour
+                              dir-locals-file)
+      (with-current-buffer (find-file-noselect dir-locals-file)
+        (save-buffer)))
+    (message "Claude session colour for %s set to %s"
+             (file-name-nondirectory (directory-file-name working-dir))
+             colour)))
 
 (defvar mgrbyte-claude--project-markers '(".git" "pyproject.toml" "flake.nix"
                                           "package.json" "Cargo.toml" "go.mod")
