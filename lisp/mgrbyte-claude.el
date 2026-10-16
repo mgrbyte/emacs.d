@@ -396,21 +396,29 @@ Returns a list of directory paths, or nil if no deps found."
 (defun mgrbyte-set-claude-session-colour (colour)
   "Set COLOUR as the Claude session colour in the current project's .dir-locals.el.
 The project is the Claude working directory of the current buffer; the
-entry is added or replaced and the file saved.  Takes effect for sessions
-started afterwards."
+entry is added or replaced and the file saved.  If a session is running
+for the project, /color is also sent to it via tmux so the change applies
+immediately; run this when the CLI is idle at the prompt, since the
+command is typed into its input box."
   (interactive
    (list (completing-read "Claude session colour: "
                           mgrbyte-claude-session-colours nil t)))
   (let* ((working-dir (claude-code-ide--get-working-directory))
-         (dir-locals-file (expand-file-name ".dir-locals.el" working-dir)))
+         (dir-locals-file (expand-file-name ".dir-locals.el" working-dir))
+         (session-plist (gethash working-dir mgrbyte-claude-ide-external--sessions)))
     (save-window-excursion
       (add-dir-local-variable nil 'mgrbyte-claude-session-colour colour
                               dir-locals-file)
       (with-current-buffer (find-file-noselect dir-locals-file)
         (save-buffer)))
-    (message "Claude session colour for %s set to %s"
+    (when session-plist
+      (call-process "tmux" nil nil nil
+                    "send-keys" "-t" (plist-get session-plist :window-name)
+                    (format "/color %s" colour) "Enter"))
+    (message "Claude session colour for %s set to %s%s"
              (file-name-nondirectory (directory-file-name working-dir))
-             colour)))
+             colour
+             (if session-plist " (applied to the running session)" ""))))
 
 (defvar mgrbyte-claude--project-markers '(".git" "pyproject.toml" "flake.nix"
                                           "package.json" "Cargo.toml" "go.mod")
